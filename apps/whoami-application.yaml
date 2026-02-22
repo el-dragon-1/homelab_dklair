@@ -12,7 +12,7 @@ spec:
       chart: whoami
       helm:
         valueFiles:
-          - $values/path/to/values.yaml  # Update this path
+          - $values/apps/values/whoami/values.yaml  # Update this path
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # Update this
       targetRevision: HEAD
       ref: values
