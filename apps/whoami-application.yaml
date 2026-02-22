@@ -3,6 +3,11 @@ kind: Application
 metadata:
   name: whoami
   namespace: argocd
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     namespace: whoami
