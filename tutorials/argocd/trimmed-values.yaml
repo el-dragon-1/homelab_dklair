@@ -1,0 +1,46 @@
+
+global:
+  domain: argocd.dklair.io
+
+# redis
+redis:
+  enabled: false
+
+# redis-ha disables redis single node deployment.
+redis-ha:
+  enabled: true
+  persistentVolume:
+    enabled: true
+    size: 1Gi
+    storageClass: "longhorn"
+
+# -- Application Controller (StatefulSet)
+controller:
+  replicas: 3
+
+# -- Repo Server
+repoServer:
+  replicas: 2
+
+# -- Argo CD Server
+server:
+  replicas: 1
+
+  ingress:
+    enabled: true
+    controller: generic
+    ingressClassName: "traefik"
+    hostname: "argocd.dklair.io"
+    tls: false
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+
+# -- ApplicationSet Controller
+applicationSet:
+  replicas: 2
+
+# required for Traefik to handle tls.
+params:
+    create: true
+    annotations: {}
+    server.insecure: true
