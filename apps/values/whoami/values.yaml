@@ -10,7 +10,7 @@ image:
 ingress:
   enabled: true
   className: 'my-traefik'
-  annotations:{}
+  annotations: {}
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: whoami.dklair.io
