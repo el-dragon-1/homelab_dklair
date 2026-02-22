@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/
+      targetRevision: 0.1.2
+      chart: whoami
+      helm:
+        valueFiles:
+          - $values/path/to/values.yaml  # Update this path
+    - repoURL: https://github.com/your-org/your-values-repo  # Update this
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
