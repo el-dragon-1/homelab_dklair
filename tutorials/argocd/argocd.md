@@ -14,7 +14,7 @@ helm repo update
 
 I started with the values.yaml and vibe coded the following yaml file (i think) using a ton of back and forth and error troubleshooting.
 
-```
+```yaml
 global:
   domain: argocd.dklair.io
 
