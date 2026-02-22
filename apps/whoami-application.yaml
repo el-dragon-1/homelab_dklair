@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/
+      targetRevision: 0.1.2
+      chart: whoami
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
