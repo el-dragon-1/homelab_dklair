@@ -1,6 +1,3 @@
-# once completed you must run the command
-# kubectl apply -f apps/whoami-application.yaml -n argocd
-# this is because the UI reverts the multiple source configuration to a single source.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
