@@ -10,8 +10,7 @@ image:
 ingress:
   enabled: true
   className: 'my-traefik'
-  annotations:
-    traefik.ingress.kubernetes.io/router.entrypoints: web
+  annotations:{}
     # kubernetes.io/tls-acme: "true"
   hosts:
     - host: whoami.dklair.io
