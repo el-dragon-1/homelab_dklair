@@ -44,83 +44,35 @@ ingress:
     - host: whoami.dklair.io # this is the path setup in cloudflare application routes
         - path: /
           pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: whoami-local-tls
-  #    hosts:
-  #      - whoami.local
-# -- Expose the service via gateway-api HTTPRoute
-# Requires Gateway API resources and suitable controller installed within the cluster
-# (see: https://gateway-api.sigs.k8s.io/guides/)
 ```
+
+Together you should have a values.yaml file that looks like this.
+
+Basically if you dont have the configuration here the chart will pull the default values. If you bring in the default values it will use the default values. If you update the default values with your own configuration it will use the updated values you've entered here.
 
 ```yaml
 replicaCount: 1
 
 image:
   repository: traefik/whoami
-  # This sets the pull policy for images.
   pullPolicy: IfNotPresent
 
 ingress:
   enabled: true
   className: 'my-traefik'
   annotations: {}
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: whoami.dklair.io
       paths:
         - path: /
           pathType: ImplementationSpecific
-  tls: []
-  #  - secretName: whoami-local-tls
-  #    hosts:
-  #      - whoami.local
-
-# -- Expose the service via gateway-api HTTPRoute
-# Requires Gateway API resources and suitable controller installed within the cluster
-# (see: https://gateway-api.sigs.k8s.io/guides/)
-httpRoute:
-  # HTTPRoute enabled.
-  enabled: false
-  # HTTPRoute annotations.
-  annotations: {}
-  # Which Gateways this Route is attached to.
-  parentRefs:
-    - name: gateway
-      sectionName: http
-      # namespace: default
-  # Hostnames matching HTTP header.
-  hostnames:
-    - whoami.local
-  # List of rules and filters applied.
-  rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /headers
-
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
-livenessProbe:
-  httpGet:
-    path: /health
-    port: http
-readinessProbe:
-  httpGet:
-    path: /health
-    port: http
-
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
-autoscaling:
-  enabled: false
-  minReplicas: 1
-  maxReplicas: 100
-  targetCPUUtilizationPercentage: 80
-  # targetMemoryUtilizationPercentage: 80
 ```
 
-There is an application yaml which is placed in the /apps directory.
+---
 
- The configuration of the application yaml requires some constants:
+There is also a application yaml which is placed in the /apps directory once it is ready for deplyment.
+
+The configuration of the application yaml requires some constants:
 
 ```yaml
 apiVersion: argoproj.io/v1alpha1
@@ -168,4 +120,10 @@ This is because the UI reverts the multiple source configuration to a single sou
 At this point you should see the application running in the ArgoCD UI.
 
 ![Alt text](/tutorials/readme-images/application-argocd.png)
+
+Select the new whoami application and view the recourses deployed.
+
+![Alt text](/tutorials/readme-images/whoami-rec.png)
+
+The application recourse will be deployed into the argocd namespace but the other recourses will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
 
