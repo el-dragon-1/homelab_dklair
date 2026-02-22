@@ -127,3 +127,9 @@ Select the new whoami application and view the resources deployed.
 
 The application recourse will be deployed into the argocd namespace but the other resources will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
 
+```
+kubectl get application -n argocd
+```
+
+![Alt text](/tutorials/readme-images/app-n-argocd.png)
+
