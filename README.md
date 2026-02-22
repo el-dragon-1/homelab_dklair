@@ -121,9 +121,9 @@ At this point you should see the application running in the ArgoCD UI.
 
 ![Alt text](/tutorials/readme-images/application-argocd.png)
 
-Select the new whoami application and view the recourses deployed.
+Select the new whoami application and view the resources deployed.
 
 ![Alt text](/tutorials/readme-images/whoami-rec.png)
 
-The application recourse will be deployed into the argocd namespace but the other recourses will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
+The application recourse will be deployed into the argocd namespace but the other resources will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
 
