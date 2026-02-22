@@ -13,7 +13,7 @@ This homelab is running on a k3s cluster with a 3 node control plane and two wor
 
 There are two files that need to be created and configured in order to launch the application. There is an application yaml which is placed in the /apps directory and the values.yaml file that is placed in the /values/new-app directory. The configuration of the application yaml requires some constants:
 
-```
+```yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
