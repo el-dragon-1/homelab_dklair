@@ -32,6 +32,8 @@ The second step here is the ingress configuration which is how the service is ex
 
 It must be enabled and my ingress className is always "my-traefik".
 
+Information on the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) can be found in the link.
+
 ```yaml
 ingress:
   enabled: true # must be set to true.
@@ -39,8 +41,7 @@ ingress:
   annotations: {}
     # traefik.ingress.kubernetes.io/router.entrypoints: web,websecure ## the entrypoint annotation is usually needed but you can try without.
   hosts:
-    - host: whoami.dklair.io # this is the path setup in cloudflare.
-      paths:
+    - host: whoami.dklair.io # this is the path setup in cloudflare application routes
         - path: /
           pathType: ImplementationSpecific
   tls: []
