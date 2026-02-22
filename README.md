@@ -1,11 +1,36 @@
-# Homelab Hardware
+# Homelab
 
 This homelab is running on a k3s cluster with a 3 node control plane and two worker nodes.
 
+## Hardware Setup
+
+### Control Plane
+
 - Node 1
+  - Debian GNU / Linux 12 (Bookworm)
   - raspberry pi 4b+
+    - 8G Ram
 - Node 2
+  - Debian DNU / Linux 13 (Trixie)
   - raspberry pi 4b+
+    - 8G Ram
+- Node 3
+  - Debian GNU / Linux 12 (Bookworm)
+  - raspberry pi 4b+
+    - 8G Ram
+
+### Worker Nodes
+
+- Node 4
+  - Debian GNU / Linux 12 (Bookworm)
+  - banana pi 5
+    - 8G Ram
+- Node 5
+  - 1U server
+    - Ubuntu 24.04.3 LTS
+    - Intel Zeon E-2324G
+    - 64G Ram
+    - RTX 4060which linu
 
 ## ArgoCD and Gitops
 
