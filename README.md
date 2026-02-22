@@ -13,6 +13,8 @@ This homelab is running on a k3s cluster with a 3 node control plane and two wor
 
 There are two files that need to be created and configured in order to launch the application.
 
+#### Configure values.yaml File
+
 There is a values.yaml file that is placed in the /values/new-app directory. This values.yaml file is configured based on my setup.
 
 The first section defines the replica count as well as some default image and pull policy values. They are not needed but are good to show in case you need to adjust them.
@@ -69,6 +71,8 @@ ingress:
 ```
 
 ---
+
+#### Configure application.yaml File
 
 There is also a application yaml which is placed in the /apps directory once it is ready for deplyment.
 
@@ -133,3 +137,5 @@ kubectl get application -n argocd
 
 ![Alt text](/tutorials/readme-images/app-n-argocd.png)
 
+!!! Note
+    If you have not configured the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) to redirect web traffic to the ingress controller the application service will not be accessible.
