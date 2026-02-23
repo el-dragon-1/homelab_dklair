@@ -1,0 +1,18 @@
+# Install CRDs as part of the Helm release
+crds:
+  enabled: true
+
+# Enable ingressShim so cert-manager watches Ingress annotations
+ingressShim:
+  defaultIssuerName: letsencrypt-prod
+  defaultIssuerKind: ClusterIssuer
+  defaultIssuerGroup: cert-manager.io
+
+# Resource limits (optional but good practice for K3s)
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
