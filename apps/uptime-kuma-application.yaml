@@ -6,9 +6,9 @@ metadata:
 spec:
   project: default
   sources:
-    - repoURL: https://helm.soulteary.com/uptime-kuma  # most common community chart
+    - repoURL: https://dirsigler.github.io/uptime-kuma-helm  # most common community chart
       chart: uptime-kuma
-      targetRevision: 2.3.0  # 🔁 check for latest
+      targetRevision: 2.21.3  # 🔁 check for latest
       helm:
         valueFiles:
           - $values/values/uptime-kuma/values.yaml
