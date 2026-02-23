@@ -8,7 +8,7 @@ spec:
   sources:
     - repoURL: https://dirsigler.github.io/uptime-kuma-helm  # most common community chart
       chart: uptime-kuma
-      targetRevision: 2.1.3  # 🔁 check for latest
+      targetRevision: 2.25.0  # 🔁 check for latest
       helm:
         valueFiles:
           - $values/values/uptime-kuma/values.yaml
