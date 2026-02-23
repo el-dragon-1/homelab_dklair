@@ -1,17 +1,18 @@
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
 replicaCount: 1
 
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
 image:
   repository: traefik/whoami
-  # This sets the pull policy for images.
   pullPolicy: IfNotPresent
 
 ingress:
   enabled: true
-  className: 'my-traefik'
-  annotations: {}
-    # kubernetes.io/tls-acme: "true"
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod  # 👈 must be indented under annotations
+  tls:
+    - hosts:
+        - whoami.dklair.io
+      secretName: whoami-tls
   hosts:
     - host: whoami.dklair.io
       paths:
