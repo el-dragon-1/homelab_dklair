@@ -13,7 +13,8 @@ ingress:
         - uptime.dklair.io  # 🔁 Replace with your domain
       secretName: uptime-kuma-tls
 
-persistence:
+volume:
   enabled: true
-  size: 1Gi
-  storageClassName: longhorn
+  accessMode: ReadWriteOnce
+  size: 4Gi
+  storageClassName: "longhorn"
