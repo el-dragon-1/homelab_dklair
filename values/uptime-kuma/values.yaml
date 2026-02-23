@@ -1,0 +1,18 @@
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: uptime.dklair.io  # 🔁 Replace with your domain
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - uptime.dklair.io  # 🔁 Replace with your domain
+      secretName: uptime-kuma-tls
+
+persistence:
+  enabled: true
+  size: 1Gi
