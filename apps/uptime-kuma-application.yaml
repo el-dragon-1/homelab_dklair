@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-kuma
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://helm.soulteary.com/uptime-kuma  # most common community chart
+      chart: uptime-kuma
+      targetRevision: 2.3.0  # 🔁 check for latest
+      helm:
+        valueFiles:
+          - $values/values/uptime-kuma/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # 🔁 Replace
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: uptime-kuma
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
