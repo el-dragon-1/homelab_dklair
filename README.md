@@ -30,7 +30,7 @@ This homelab is running on a k3s cluster with a 3 node control plane and two wor
     - Ubuntu 24.04.3 LTS
     - Intel Zeon E-2324G
     - 64G Ram
-    - RTX 4060which linu
+    - RTX 4060 8g
 
 ## ArgoCD and Gitops
 
