@@ -5,10 +5,10 @@ metadata:
 spec:
   acme:
     server: https://acme-v02.api.letsencrypt.org/directory
-    email: seraphs-respect.48@icloud.com  # 🔁 Replace this
+    email: seraphs-respect.48@icloud.com
     privateKeySecretRef:
       name: letsencrypt-prod-account-key
     solvers:
       - http01:
           ingress:
-            class: traefik  # 🔁 Change to "nginx" if using NGINX ingress
+            class: traefik
