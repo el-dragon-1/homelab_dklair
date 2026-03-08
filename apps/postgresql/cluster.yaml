@@ -1,0 +1,19 @@
+apiVersion: postgresql.cnpg.io/v1
+kind: Cluster
+metadata:
+  name: postgresql
+  namespace: postgresql
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  instances: 1
+  imageName: ghcr.io/cloudnative-pg/postgresql:16
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      secret:
+        name: postgresql-admin
+  storage:
+    storageClass: longhorn
+    size: 10Gi
