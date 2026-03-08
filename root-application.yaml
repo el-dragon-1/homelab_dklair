@@ -8,7 +8,7 @@ spec:
     namespace: argocd
     server: https://kubernetes.default.svc
   source:
-    path: apps/
+    path: apps/argocd/
     repoURL: https://github.com/el-dragon-1/homelab_dklair.git
     targetRevision: HEAD
   project: default
