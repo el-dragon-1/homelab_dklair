@@ -11,6 +11,9 @@ spec:
     repoURL: https://cloudnative-pg.github.io/charts
     chart: cluster
     targetRevision: "0.6.0"
+    helm:
+      valueFiles:
+        - $values/values/postgresql/values.yaml
   destination:
     server: https://kubernetes.default.svc
     namespace: postgresql
