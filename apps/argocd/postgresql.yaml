@@ -13,7 +13,7 @@ spec:
       targetRevision: "0.6.0"
       helm:
         valueFiles:
-          - $values/values/postgresql/values.yaml
+          - $values/postgresql/values.yaml
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values
