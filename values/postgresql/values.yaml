@@ -8,7 +8,7 @@ storage:
 bootstrap:                        # ← Directly maps to Cluster.spec.bootstrap
   initdb:
     database: postgres
-    owner: postgres
+    owner: admin
     secret:                       # ← Now the chart will see this!
       name: postgresql-admin
       userKey: username
