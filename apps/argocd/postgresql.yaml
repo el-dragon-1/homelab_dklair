@@ -9,7 +9,7 @@ spec:
   project: default
   source:
     repoURL: https://github.com/el-dragon-1/homelab_dklair.git
-    targetRevision: v0.6.0
+    targetRevision: 0.5.0
     path: apps/postgresql
   destination:
     server: https://kubernetes.default.svc
