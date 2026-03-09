@@ -1,31 +1,32 @@
-name: postgresql                  # ← Cluster CRD field at root
-instances: 1
+cluster:                          # ← Required for the "cluster" Helm chart
+  name: postgresql
+  instances: 1                    # ← Overrides default of 3
 
-storage:
-  size: 10Gi
-  storageClass: longhorn
+  storage:
+    size: 10Gi
+    storageClass: longhorn
 
-bootstrap:                        # ← Directly maps to Cluster.spec.bootstrap
-  initdb:
-    database: postgres
-    owner: admin
-    secret:                       # ← Now the chart will see this!
-      name: postgresql-admin
-      userKey: username
-      passwordKey: password
-    encoding: UTF8
-    localeCType: C
-    localeCollate: C
+  bootstrap:
+    initdb:
+      database: admin             # ← Match your Vault username for simplicity
+      owner: admin                # ← MUST match Vault 'username' value
+      secret:
+        name: postgresql-admin    # Kubernetes Secret from ExternalSecret
+        key: password             # ← Fixed: was 'passwordKey' (invalid)
+        # Note: 'userKey' is not used by CNPG; owner field defines the role name
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
-postgresql:
-  parameters:
-    max_connections: "100"
-    shared_buffers: "128MB"
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
