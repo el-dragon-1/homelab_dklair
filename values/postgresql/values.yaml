@@ -1,32 +1,31 @@
-cluster:                          # ← Required for the "cluster" Helm chart
-  name: postgresql
-  instances: 1                    # ← Overrides default of 3
+# values/postgresql/values.yaml
+name: postgresql                  # ← Root level, maps to Cluster.metadata.name
+instances: 1                      # ← Root level, maps to Cluster.spec.instances
 
-  storage:
-    size: 10Gi
-    storageClass: longhorn
+storage:
+  size: 10Gi
+  storageClass: longhorn
 
-  bootstrap:
-    initdb:
-      database: admin             # ← Match your Vault username for simplicity
-      owner: admin                # ← MUST match Vault 'username' value
-      secret:
-        name: postgresql-admin    # Kubernetes Secret from ExternalSecret
-        key: password             # ← Fixed: was 'passwordKey' (invalid)
-        # Note: 'userKey' is not used by CNPG; owner field defines the role name
-      encoding: UTF8
-      localeCType: C
-      localeCollate: C
+bootstrap:                        # ← Root level, maps to Cluster.spec.bootstrap
+  initdb:
+    database: admin
+    owner: admin
+    secret:
+      name: postgresql-admin
+      key: password               # ← Correct field name
+    encoding: UTF8
+    localeCType: C
+    localeCollate: C
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
 
-  postgresql:
-    parameters:
-      max_connections: "100"
-      shared_buffers: "128MB"
+postgresql:                       # ← Root level, maps to Cluster.spec.postgresql
+  parameters:
+    max_connections: "100"
+    shared_buffers: "128MB"
