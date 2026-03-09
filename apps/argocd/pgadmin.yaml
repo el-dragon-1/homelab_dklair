@@ -7,10 +7,16 @@ metadata:
     argocd.argoproj.io/sync-wave: "2"
 spec:
   project: default
-  source:
-    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
-    targetRevision: 0.6.0
-    path: apps/postgresql
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cluster
+      targetRevision: 0.3.0
+      helm:
+        valueFiles:
+          - $values/values/postgresql/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
   destination:
     server: https://kubernetes.default.svc
     namespace: postgresql

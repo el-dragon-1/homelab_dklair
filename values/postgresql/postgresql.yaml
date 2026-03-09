@@ -1,0 +1,27 @@
+cluster:
+  name: postgresql
+  instances: 1
+
+  storage:
+    size: 10Gi
+    storageClass: longhorn
+
+  bootstrap:
+    initdb:
+      database: postgres
+      owner: postgres
+      secret:
+        name: postgresql-admin
+
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
