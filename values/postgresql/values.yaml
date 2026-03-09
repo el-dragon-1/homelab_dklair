@@ -1,29 +1,31 @@
-cluster:
-  name: postgresql
-  instances: 1
+name: postgresql                  # ← Cluster CRD field at root
+instances: 1
 
-  storage:
-    size: 10Gi
-    storageClass: longhorn
+storage:
+  size: 10Gi
+  storageClass: longhorn
 
-  bootstrap:
-    initdb:
-      database: postgres
-      owner: postgres
-      secret:
-        name: postgresql-admin
-        userKey: username
-        passwordKey: password
+bootstrap:                        # ← Directly maps to Cluster.spec.bootstrap
+  initdb:
+    database: postgres
+    owner: postgres
+    secret:                       # ← Now the chart will see this!
+      name: postgresql-admin
+      userKey: username
+      passwordKey: password
+    encoding: UTF8
+    localeCType: C
+    localeCollate: C
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
 
-  postgresql:
-    parameters:
-      max_connections: "100"
-      shared_buffers: "128MB"
+postgresql:
+  parameters:
+    max_connections: "100"
+    shared_buffers: "128MB"
