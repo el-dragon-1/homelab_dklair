@@ -12,6 +12,8 @@ cluster:
       owner: postgres
       secret:
         name: postgresql-admin
+        userKey: username
+        passwordKey: password
 
   resources:
     requests:
