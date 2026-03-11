@@ -1,5 +1,5 @@
 # values/postgresql/values.yaml
-name: postgresql                  # ← Root level, maps to Cluster.metadata.name
+# name: postgresql                  # ← Root level, maps to Cluster.metadata.name
 instances: 1                      # ← Root level, maps to Cluster.spec.instances
 
 storage:
