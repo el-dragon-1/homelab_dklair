@@ -13,7 +13,6 @@ cluster:                          # ← REQUIRED for chart v0.6.0
       owner: admin
       secret:
         name: postgresql-admin
-        key: password             # ← Correct field name
       encoding: UTF8
       localeCType: C
       localeCollate: C
