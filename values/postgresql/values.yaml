@@ -1,31 +1,32 @@
 # values/postgresql/values.yaml
-name: postgresql                  # ← Root level, maps to Cluster.metadata.name
-instances: 1                      # ← Root level, maps to Cluster.spec.instances
+cluster:                          # ← REQUIRED for chart v0.6.0
+  name: postgresql
+  instances: 1
 
-storage:
-  size: 10Gi
-  storageClass: longhorn
+  storage:
+    size: 10Gi
+    storageClass: longhorn
 
-bootstrap:                        # ← Root level, maps to Cluster.spec.bootstrap
-  initdb:
-    database: admin
-    owner: admin
-    secret:
-      name: postgresql-admin
-      key: password               # ← Correct field name
-    encoding: UTF8
-    localeCType: C
-    localeCollate: C
+  bootstrap:                      # ← Nested under cluster:
+    initdb:
+      database: admin
+      owner: admin
+      secret:
+        name: postgresql-admin
+        key: password             # ← Correct field name
+      encoding: UTF8
+      localeCType: C
+      localeCollate: C
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
 
-postgresql:                       # ← Root level, maps to Cluster.spec.postgresql
-  parameters:
-    max_connections: "100"
-    shared_buffers: "128MB"
+  postgresql:                     # ← Nested under cluster:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
