@@ -1,31 +1,37 @@
-# values/postgresql/values.yaml
-cluster:                          # ← REQUIRED for chart v0.6.0
-  name: postgresql
-  instances: 1
+# Cluster identity
+nameOverride: postgresql
+fullNameOverride: postgresql-cluster
 
-  storage:
-    size: 10Gi
-    storageClass: longhorn
+# Number of instances
+instances: 1
 
-  bootstrap:                      # ← Nested under cluster:
-    initdb:
-      database: admin
-      owner: admin
-      secret:
-        name: postgresql-admin
-      encoding: UTF8
-      localeCType: C
-      localeCollate: C
+# Storage configuration
+storage:
+  size: 10Gi
+  storageClass: longhorn
 
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
+# Bootstrap configuration (at root level, NOT under cluster:)
+bootstrap:
+  initdb:
+    database: admin
+    owner: admin
+    secret:
+      name: postgresql-admin   # ← Secret name ONLY; CNPG expects 'username' + 'password' keys
+    encoding: UTF8
+    localeCType: C
+    localeCollate: C
 
-  postgresql:                     # ← Nested under cluster:
-    parameters:
-      max_connections: "100"
-      shared_buffers: "128MB"
+# PostgreSQL parameters
+postgresql:
+  parameters:
+    max_connections: "100"
+    shared_buffers: "128MB"
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
