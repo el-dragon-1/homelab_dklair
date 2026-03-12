@@ -1,33 +1,31 @@
+# values/postgresql/values.yaml
+
 # Cluster identity
 nameOverride: postgresql
 fullNameOverride: postgresql-cluster
 
-# Number of instances
+# Core settings (at ROOT level)
 instances: 1
 
-# Storage configuration
 storage:
   size: 10Gi
   storageClass: longhorn
 
-# Bootstrap configuration (at root level, NOT under cluster:)
 bootstrap:
   initdb:
     database: admin
     owner: admin
     secret:
-      name: postgresql-admin   # ← Secret name ONLY; CNPG expects 'username' + 'password' keys
+      name: postgresql-admin   # ← Secret must have 'username' + 'password' keys
     encoding: UTF8
     localeCType: C
     localeCollate: C
 
-# PostgreSQL parameters
 postgresql:
   parameters:
     max_connections: "100"
     shared_buffers: "128MB"
 
-# Resources
 resources:
   requests:
     cpu: 100m
