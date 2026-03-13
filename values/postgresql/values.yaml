@@ -1,18 +1,22 @@
-# values/postgresql/values.yaml
+# === CloudNativePG Cluster Chart v0.6.0 ===
+# Most values are nested under 'cluster:' per chart schema [[1]]
 
-# Cluster identity
+# Chart-level overrides (optional)
 nameOverride: postgresql
 fullNameOverride: postgresql-cluster
 
-# Core settings (at ROOT level)
-instances: 1
+# === Cluster configuration (under 'cluster:' key) ===
+cluster:
+  # Number of instances
+  instances: 1
 
-storage:
-  size: 10Gi
-  storageClass: longhorn
+  # Storage configuration
+  storage:
+    size: 10Gi
+    storageClass: longhorn
 
-bootstrap:
-  initdb:
+  # Bootstrap via initdb (THIS IS THE KEY FIX)
+  initdb:   # ← NOT 'bootstrap.initdb'
     database: admin
     owner: admin
     secret:
@@ -21,15 +25,17 @@ bootstrap:
     localeCType: C
     localeCollate: C
 
-postgresql:
-  parameters:
-    max_connections: "100"
-    shared_buffers: "128MB"
+  # PostgreSQL parameters
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
 
-resources:
-  requests:
-    cpu: 100m
-    memory: 256Mi
-  limits:
-    cpu: 500m
-    memory: 512Mi
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
