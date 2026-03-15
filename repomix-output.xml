@@ -1,0 +1,4667 @@
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+apps/
+  argocd/
+    cert-manager-application.yaml
+    cert-manager-cluster-issuer-application.yaml
+    cloudnativepg.yaml
+    external-secrets-application.yaml
+    external-secrets-config.yaml
+    pgadmin-application.yaml
+    postgresql.yaml
+    uptime-kuma-application.yaml
+    whoami-application.yaml
+  cert-manager/
+    cluster-issuer.yaml
+  external-secrets-config/
+    external-secrets-secrets-store.yaml
+    pgadmin-admin-externalsecret.yaml
+    postgresql-admin-externalsecret.yaml
+  .gitkeep
+disabled/
+  .gitkeep
+postgresql/
+  external-secret.yaml
+tutorials/
+  argocd/
+    argocd.md
+    values.yaml
+  cloudflare/
+    application-routes/
+      configure-app-routes.md
+      network-connectors.png
+      zero-trust-loc.png
+  readme-images/
+    app-n-argocd.png
+    application-argocd.png
+    whoami-rec.png
+values/
+  cert-manager/
+    values.yaml
+  cloudnativepg/
+    values.yaml
+  pgadmin/
+    values.yaml
+  postgresql/
+    values.yaml
+  uptime-kuma/
+    values.yaml
+  whoami/
+    values.yaml
+zulu-remove/
+  pgadmin.yaml
+  repomix-output.xml
+application-template.yaml
+README.md
+root-application.yaml
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="apps/.gitkeep">
+
+</file>
+
+<file path="disabled/.gitkeep">
+
+</file>
+
+<file path="apps/argocd/cert-manager-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: v1.17.1
+      helm:
+        valueFiles:
+          - $values/values/cert-manager/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # 🔁 Replace this
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/cert-manager-cluster-issuer-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager-cluster-issuer
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+    path: apps/cert-manager
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/external-secrets-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.9.11
+    helm:
+      values: |
+        installCRDs: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/external-secrets-config.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # After external-secrets Helm chart installs
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+    path: apps/external-secrets-config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+</file>
+
+<file path="apps/argocd/pgadmin-application.yaml">
+# apps/external-secrets-config/pgadmin-admin-externalsecret.yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: pgadmin-admin
+  namespace: pgadmin
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # Ensure this syncs before the Helm app
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: pgadmin-admin
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        email: "{{ .email }}"
+        password: "{{ .password }}"
+  data:
+    - secretKey: email
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: email
+    - secretKey: password
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: password
+</file>
+
+<file path="apps/argocd/uptime-kuma-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-kuma
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://dirsigler.github.io/uptime-kuma-helm  # most common community chart
+      chart: uptime-kuma
+      targetRevision: 2.25.0  # 🔁 check for latest
+      helm:
+        valueFiles:
+          - $values/values/uptime-kuma/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # 🔁 Replace
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: uptime-kuma
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/whoami-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/
+      targetRevision: 0.1.2
+      chart: whoami
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/cert-manager/cluster-issuer.yaml">
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: seraphs-respect.48@icloud.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+</file>
+
+<file path="apps/external-secrets-config/external-secrets-secrets-store.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend
+spec:
+  provider:
+    vault:
+      server: "http://192.168.4.177:8200"
+      path: "homelab"
+      version: "v2"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "homelab-role"
+          serviceAccountRef:
+            name: "vault-auth"
+            namespace: "secrets"
+</file>
+
+<file path="apps/external-secrets-config/pgadmin-admin-externalsecret.yaml">
+# apps/external-secrets-config/pgadmin-admin-externalsecret.yaml
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: pgadmin-admin
+  namespace: pgadmin
+  annotations:
+    argocd.argoproj.io/sync-wave: "1" # Ensure this syncs before the Helm app
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: pgadmin-admin
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:
+        email: "{{ .email }}"
+        password: "{{ .password }}"
+  data:
+    - secretKey: email
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: email
+    - secretKey: password
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: password
+</file>
+
+<file path="postgresql/external-secret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: postgresql-admin
+  namespace: postgresql
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: postgresql-admin
+    creationPolicy: Owner
+  data:
+    - secretKey: username
+      remoteRef:
+        key: postgresql/postgresql-admin
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: postgresql/postgresql-admin
+        property: password
+</file>
+
+<file path="values/cert-manager/values.yaml">
+# Install CRDs as part of the Helm release
+crds:
+  enabled: true
+
+# Enable ingressShim so cert-manager watches Ingress annotations
+ingressShim:
+  defaultIssuerName: letsencrypt-prod
+  defaultIssuerKind: ClusterIssuer
+  defaultIssuerGroup: cert-manager.io
+
+# Resource limits (optional but good practice for K3s)
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+</file>
+
+<file path="values/cloudnativepg/values.yaml">
+# CloudNativePG Operator values
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Monitoring disabled for now, can enable later with Prometheus
+monitoring:
+  enabled: false
+</file>
+
+<file path="values/pgadmin/values.yaml">
+# values/pgadmin/values.yaml
+
+# Use the official pgAdmin image with specific version
+image:
+  repository: dpage/pgadmin4
+  tag: "9.13"
+  pullPolicy: IfNotPresent
+
+# Configure Environment Variables via Secret (Populated by External Secrets)
+env:
+  email:
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: email
+  password:
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: password
+
+# Persistence Configuration (Using Longhorn as per your cluster setup)
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  size: 4Gi
+  accessMode: ReadWriteOnce
+
+# Ingress Configuration (Traefik + Cert-Manager)
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  hosts:
+    - host: pgadmin.dklair.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pgadmin-tls
+      hosts:
+        - pgadmin.dklair.io
+
+# Resources (Optional, good for K3s)
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+</file>
+
+<file path="zulu-remove/pgadmin.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pgadmin
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "3"  # After postgresql deploys
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+    path: apps/pgadmin
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pgadmin
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="zulu-remove/repomix-output.xml">
+This file is a merged representation of the entire codebase, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of the entire repository's contents.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+apps/
+  argocd/
+    cert-manager-application.yaml
+    cert-manager-cluster-issuer-application.yaml
+    cloudnativepg.yaml
+    external-secrets-application.yaml
+    external-secrets-config.yaml
+    postgresql.yaml
+    uptime-kuma-application.yaml
+    whoami-application.yaml
+  cert-manager/
+    cluster-issuer.yaml
+  external-secrets/
+    external-secrets_test-secret.yaml
+  external-secrets-config/
+    external-secrets-secrets-store.yaml
+    postgresql-admin-externalsecret.yaml
+  .gitkeep
+disabled/
+  .gitkeep
+pgadmin/
+  deployment.yaml
+  external-secret.yaml
+  namespace.yaml
+postgresql/
+  external-secret.yaml
+tutorials/
+  argocd/
+    argocd.md
+    values.yaml
+  cloudflare/
+    application-routes/
+      configure-app-routes.md
+      network-connectors.png
+      zero-trust-loc.png
+  readme-images/
+    app-n-argocd.png
+    application-argocd.png
+    whoami-rec.png
+values/
+  cert-manager/
+    values.yaml
+  cloudnativepg/
+    values.yaml
+  postgresql/
+    values.yaml
+  uptime-kuma/
+    values.yaml
+  whoami/
+    values.yaml
+application-template.yaml
+pgadmin.yaml
+README.md
+root-application.yaml
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="apps/.gitkeep">
+
+</file>
+
+<file path="disabled/.gitkeep">
+
+</file>
+
+<file path="apps/argocd/cert-manager-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://charts.jetstack.io
+      chart: cert-manager
+      targetRevision: v1.17.1
+      helm:
+        valueFiles:
+          - $values/values/cert-manager/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # 🔁 Replace this
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/cert-manager-cluster-issuer-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cert-manager-cluster-issuer
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+    path: apps/cert-manager
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cert-manager
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/external-secrets-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.9.11
+    helm:
+      values: |
+        installCRDs: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/external-secrets-config.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets-config
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # After external-secrets Helm chart installs
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+    path: apps/external-secrets-config
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+</file>
+
+<file path="apps/argocd/uptime-kuma-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: uptime-kuma
+  namespace: argocd
+spec:
+  project: default
+  sources:
+    - repoURL: https://dirsigler.github.io/uptime-kuma-helm  # most common community chart
+      chart: uptime-kuma
+      targetRevision: 2.25.0  # 🔁 check for latest
+      helm:
+        valueFiles:
+          - $values/values/uptime-kuma/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git  # 🔁 Replace
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: uptime-kuma
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/whoami-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/
+      targetRevision: 0.1.2
+      chart: whoami
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/cert-manager/cluster-issuer.yaml">
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: seraphs-respect.48@icloud.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-account-key
+    solvers:
+      - http01:
+          ingress:
+            class: traefik
+</file>
+
+<file path="apps/external-secrets/external-secrets_test-secret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: test-secret
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: test-secret
+    creationPolicy: Owner
+  data:
+    - secretKey: username
+      remoteRef:
+        key: homelab/test-secret
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: homelab/test-secret
+        property: password
+</file>
+
+<file path="apps/external-secrets-config/external-secrets-secrets-store.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ClusterSecretStore
+metadata:
+  name: vault-backend
+spec:
+  provider:
+    vault:
+      server: "http://192.168.4.177:8200"
+      path: "homelab"
+      version: "v2"
+      auth:
+        kubernetes:
+          mountPath: "kubernetes"
+          role: "homelab-role"
+          serviceAccountRef:
+            name: "vault-auth"
+            namespace: "secrets"
+</file>
+
+<file path="pgadmin/deployment.yaml">
+
+</file>
+
+<file path="pgadmin/external-secret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: pgadmin-admin
+  namespace: pgadmin
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: pgadmin-admin
+    creationPolicy: Owner
+  data:
+    - secretKey: email
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: email
+    - secretKey: password
+      remoteRef:
+        key: pgadmin/pgadmin-admin
+        property: password
+</file>
+
+<file path="pgadmin/namespace.yaml">
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: pgadmin
+</file>
+
+<file path="postgresql/external-secret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: postgresql-admin
+  namespace: postgresql
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: postgresql-admin
+    creationPolicy: Owner
+  data:
+    - secretKey: username
+      remoteRef:
+        key: postgresql/postgresql-admin
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: postgresql/postgresql-admin
+        property: password
+</file>
+
+<file path="values/cert-manager/values.yaml">
+# Install CRDs as part of the Helm release
+crds:
+  enabled: true
+
+# Enable ingressShim so cert-manager watches Ingress annotations
+ingressShim:
+  defaultIssuerName: letsencrypt-prod
+  defaultIssuerKind: ClusterIssuer
+  defaultIssuerGroup: cert-manager.io
+
+# Resource limits (optional but good practice for K3s)
+resources:
+  requests:
+    cpu: 10m
+    memory: 64Mi
+  limits:
+    cpu: 100m
+    memory: 128Mi
+</file>
+
+<file path="values/cloudnativepg/values.yaml">
+# CloudNativePG Operator values
+replicaCount: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 256Mi
+
+# Monitoring disabled for now, can enable later with Prometheus
+monitoring:
+  enabled: false
+</file>
+
+<file path="application-template.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd # <<<< this must always be argocd.
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/ # <<<< the helm chart repository
+      targetRevision: 0.1.2 # <<<< the version of the chart to deploy
+      chart: whoami # <<<< the name of the chart to deploy
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml # <<<< the values file to use for the helm chart
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # <<<< the git repository containing the values file
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="root-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  source:
+    path: apps/argocd/
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="tutorials/argocd/values.yaml">
+apiVersionOverrides: {}
+applicationSet:
+  affinity: {}
+  allowAnyNamespace: false
+  automountServiceAccountToken: true
+  certificate:
+    additionalHosts: []
+    annotations: {}
+    domain: ""
+    duration: ""
+    enabled: false
+    issuer:
+      group: ""
+      kind: ""
+      name: ""
+    privateKey:
+      algorithm: RSA
+      encoding: PKCS1
+      rotationPolicy: Never
+      size: 2048
+    renewBefore: ""
+  containerPorts:
+    metrics: 8080
+    probe: 8081
+    webhook: 7000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  extraArgs: []
+  extraContainers: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  ingress:
+    annotations: {}
+    enabled: false
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    hostname: ""
+    ingressClassName: ""
+    labels: {}
+    path: /api/webhook
+    pathType: Prefix
+    tls: false
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8080
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: applicationset-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 7000
+    portName: http-webhook
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-applicationset-controller
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+commitServer:
+  affinity: {}
+  automountServiceAccountToken: false
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: false
+  extraArgs: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: metrics
+      servicePort: 8087
+      type: ClusterIP
+  name: commit-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 8086
+    portName: server
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-commit-server
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+configs:
+  clusterCredentials: {}
+  cm:
+    admin.enabled: true
+    annotations: {}
+    application.instanceLabelKey: argocd.argoproj.io/instance
+    application.sync.impersonation.enabled: false
+    create: true
+    exec.enabled: false
+    resource.customizations.ignoreResourceUpdates.ConfigMap: |
+      jqPathExpressions:
+        # Ignore the cluster-autoscaler status
+        - '.metadata.annotations."cluster-autoscaler.kubernetes.io/last-updated"'
+        # Ignore the annotation of the legacy Leases election
+        - '.metadata.annotations."control-plane.alpha.kubernetes.io/leader"'
+    resource.customizations.ignoreResourceUpdates.Endpoints: |
+      jsonPointers:
+        - /metadata
+        - /subsets
+    resource.customizations.ignoreResourceUpdates.all: |
+      jsonPointers:
+        - /status
+    resource.customizations.ignoreResourceUpdates.apps_ReplicaSet: |
+      jqPathExpressions:
+        - '.metadata.annotations."deployment.kubernetes.io/desired-replicas"'
+        - '.metadata.annotations."deployment.kubernetes.io/max-replicas"'
+        - '.metadata.annotations."rollout.argoproj.io/desired-replicas"'
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Application: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+        - '.metadata.annotations."argocd.argoproj.io/refresh"'
+        - '.metadata.annotations."argocd.argoproj.io/hydrate"'
+        - '.operation'
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Rollout: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+    resource.customizations.ignoreResourceUpdates.autoscaling_HorizontalPodAutoscaler: |
+      jqPathExpressions:
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/behavior"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/conditions"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/metrics"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/current-metrics"'
+    resource.customizations.ignoreResourceUpdates.discovery.k8s.io_EndpointSlice: |
+      jsonPointers:
+        - /metadata
+        - /endpoints
+        - /ports
+    resource.exclusions: |
+      ### Network resources created by the Kubernetes control plane and excluded to reduce the number of watched events and UI clutter
+      - apiGroups:
+        - ''
+        - discovery.k8s.io
+        kinds:
+        - Endpoints
+        - EndpointSlice
+      ### Internal Kubernetes resources excluded reduce the number of watched events
+      - apiGroups:
+        - coordination.k8s.io
+        kinds:
+        - Lease
+      ### Internal Kubernetes Authz/Authn resources excluded reduce the number of watched events
+      - apiGroups:
+        - authentication.k8s.io
+        - authorization.k8s.io
+        kinds:
+        - SelfSubjectReview
+        - TokenReview
+        - LocalSubjectAccessReview
+        - SelfSubjectAccessReview
+        - SelfSubjectRulesReview
+        - SubjectAccessReview
+      ### Intermediate Certificate Request excluded reduce the number of watched events
+      - apiGroups:
+        - certificates.k8s.io
+        kinds:
+        - CertificateSigningRequest
+      - apiGroups:
+        - cert-manager.io
+        kinds:
+        - CertificateRequest
+      ### Cilium internal resources excluded reduce the number of watched events and UI Clutter
+      - apiGroups:
+        - cilium.io
+        kinds:
+        - CiliumIdentity
+        - CiliumEndpoint
+        - CiliumEndpointSlice
+      ### Kyverno intermediate and reporting resources excluded reduce the number of watched events and improve performance
+      - apiGroups:
+        - kyverno.io
+        - reports.kyverno.io
+        - wgpolicyk8s.io
+        kinds:
+        - PolicyReport
+        - ClusterPolicyReport
+        - EphemeralReport
+        - ClusterEphemeralReport
+        - AdmissionReport
+        - ClusterAdmissionReport
+        - BackgroundScanReport
+        - ClusterBackgroundScanReport
+        - UpdateRequest
+    statusbadge.enabled: false
+    timeout.hard.reconciliation: 0s
+    timeout.reconciliation: 180s
+  cmp:
+    annotations: {}
+    create: false
+    plugins: {}
+  credentialTemplates: {}
+  credentialTemplatesAnnotations: {}
+  gpg:
+    annotations: {}
+    keys: {}
+  params:
+    annotations: {}
+    create: true
+    server.insecure: true
+  rbac:
+    annotations: {}
+    create: true
+    policy.csv: ""
+    policy.default: ""
+    policy.matchMode: glob
+    scopes: '[groups]'
+  repositories: {}
+  repositoriesAnnotations: {}
+  secret:
+    annotations: {}
+    argocdServerAdminPassword: ""
+    argocdServerAdminPasswordMtime: ""
+    azureDevops:
+      password: ""
+      username: ""
+    bitbucketServerSecret: ""
+    bitbucketUUID: ""
+    createSecret: true
+    extra: {}
+    githubSecret: ""
+    gitlabSecret: ""
+    gogsSecret: ""
+    labels: {}
+  ssh:
+    annotations: {}
+    create: true
+    extraHosts: ""
+    knownHosts: |
+      [ssh.github.com]:443 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      [ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      [ssh.github.com]:443 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+      bitbucket.org ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPIQmuzMBuKdWeF4+a2sjSSpBK0iqitSQ+5BM9KhpexuGt20JpTVM7u5BDZngncgrqDMbWdxMWWOGtZ9UgbqgZE=
+      bitbucket.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIazEu89wgQZ4bqs3d63QSMzYVa0MuJ2e2gKTKqu+UUO
+      bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQeJzhupRu0u0cdegZIa8e86EG2qOCsIsD1Xw0xSeiPDlCr7kq97NLmMbpKTX6Esc30NuoqEEHCuc7yWtwp8dI76EEEB1VqY9QJq6vk+aySyboD5QF61I/1WeTwu+deCbgKMGbUijeXhtfbxSxm6JwGrXrhBdofTsbKRUsrN1WoNgUa8uqN1Vx6WAJw1JHPhglEGGHea6QICwJOAr/6mrui/oB7pkaWKHj3z7d1IC4KWLtY47elvjbaTlkN04Kc/5LFEirorGYVbt15kAUlqGM65pk6ZBxtaO3+30LVlORZkxOh+LKL/BvbZ/iRNhItLqNyieoQj/uh/7Iv4uyH/cV/0b4WDSd3DptigWq84lJubb9t/DnZlrJazxyDCulTmKdOR7vs9gMTo+uoIrPSb8ScTtvw65+odKAlBj59dhnVp9zd7QUojOpXlL62Aw56U4oO+FALuevvMjiWeavKhJqlR7i5n9srYcrNV7ttmDw7kf/97P5zauIhxcjX+xHv4M=
+      github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+      gitlab.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFSMqzJeV9rUzU4kWitGjeR4PWSa29SPqJ1fVkhtj3Hw9xjLVXVYrU9QlYWrOLXBpQ6KWjbjTDTdDkoohFzgbEY=
+      gitlab.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf
+      gitlab.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsj2bNKTBSpIYDEGk9KxsGh3mySTRgMtXL583qmBpzeQ+jqCMRgBqB98u3z++J1sKlXHWfM9dyhSevkMwSbhoR8XIq/U0tCNyokEi/ueaBMCvbcTHhO7FcwzY92WK4Yt0aGROY5qX2UKSeOvuP4D6TPqKF1onrSzH9bx9XUf2lEdWT/ia1NEKjunUqu1xOB/StKDHMoX4/OKyIzuS0q/T1zOATthvasJFoPrAjkohTyaDUz2LN5JoH839hViyEG82yB+MjcFV5MU3N1l1QL3cVUCh93xSaua1N85qivl+siMkPGbO5xR/En4iEY6K2XPASUEMaieWVNTRCtJ4S8H+9
+      ssh.dev.azure.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Hr1oTWqNqOlzGJOfGJ4NakVyIzf1rXYd4d7wo6jBlkLvCA4odBlL0mDUyZ0/QUfTTqeu+tm22gOsv+VrVTMk6vwRU75gY/y9ut5Mb3bR5BV58dKXyq9A9UeB5Cakehn5Zgm6x1mKoVyf+FFn26iYqXJRgzIZZcZ5V6hrE0Qg39kZm4az48o0AUbf6Sp4SLdvnuMa2sVNwHBboS7EJkm57XQPVU3/QpyNLHbWDdzwtrlS+ez30S3AdYhLKEOxAG8weOnyrtLJAUen9mTkol8oII1edf7mWWbWVf0nBmly21+nZcmCTISQBtdcyPaEno7fFQMDD26/s0lfKob4Kw8H
+      vs-ssh.visualstudio.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Hr1oTWqNqOlzGJOfGJ4NakVyIzf1rXYd4d7wo6jBlkLvCA4odBlL0mDUyZ0/QUfTTqeu+tm22gOsv+VrVTMk6vwRU75gY/y9ut5Mb3bR5BV58dKXyq9A9UeB5Cakehn5Zgm6x1mKoVyf+FFn26iYqXJRgzIZZcZ5V6hrE0Qg39kZm4az48o0AUbf6Sp4SLdvnuMa2sVNwHBboS7EJkm57XQPVU3/QpyNLHbWDdzwtrlS+ez30S3AdYhLKEOxAG8weOnyrtLJAUen9mTkol8oII1edf7mWWbWVf0nBmly21+nZcmCTISQBtdcyPaEno7fFQMDD26/s0lfKob4Kw8H
+  styles: ""
+  tls:
+    annotations: {}
+    certificates: {}
+    create: true
+controller:
+  affinity: {}
+  automountServiceAccountToken: true
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8082
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  dynamicClusterDistribution: false
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  extraArgs: []
+  extraContainers: []
+  heartbeatTime: 10
+  hostNetwork: false
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  metrics:
+    applicationLabels:
+      enabled: false
+      labels: []
+    enabled: false
+    rules:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      namespace: ""
+      selector: {}
+      spec: []
+    scrapeTimeout: ""
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8082
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: application-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 3
+  resources: {}
+  revisionHistoryLimit: 5
+  roleRules: []
+  runtimeClassName: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-application-controller
+  statefulsetAnnotations: {}
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+  vpa:
+    annotations: {}
+    containerPolicy: {}
+    enabled: false
+    labels: {}
+    updateMode: Initial
+crds:
+  additionalLabels: {}
+  annotations: {}
+  install: true
+  keep: true
+createAggregateRoles: false
+createClusterRoles: true
+dex:
+  affinity: {}
+  automountServiceAccountToken: true
+  certificateSecret:
+    annotations: {}
+    ca: ""
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  containerPorts:
+    grpc: 5557
+    http: 5556
+    metrics: 5558
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  enabled: true
+  env: []
+  envFrom: []
+  extraArgs: []
+  extraContainers: []
+  image:
+    imagePullPolicy: ""
+    repository: ghcr.io/dexidp/dex
+    tag: v2.44.0
+  imagePullSecrets: []
+  initContainers: []
+  initImage:
+    imagePullPolicy: ""
+    repository: ""
+    resources: {}
+    tag: ""
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    httpPath: /healthz/live
+    httpPort: metrics
+    httpScheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      labels: {}
+      portName: http-metrics
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: dex-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    httpPath: /healthz/ready
+    httpPort: metrics
+    httpScheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    name: argocd-dex-server
+  servicePortGrpc: 5557
+  servicePortGrpcName: grpc
+  servicePortHttp: 5556
+  servicePortHttpName: http
+  servicePortMetrics: 5558
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+externalRedis:
+  existingSecret: ""
+  host: ""
+  password: ""
+  port: 6379
+  secretAnnotations: {}
+  username: ""
+extraObjects: []
+fullnameOverride: ""
+global:
+  addPrometheusAnnotations: false
+  additionalLabels: {}
+  affinity:
+    nodeAffinity:
+      matchExpressions: []
+      type: hard
+    podAntiAffinity: soft
+  certificateAnnotations: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  domain: argocd.dklair.io
+  dualStack:
+    ipFamilies: []
+    ipFamilyPolicy: ""
+  env: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  image:
+    imagePullPolicy: IfNotPresent
+    repository: quay.io/argoproj/argocd
+    tag: ""
+  imagePullSecrets: []
+  logging:
+    format: text
+    level: info
+  networkPolicy:
+    create: false
+    defaultDenyIngress: false
+  nodeSelector:
+    kubernetes.io/os: linux
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  revisionHistoryLimit: 3
+  runtimeClassName: ""
+  securityContext: {}
+  statefulsetAnnotations: {}
+  tolerations: []
+  topologySpreadConstraints: []
+kubeVersionOverride: ""
+nameOverride: argocd
+namespaceOverride: ""
+notifications:
+  affinity: {}
+  argocdUrl: ""
+  automountServiceAccountToken: true
+  clusterRoleRules:
+    rules: []
+  cm:
+    create: true
+  containerPorts:
+    metrics: 9001
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  context: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy:
+    type: Recreate
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: true
+  extraArgs: []
+  extraContainers: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    port: 9001
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      metricRelabelings: []
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: notifications-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  notifiers: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  secret:
+    annotations: {}
+    create: true
+    items: {}
+    labels: {}
+    name: argocd-notifications-secret
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-notifications-controller
+  subscriptions: []
+  templates: {}
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  triggers: {}
+openshift:
+  enabled: false
+redis:
+  affinity: {}
+  automountServiceAccountToken: true
+  containerPorts:
+    metrics: 9121
+    redis: 6379
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: true
+  env: []
+  envFrom: []
+  exporter:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: false
+    env: []
+    image:
+      imagePullPolicy: ""
+      repository: ghcr.io/oliver006/redis_exporter
+      tag: v1.81.0
+    livenessProbe:
+      enabled: false
+      failureThreshold: 5
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 15
+    readinessProbe:
+      enabled: false
+      failureThreshold: 5
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 15
+    resources: {}
+  extraArgs: []
+  extraContainers: []
+  image:
+    imagePullPolicy: ""
+    repository: ecr-public.aws.com/docker/library/redis
+    tag: 8.2.3-alpine
+  imagePullSecrets: []
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 5
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: None
+      labels: {}
+      portName: http-metrics
+      servicePort: 9121
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: redis
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 5
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
+  resources: {}
+  runtimeClassName: ""
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    seccompProfile:
+      type: RuntimeDefault
+  service:
+    annotations: {}
+    labels: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: false
+    name: ""
+  servicePort: 6379
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+redis-ha:
+  additionalAffinities: {}
+  affinity: ""
+  auth: true
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+  enabled: true
+  existingSecret: argocd-redis
+  exporter:
+    enabled: false
+    image: ghcr.io/oliver006/redis_exporter
+    tag: v1.75.0
+  haproxy:
+    additionalAffinities: {}
+    affinity: ""
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+    enabled: true
+    hardAntiAffinity: true
+    image:
+      repository: ecr-public.aws.com/docker/library/haproxy
+    labels:
+      app.kubernetes.io/name: argocd-redis-ha-haproxy
+    metrics:
+      enabled: true
+    tolerations: []
+  hardAntiAffinity: true
+  image:
+    repository: ecr-public.aws.com/docker/library/redis
+    tag: 8.2.3-alpine
+  persistentVolume:
+    enabled: enabled
+    size: 1Gi
+    storageClass: longhorn
+  redis:
+    config:
+      save: '""'
+    masterGroupName: argocd
+  tolerations: []
+  topologySpreadConstraints:
+    enabled: false
+    maxSkew: ""
+    topologyKey: ""
+    whenUnsatisfiable: ""
+redisSecretInit:
+  affinity: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  enabled: true
+  extraArgs: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  jobAnnotations: {}
+  name: redis-secret-init
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  resources: {}
+  runtimeClassName: ""
+  securityContext: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    name: ""
+  tolerations: []
+repoServer:
+  affinity: {}
+  automountServiceAccountToken: true
+  autoscaling:
+    behavior: {}
+    enabled: false
+    maxReplicas: 5
+    metrics: []
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  certificateSecret:
+    annotations: {}
+    ca: ""
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8084
+    server: 8081
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  copyutil:
+    resources: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  existingVolumes: {}
+  extraArgs: []
+  extraContainers: []
+  hostNetwork: false
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  lifecycle: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8084
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: repo-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  rbac: []
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 8081
+    portName: tcp-repo-server
+    trafficDistribution: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: ""
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  useEphemeralHelmWorkingDir: true
+  volumeMounts: []
+  volumes: []
+server:
+  affinity: {}
+  automountServiceAccountToken: true
+  autoscaling:
+    behavior: {}
+    enabled: false
+    maxReplicas: 5
+    metrics: []
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  backendTLSPolicy:
+    annotations: {}
+    enabled: false
+    labels: {}
+    targetRefs: []
+    validation: {}
+  certificate:
+    additionalHosts: []
+    annotations: {}
+    domain: ""
+    duration: ""
+    enabled: false
+    issuer:
+      group: ""
+      kind: ""
+      name: ""
+    privateKey:
+      algorithm: RSA
+      encoding: PKCS1
+      rotationPolicy: Never
+      size: 2048
+    renewBefore: ""
+    secretTemplateAnnotations: {}
+    usages: []
+  certificateSecret:
+    annotations: {}
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8083
+    server: 8080
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  extensions:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: false
+    extensionList: []
+    image:
+      imagePullPolicy: ""
+      repository: quay.io/argoprojlabs/argocd-extension-installer
+      tag: v0.0.9
+    resources: {}
+  extraArgs: []
+  extraContainers: []
+  grpcroute:
+    annotations: {}
+    enabled: false
+    hostnames: []
+    labels: {}
+    parentRefs: []
+    rules:
+    - matches:
+      - method:
+          type: Exact
+  hostNetwork: false
+  httproute:
+    annotations: {}
+    enabled: false
+    hostnames: []
+    labels: {}
+    parentRefs: []
+    rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  ingress:
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    aws:
+      backendProtocolVersion: GRPC
+      serviceAnnotations: {}
+      serviceType: NodePort
+    controller: generic
+    enabled: true
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    gke:
+      backendConfig: {}
+      frontendConfig: {}
+      managedCertificate:
+        create: true
+        extraDomains: []
+    hostname: argocd.dklair.io
+    ingressClassName: my-traefik
+    labels: {}
+    path: /
+    pathType: Prefix
+    tls: false
+  ingressGrpc:
+    annotations: {}
+    enabled: false
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    hostname: ""
+    ingressClassName: ""
+    labels: {}
+    path: /
+    pathType: Prefix
+    tls: false
+  initContainers: []
+  lifecycle: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8083
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  route:
+    annotations: {}
+    enabled: false
+    hostname: ""
+    termination_policy: None
+    termination_type: passthrough
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    externalIPs: []
+    externalTrafficPolicy: Cluster
+    labels: {}
+    loadBalancerClass: ""
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePortHttp: 30080
+    nodePortHttps: 30443
+    servicePortHttp: 80
+    servicePortHttpName: http
+    servicePortHttps: 443
+    servicePortHttpsAppProtocol: ""
+    servicePortHttpsName: https
+    sessionAffinity: None
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-server
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+</file>
+
+<file path="tutorials/cloudflare/application-routes/configure-app-routes.md">
+# Configuring Published Application Routes
+
+When you have an application runnin in the cluster alonog with an ingress resource you have to configure the hostname routes in order for web traffic to be routed to the appropriate ingress.
+
+In cloudflarefirst go to Zero Trust in the side. (The location changes from time to time)
+
+![Alt text](/tutorials/cloudflare/application-routes/zero-trust-loc.png)
+
+Click Networks > Connectors. For the tunnel you want to edit select the menu dots and click Configure.
+
+![Alt text](/tutorials/cloudflare/application-routes/network-connectors.png)
+</file>
+
+<file path="apps/external-secrets-config/postgresql-admin-externalsecret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: postgresql-admin
+  namespace: postgresql
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: postgresql-admin
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:                        # ← Added: template data mappings
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  data:                            # ← Added: remote reference mappings
+    - secretKey: username
+      remoteRef:
+        key: homelab/postgresql/postgresql-admin
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: homelab/postgresql/postgresql-admin
+        property: password
+</file>
+
+<file path="tutorials/argocd/argocd.md">
+# ArgoCD
+
+ArgoCD was added using helm and the following yaml file [values.yaml](tutorials/argocd/values.yaml). The configuration is working but I didnt trim the fat before running:
+
+There is sample documentation within the ArgoCD docs [Here](https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/#helm). I was directed to where the [helm charts](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd) are being maintained.
+
+
+```
+helm repo add argocd https://argoproj.github.io/argo-helm
+```
+```
+helm repo update
+```
+
+I started with the values.yaml and vibe coded the following yaml file (i think) using a ton of back and forth and error troubleshooting.
+
+```yaml
+global:
+  domain: argocd.dklair.io
+
+# redis
+redis:
+  enabled: false
+
+# redis-ha disables redis single node deployment.
+redis-ha:
+  enabled: true
+  persistentVolume:
+    enabled: true
+    size: 1Gi
+    storageClass: "longhorn"
+
+# -- Application Controller (StatefulSet)
+controller:
+  replicas: 3
+
+# -- Repo Server
+repoServer:
+  replicas: 2
+
+# -- Argo CD Server
+server:
+  replicas: 1
+
+  ingress:
+    enabled: true
+    controller: generic
+    ingressClassName: "traefik"
+    hostname: "argocd.dklair.io"
+    tls: false
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+
+# -- ApplicationSet Controller
+applicationSet:
+  replicas: 2
+
+# required for Traefik to handle tls.
+params:
+    create: true
+    annotations: {}
+    server.insecure: true
+```
+
+Make sure you run this command from the directory with values.yaml
+
+```
+helm install argocd argo/argo-cd -n argocd --create-namespace --values values.yaml
+```
+</file>
+
+<file path="values/uptime-kuma/values.yaml">
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: uptime.dklair.io  # 🔁 Replace with your domain
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - uptime.dklair.io  # 🔁 Replace with your domain
+      secretName: uptime-kuma-tls
+
+volume:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 4Gi
+  storageClassName: "longhorn"
+</file>
+
+<file path="values/whoami/values.yaml">
+replicaCount: 1
+
+image:
+  repository: traefik/whoami
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations: {}
+  tls:
+    - hosts:
+        - whoami.dklair.io
+      secretName: whoami-tls
+  hosts:
+    - host: whoami.dklair.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+</file>
+
+<file path="pgadmin.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cluster
+      targetRevision: 0.3.0
+      helm:
+        valueFiles:
+          - $values/values/postgresql/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: postgresql
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="apps/argocd/cloudnativepg.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnativepg
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: 0.27.1
+      helm:
+        valueFiles:
+          - $values/values/cloudnativepg/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+</file>
+
+<file path="values/postgresql/values.yaml">
+# === CloudNativePG Cluster Chart v0.6.0 ===
+# Most values are nested under 'cluster:' per chart schema [[1]]
+
+# Chart-level overrides (optional)
+nameOverride: postgresql
+fullNameOverride: postgresql-cluster
+
+# === Cluster configuration (under 'cluster:' key) ===
+cluster:
+  # Number of instances
+  instances: 1
+
+  # Storage configuration
+  storage:
+    size: 10Gi
+    storageClass: longhorn
+
+  # Bootstrap via initdb (THIS IS THE KEY FIX)
+  initdb:   # ← NOT 'bootstrap.initdb'
+    database: admin
+    owner: admin
+    secret:
+      name: postgresql-admin   # ← Secret must have 'username' + 'password' keys
+    encoding: UTF8
+    localeCType: C
+    localeCollate: C
+
+  # PostgreSQL parameters
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+</file>
+
+<file path="README.md">
+# Homelab
+
+This homelab is running on a k3s cluster with a 3 node control plane and two worker nodes.
+
+## Hardware Setup
+
+### Control Plane
+
+- Node 1
+  - Debian GNU / Linux 12 (Bookworm)
+  - raspberry pi 4b+
+    - 8G Ram
+- Node 2
+  - Debian DNU / Linux 13 (Trixie)
+  - raspberry pi 4b+
+    - 8G Ram
+- Node 3
+  - Debian GNU / Linux 12 (Bookworm)
+  - raspberry pi 4b+
+    - 8G Ram
+
+### Worker Nodes
+
+- Node 4
+  - Debian GNU / Linux 12 (Bookworm)
+  - banana pi 5
+    - 8G Ram
+- Node 5
+  - 1U server
+    - Ubuntu 24.04.3 LTS
+    - Intel Zeon E-2324G
+    - 64G Ram
+    - RTX 4060 8gb
+
+## ArgoCD and Gitops
+
+### Deploying an application
+
+There are two files that need to be created and configured in order to launch the application.
+
+#### Configure values.yaml File
+
+There is a values.yaml file that is placed in the /values/new-app directory. This values.yaml file is configured based on my setup.
+
+The first section defines the replica count as well as some default image and pull policy values. They are not needed but are good to show in case you need to adjust them.
+
+```yaml
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: traefik/whoami
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+```
+
+The second step here is the ingress configuration which is how the service is exposed.
+
+It must be enabled and my ingress className is always "my-traefik".
+
+Information on the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) can be found in the link.
+
+```yaml
+ingress:
+  enabled: true # must be set to true.
+  className: 'my-traefik' # for my setup this must be my-traefic. Yours may be different.
+  annotations: {}
+    # traefik.ingress.kubernetes.io/router.entrypoints: web,websecure ## the entrypoint annotation is usually needed but you can try without.
+  hosts:
+    - host: whoami.dklair.io # this is the path setup in cloudflare application routes
+        - path: /
+          pathType: ImplementationSpecific
+```
+
+Together you should have a values.yaml file that looks like this.
+
+Basically if you dont have the configuration here the chart will pull the default values. If you bring in the default values it will use the default values. If you update the default values with your own configuration it will use the updated values you've entered here.
+
+```yaml
+replicaCount: 1
+
+image:
+  repository: traefik/whoami
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: 'my-traefik'
+  annotations: {}
+  hosts:
+    - host: whoami.dklair.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+```
+
+---
+
+#### Configure application.yaml File
+
+There is also a application yaml which is placed in the /apps directory once it is ready for deplyment.
+
+The configuration of the application yaml requires some constants:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami  # the name of your application
+  namespace: argocd # this must always be argocd.
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/ # the helm chart repository
+      targetRevision: 0.1.2 # the version of the chart to deploy
+      chart: whoami # the name of the chart to deploy
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml # the values file to use for the helm chart
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # the git repository containing the values file
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+```
+
+Once completed you must run the command
+
+```
+kubectl apply -f apps/whoami-application.yaml -n argocd
+```
+
+This is because the UI reverts the multiple source configuration to a single source.
+
+At this point you should see the application running in the ArgoCD UI.
+
+![Alt text](/tutorials/readme-images/application-argocd.png)
+
+Select the new whoami application and view the resources deployed.
+
+![Alt text](/tutorials/readme-images/whoami-rec.png)
+
+The application recourse will be deployed into the argocd namespace but the other resources will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
+
+```
+kubectl get application -n argocd
+```
+
+![Alt text](/tutorials/readme-images/app-n-argocd.png)
+
+!!! Note
+    If you have not configured the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) to redirect web traffic to the ingress controller the application service will not be accessible.
+</file>
+
+<file path="apps/argocd/postgresql.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cluster
+      targetRevision: "0.6.0"
+      helm:
+        valueFiles:
+          - $values/values/postgresql/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: postgresql
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+</files>
+</file>
+
+<file path="application-template.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami
+  namespace: argocd # <<<< this must always be argocd.
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/ # <<<< the helm chart repository
+      targetRevision: 0.1.2 # <<<< the version of the chart to deploy
+      chart: whoami # <<<< the name of the chart to deploy
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml # <<<< the values file to use for the helm chart
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # <<<< the git repository containing the values file
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="root-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  destination:
+    namespace: argocd
+    server: https://kubernetes.default.svc
+  source:
+    path: apps/argocd/
+    repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+    targetRevision: HEAD
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+<file path="tutorials/argocd/values.yaml">
+apiVersionOverrides: {}
+applicationSet:
+  affinity: {}
+  allowAnyNamespace: false
+  automountServiceAccountToken: true
+  certificate:
+    additionalHosts: []
+    annotations: {}
+    domain: ""
+    duration: ""
+    enabled: false
+    issuer:
+      group: ""
+      kind: ""
+      name: ""
+    privateKey:
+      algorithm: RSA
+      encoding: PKCS1
+      rotationPolicy: Never
+      size: 2048
+    renewBefore: ""
+  containerPorts:
+    metrics: 8080
+    probe: 8081
+    webhook: 7000
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  extraArgs: []
+  extraContainers: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  ingress:
+    annotations: {}
+    enabled: false
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    hostname: ""
+    ingressClassName: ""
+    labels: {}
+    path: /api/webhook
+    pathType: Prefix
+    tls: false
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8080
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: applicationset-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 7000
+    portName: http-webhook
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-applicationset-controller
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+commitServer:
+  affinity: {}
+  automountServiceAccountToken: false
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: false
+  extraArgs: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 30
+    periodSeconds: 30
+    timeoutSeconds: 5
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: metrics
+      servicePort: 8087
+      type: ClusterIP
+  name: commit-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 5
+    periodSeconds: 10
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 8086
+    portName: server
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-commit-server
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+configs:
+  clusterCredentials: {}
+  cm:
+    admin.enabled: true
+    annotations: {}
+    application.instanceLabelKey: argocd.argoproj.io/instance
+    application.sync.impersonation.enabled: false
+    create: true
+    exec.enabled: false
+    resource.customizations.ignoreResourceUpdates.ConfigMap: |
+      jqPathExpressions:
+        # Ignore the cluster-autoscaler status
+        - '.metadata.annotations."cluster-autoscaler.kubernetes.io/last-updated"'
+        # Ignore the annotation of the legacy Leases election
+        - '.metadata.annotations."control-plane.alpha.kubernetes.io/leader"'
+    resource.customizations.ignoreResourceUpdates.Endpoints: |
+      jsonPointers:
+        - /metadata
+        - /subsets
+    resource.customizations.ignoreResourceUpdates.all: |
+      jsonPointers:
+        - /status
+    resource.customizations.ignoreResourceUpdates.apps_ReplicaSet: |
+      jqPathExpressions:
+        - '.metadata.annotations."deployment.kubernetes.io/desired-replicas"'
+        - '.metadata.annotations."deployment.kubernetes.io/max-replicas"'
+        - '.metadata.annotations."rollout.argoproj.io/desired-replicas"'
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Application: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+        - '.metadata.annotations."argocd.argoproj.io/refresh"'
+        - '.metadata.annotations."argocd.argoproj.io/hydrate"'
+        - '.operation'
+    resource.customizations.ignoreResourceUpdates.argoproj.io_Rollout: |
+      jqPathExpressions:
+        - '.metadata.annotations."notified.notifications.argoproj.io"'
+    resource.customizations.ignoreResourceUpdates.autoscaling_HorizontalPodAutoscaler: |
+      jqPathExpressions:
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/behavior"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/conditions"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/metrics"'
+        - '.metadata.annotations."autoscaling.alpha.kubernetes.io/current-metrics"'
+    resource.customizations.ignoreResourceUpdates.discovery.k8s.io_EndpointSlice: |
+      jsonPointers:
+        - /metadata
+        - /endpoints
+        - /ports
+    resource.exclusions: |
+      ### Network resources created by the Kubernetes control plane and excluded to reduce the number of watched events and UI clutter
+      - apiGroups:
+        - ''
+        - discovery.k8s.io
+        kinds:
+        - Endpoints
+        - EndpointSlice
+      ### Internal Kubernetes resources excluded reduce the number of watched events
+      - apiGroups:
+        - coordination.k8s.io
+        kinds:
+        - Lease
+      ### Internal Kubernetes Authz/Authn resources excluded reduce the number of watched events
+      - apiGroups:
+        - authentication.k8s.io
+        - authorization.k8s.io
+        kinds:
+        - SelfSubjectReview
+        - TokenReview
+        - LocalSubjectAccessReview
+        - SelfSubjectAccessReview
+        - SelfSubjectRulesReview
+        - SubjectAccessReview
+      ### Intermediate Certificate Request excluded reduce the number of watched events
+      - apiGroups:
+        - certificates.k8s.io
+        kinds:
+        - CertificateSigningRequest
+      - apiGroups:
+        - cert-manager.io
+        kinds:
+        - CertificateRequest
+      ### Cilium internal resources excluded reduce the number of watched events and UI Clutter
+      - apiGroups:
+        - cilium.io
+        kinds:
+        - CiliumIdentity
+        - CiliumEndpoint
+        - CiliumEndpointSlice
+      ### Kyverno intermediate and reporting resources excluded reduce the number of watched events and improve performance
+      - apiGroups:
+        - kyverno.io
+        - reports.kyverno.io
+        - wgpolicyk8s.io
+        kinds:
+        - PolicyReport
+        - ClusterPolicyReport
+        - EphemeralReport
+        - ClusterEphemeralReport
+        - AdmissionReport
+        - ClusterAdmissionReport
+        - BackgroundScanReport
+        - ClusterBackgroundScanReport
+        - UpdateRequest
+    statusbadge.enabled: false
+    timeout.hard.reconciliation: 0s
+    timeout.reconciliation: 180s
+  cmp:
+    annotations: {}
+    create: false
+    plugins: {}
+  credentialTemplates: {}
+  credentialTemplatesAnnotations: {}
+  gpg:
+    annotations: {}
+    keys: {}
+  params:
+    annotations: {}
+    create: true
+    server.insecure: true
+  rbac:
+    annotations: {}
+    create: true
+    policy.csv: ""
+    policy.default: ""
+    policy.matchMode: glob
+    scopes: '[groups]'
+  repositories: {}
+  repositoriesAnnotations: {}
+  secret:
+    annotations: {}
+    argocdServerAdminPassword: ""
+    argocdServerAdminPasswordMtime: ""
+    azureDevops:
+      password: ""
+      username: ""
+    bitbucketServerSecret: ""
+    bitbucketUUID: ""
+    createSecret: true
+    extra: {}
+    githubSecret: ""
+    gitlabSecret: ""
+    gogsSecret: ""
+    labels: {}
+  ssh:
+    annotations: {}
+    create: true
+    extraHosts: ""
+    knownHosts: |
+      [ssh.github.com]:443 ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      [ssh.github.com]:443 ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      [ssh.github.com]:443 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+      bitbucket.org ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBPIQmuzMBuKdWeF4+a2sjSSpBK0iqitSQ+5BM9KhpexuGt20JpTVM7u5BDZngncgrqDMbWdxMWWOGtZ9UgbqgZE=
+      bitbucket.org ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIIazEu89wgQZ4bqs3d63QSMzYVa0MuJ2e2gKTKqu+UUO
+      bitbucket.org ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQDQeJzhupRu0u0cdegZIa8e86EG2qOCsIsD1Xw0xSeiPDlCr7kq97NLmMbpKTX6Esc30NuoqEEHCuc7yWtwp8dI76EEEB1VqY9QJq6vk+aySyboD5QF61I/1WeTwu+deCbgKMGbUijeXhtfbxSxm6JwGrXrhBdofTsbKRUsrN1WoNgUa8uqN1Vx6WAJw1JHPhglEGGHea6QICwJOAr/6mrui/oB7pkaWKHj3z7d1IC4KWLtY47elvjbaTlkN04Kc/5LFEirorGYVbt15kAUlqGM65pk6ZBxtaO3+30LVlORZkxOh+LKL/BvbZ/iRNhItLqNyieoQj/uh/7Iv4uyH/cV/0b4WDSd3DptigWq84lJubb9t/DnZlrJazxyDCulTmKdOR7vs9gMTo+uoIrPSb8ScTtvw65+odKAlBj59dhnVp9zd7QUojOpXlL62Aw56U4oO+FALuevvMjiWeavKhJqlR7i5n9srYcrNV7ttmDw7kf/97P5zauIhxcjX+xHv4M=
+      github.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBEmKSENjQEezOmxkZMy7opKgwFB9nkt5YRrYMjNuG5N87uRgg6CLrbo5wAdT/y6v0mKV0U2w0WZ2YB/++Tpockg=
+      github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      github.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABgQCj7ndNxQowgcQnjshcLrqPEiiphnt+VTTvDP6mHBL9j1aNUkY4Ue1gvwnGLVlOhGeYrnZaMgRK6+PKCUXaDbC7qtbW8gIkhL7aGCsOr/C56SJMy/BCZfxd1nWzAOxSDPgVsmerOBYfNqltV9/hWCqBywINIR+5dIg6JTJ72pcEpEjcYgXkE2YEFXV1JHnsKgbLWNlhScqb2UmyRkQyytRLtL+38TGxkxCflmO+5Z8CSSNY7GidjMIZ7Q4zMjA2n1nGrlTDkzwDCsw+wqFPGQA179cnfGWOWRVruj16z6XyvxvjJwbz0wQZ75XK5tKSb7FNyeIEs4TT4jk+S4dhPeAUC5y+bDYirYgM4GC7uEnztnZyaVWQ7B381AK4Qdrwt51ZqExKbQpTUNn+EjqoTwvqNj4kqx5QUCI0ThS/YkOxJCXmPUWZbhjpCg56i+2aB6CmK2JGhn57K5mj0MNdBXA4/WnwH6XoPWJzK5Nyu2zB3nAZp+S5hpQs+p1vN1/wsjk=
+      gitlab.com ecdsa-sha2-nistp256 AAAAE2VjZHNhLXNoYTItbmlzdHAyNTYAAAAIbmlzdHAyNTYAAABBBFSMqzJeV9rUzU4kWitGjeR4PWSa29SPqJ1fVkhtj3Hw9xjLVXVYrU9QlYWrOLXBpQ6KWjbjTDTdDkoohFzgbEY=
+      gitlab.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIAfuCHKVTjquxvt6CM6tdG4SLp1Btn/nOeHHE5UOzRdf
+      gitlab.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCsj2bNKTBSpIYDEGk9KxsGh3mySTRgMtXL583qmBpzeQ+jqCMRgBqB98u3z++J1sKlXHWfM9dyhSevkMwSbhoR8XIq/U0tCNyokEi/ueaBMCvbcTHhO7FcwzY92WK4Yt0aGROY5qX2UKSeOvuP4D6TPqKF1onrSzH9bx9XUf2lEdWT/ia1NEKjunUqu1xOB/StKDHMoX4/OKyIzuS0q/T1zOATthvasJFoPrAjkohTyaDUz2LN5JoH839hViyEG82yB+MjcFV5MU3N1l1QL3cVUCh93xSaua1N85qivl+siMkPGbO5xR/En4iEY6K2XPASUEMaieWVNTRCtJ4S8H+9
+      ssh.dev.azure.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Hr1oTWqNqOlzGJOfGJ4NakVyIzf1rXYd4d7wo6jBlkLvCA4odBlL0mDUyZ0/QUfTTqeu+tm22gOsv+VrVTMk6vwRU75gY/y9ut5Mb3bR5BV58dKXyq9A9UeB5Cakehn5Zgm6x1mKoVyf+FFn26iYqXJRgzIZZcZ5V6hrE0Qg39kZm4az48o0AUbf6Sp4SLdvnuMa2sVNwHBboS7EJkm57XQPVU3/QpyNLHbWDdzwtrlS+ez30S3AdYhLKEOxAG8weOnyrtLJAUen9mTkol8oII1edf7mWWbWVf0nBmly21+nZcmCTISQBtdcyPaEno7fFQMDD26/s0lfKob4Kw8H
+      vs-ssh.visualstudio.com ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQC7Hr1oTWqNqOlzGJOfGJ4NakVyIzf1rXYd4d7wo6jBlkLvCA4odBlL0mDUyZ0/QUfTTqeu+tm22gOsv+VrVTMk6vwRU75gY/y9ut5Mb3bR5BV58dKXyq9A9UeB5Cakehn5Zgm6x1mKoVyf+FFn26iYqXJRgzIZZcZ5V6hrE0Qg39kZm4az48o0AUbf6Sp4SLdvnuMa2sVNwHBboS7EJkm57XQPVU3/QpyNLHbWDdzwtrlS+ez30S3AdYhLKEOxAG8weOnyrtLJAUen9mTkol8oII1edf7mWWbWVf0nBmly21+nZcmCTISQBtdcyPaEno7fFQMDD26/s0lfKob4Kw8H
+  styles: ""
+  tls:
+    annotations: {}
+    certificates: {}
+    create: true
+controller:
+  affinity: {}
+  automountServiceAccountToken: true
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8082
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  dynamicClusterDistribution: false
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  extraArgs: []
+  extraContainers: []
+  heartbeatTime: 10
+  hostNetwork: false
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  metrics:
+    applicationLabels:
+      enabled: false
+      labels: []
+    enabled: false
+    rules:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      namespace: ""
+      selector: {}
+      spec: []
+    scrapeTimeout: ""
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8082
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: application-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 3
+  resources: {}
+  revisionHistoryLimit: 5
+  roleRules: []
+  runtimeClassName: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-application-controller
+  statefulsetAnnotations: {}
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+  vpa:
+    annotations: {}
+    containerPolicy: {}
+    enabled: false
+    labels: {}
+    updateMode: Initial
+crds:
+  additionalLabels: {}
+  annotations: {}
+  install: true
+  keep: true
+createAggregateRoles: false
+createClusterRoles: true
+dex:
+  affinity: {}
+  automountServiceAccountToken: true
+  certificateSecret:
+    annotations: {}
+    ca: ""
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  containerPorts:
+    grpc: 5557
+    http: 5556
+    metrics: 5558
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  enabled: true
+  env: []
+  envFrom: []
+  extraArgs: []
+  extraContainers: []
+  image:
+    imagePullPolicy: ""
+    repository: ghcr.io/dexidp/dex
+    tag: v2.44.0
+  imagePullSecrets: []
+  initContainers: []
+  initImage:
+    imagePullPolicy: ""
+    repository: ""
+    resources: {}
+    tag: ""
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    httpPath: /healthz/live
+    httpPort: metrics
+    httpScheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      labels: {}
+      portName: http-metrics
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: dex-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    httpPath: /healthz/ready
+    httpPort: metrics
+    httpScheme: HTTP
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    name: argocd-dex-server
+  servicePortGrpc: 5557
+  servicePortGrpcName: grpc
+  servicePortHttp: 5556
+  servicePortHttpName: http
+  servicePortMetrics: 5558
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+externalRedis:
+  existingSecret: ""
+  host: ""
+  password: ""
+  port: 6379
+  secretAnnotations: {}
+  username: ""
+extraObjects: []
+fullnameOverride: ""
+global:
+  addPrometheusAnnotations: false
+  additionalLabels: {}
+  affinity:
+    nodeAffinity:
+      matchExpressions: []
+      type: hard
+    podAntiAffinity: soft
+  certificateAnnotations: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  domain: argocd.dklair.io
+  dualStack:
+    ipFamilies: []
+    ipFamilyPolicy: ""
+  env: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  hostAliases: []
+  image:
+    imagePullPolicy: IfNotPresent
+    repository: quay.io/argoproj/argocd
+    tag: ""
+  imagePullSecrets: []
+  logging:
+    format: text
+    level: info
+  networkPolicy:
+    create: false
+    defaultDenyIngress: false
+  nodeSelector:
+    kubernetes.io/os: linux
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  revisionHistoryLimit: 3
+  runtimeClassName: ""
+  securityContext: {}
+  statefulsetAnnotations: {}
+  tolerations: []
+  topologySpreadConstraints: []
+kubeVersionOverride: ""
+nameOverride: argocd
+namespaceOverride: ""
+notifications:
+  affinity: {}
+  argocdUrl: ""
+  automountServiceAccountToken: true
+  clusterRoleRules:
+    rules: []
+  cm:
+    create: true
+  containerPorts:
+    metrics: 9001
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  context: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy:
+    type: Recreate
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: true
+  extraArgs: []
+  extraContainers: []
+  extraEnv: []
+  extraEnvFrom: []
+  extraVolumeMounts: []
+  extraVolumes: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    port: 9001
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      metricRelabelings: []
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: notifications-controller
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  notifiers: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  resources: {}
+  runtimeClassName: ""
+  secret:
+    annotations: {}
+    create: true
+    items: {}
+    labels: {}
+    name: argocd-notifications-secret
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-notifications-controller
+  subscriptions: []
+  templates: {}
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  triggers: {}
+openshift:
+  enabled: false
+redis:
+  affinity: {}
+  automountServiceAccountToken: true
+  containerPorts:
+    metrics: 9121
+    redis: 6379
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  enabled: true
+  env: []
+  envFrom: []
+  exporter:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: false
+    env: []
+    image:
+      imagePullPolicy: ""
+      repository: ghcr.io/oliver006/redis_exporter
+      tag: v1.81.0
+    livenessProbe:
+      enabled: false
+      failureThreshold: 5
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 15
+    readinessProbe:
+      enabled: false
+      failureThreshold: 5
+      initialDelaySeconds: 30
+      periodSeconds: 15
+      successThreshold: 1
+      timeoutSeconds: 15
+    resources: {}
+  extraArgs: []
+  extraContainers: []
+  image:
+    imagePullPolicy: ""
+    repository: ecr-public.aws.com/docker/library/redis
+    tag: 8.2.3-alpine
+  imagePullSecrets: []
+  initContainers: []
+  livenessProbe:
+    enabled: false
+    failureThreshold: 5
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: None
+      labels: {}
+      portName: http-metrics
+      servicePort: 9121
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      selector: {}
+      tlsConfig: {}
+  name: redis
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: false
+    failureThreshold: 5
+    initialDelaySeconds: 30
+    periodSeconds: 15
+    successThreshold: 1
+    timeoutSeconds: 15
+  resources: {}
+  runtimeClassName: ""
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+    seccompProfile:
+      type: RuntimeDefault
+  service:
+    annotations: {}
+    labels: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: false
+    create: false
+    name: ""
+  servicePort: 6379
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+redis-ha:
+  additionalAffinities: {}
+  affinity: ""
+  auth: true
+  containerSecurityContext:
+    readOnlyRootFilesystem: true
+  enabled: true
+  existingSecret: argocd-redis
+  exporter:
+    enabled: false
+    image: ghcr.io/oliver006/redis_exporter
+    tag: v1.75.0
+  haproxy:
+    additionalAffinities: {}
+    affinity: ""
+    containerSecurityContext:
+      readOnlyRootFilesystem: true
+    enabled: true
+    hardAntiAffinity: true
+    image:
+      repository: ecr-public.aws.com/docker/library/haproxy
+    labels:
+      app.kubernetes.io/name: argocd-redis-ha-haproxy
+    metrics:
+      enabled: true
+    tolerations: []
+  hardAntiAffinity: true
+  image:
+    repository: ecr-public.aws.com/docker/library/redis
+    tag: 8.2.3-alpine
+  persistentVolume:
+    enabled: enabled
+    size: 1Gi
+    storageClass: longhorn
+  redis:
+    config:
+      save: '""'
+    masterGroupName: argocd
+  tolerations: []
+  topologySpreadConstraints:
+    enabled: false
+    maxSkew: ""
+    topologyKey: ""
+    whenUnsatisfiable: ""
+redisSecretInit:
+  affinity: {}
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  enabled: true
+  extraArgs: []
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  jobAnnotations: {}
+  name: redis-secret-init
+  nodeSelector: {}
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  resources: {}
+  runtimeClassName: ""
+  securityContext: {}
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    name: ""
+  tolerations: []
+repoServer:
+  affinity: {}
+  automountServiceAccountToken: true
+  autoscaling:
+    behavior: {}
+    enabled: false
+    maxReplicas: 5
+    metrics: []
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  certificateSecret:
+    annotations: {}
+    ca: ""
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8084
+    server: 8081
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  copyutil:
+    resources: {}
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  existingVolumes: {}
+  extraArgs: []
+  extraContainers: []
+  hostNetwork: false
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  initContainers: []
+  lifecycle: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8084
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: repo-server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  rbac: []
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    labels: {}
+    port: 8081
+    portName: tcp-repo-server
+    trafficDistribution: ""
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: ""
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  useEphemeralHelmWorkingDir: true
+  volumeMounts: []
+  volumes: []
+server:
+  affinity: {}
+  automountServiceAccountToken: true
+  autoscaling:
+    behavior: {}
+    enabled: false
+    maxReplicas: 5
+    metrics: []
+    minReplicas: 1
+    targetCPUUtilizationPercentage: 50
+    targetMemoryUtilizationPercentage: 50
+  backendTLSPolicy:
+    annotations: {}
+    enabled: false
+    labels: {}
+    targetRefs: []
+    validation: {}
+  certificate:
+    additionalHosts: []
+    annotations: {}
+    domain: ""
+    duration: ""
+    enabled: false
+    issuer:
+      group: ""
+      kind: ""
+      name: ""
+    privateKey:
+      algorithm: RSA
+      encoding: PKCS1
+      rotationPolicy: Never
+      size: 2048
+    renewBefore: ""
+    secretTemplateAnnotations: {}
+    usages: []
+  certificateSecret:
+    annotations: {}
+    crt: ""
+    enabled: false
+    key: ""
+    labels: {}
+  clusterRoleRules:
+    enabled: false
+    rules: []
+  containerPorts:
+    metrics: 8083
+    server: 8080
+  containerSecurityContext:
+    allowPrivilegeEscalation: false
+    capabilities:
+      drop:
+      - ALL
+    readOnlyRootFilesystem: true
+    runAsNonRoot: true
+    seccompProfile:
+      type: RuntimeDefault
+  deploymentAnnotations: {}
+  deploymentLabels: {}
+  deploymentStrategy: {}
+  dnsConfig: {}
+  dnsPolicy: ClusterFirst
+  emptyDir:
+    sizeLimit: ""
+  env: []
+  envFrom: []
+  extensions:
+    containerSecurityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      readOnlyRootFilesystem: true
+      runAsNonRoot: true
+      runAsUser: 1000
+      seccompProfile:
+        type: RuntimeDefault
+    enabled: false
+    extensionList: []
+    image:
+      imagePullPolicy: ""
+      repository: quay.io/argoprojlabs/argocd-extension-installer
+      tag: v0.0.9
+    resources: {}
+  extraArgs: []
+  extraContainers: []
+  grpcroute:
+    annotations: {}
+    enabled: false
+    hostnames: []
+    labels: {}
+    parentRefs: []
+    rules:
+    - matches:
+      - method:
+          type: Exact
+  hostNetwork: false
+  httproute:
+    annotations: {}
+    enabled: false
+    hostnames: []
+    labels: {}
+    parentRefs: []
+    rules:
+    - matches:
+      - path:
+          type: PathPrefix
+          value: /
+  image:
+    imagePullPolicy: ""
+    repository: ""
+    tag: ""
+  imagePullSecrets: []
+  ingress:
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+    aws:
+      backendProtocolVersion: GRPC
+      serviceAnnotations: {}
+      serviceType: NodePort
+    controller: generic
+    enabled: true
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    gke:
+      backendConfig: {}
+      frontendConfig: {}
+      managedCertificate:
+        create: true
+        extraDomains: []
+    hostname: argocd.dklair.io
+    ingressClassName: my-traefik
+    labels: {}
+    path: /
+    pathType: Prefix
+    tls: false
+  ingressGrpc:
+    annotations: {}
+    enabled: false
+    extraHosts: []
+    extraPaths: []
+    extraRules: []
+    extraTls: []
+    hostname: ""
+    ingressClassName: ""
+    labels: {}
+    path: /
+    pathType: Prefix
+    tls: false
+  initContainers: []
+  lifecycle: {}
+  livenessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  metrics:
+    enabled: false
+    service:
+      annotations: {}
+      clusterIP: ""
+      labels: {}
+      portName: http-metrics
+      servicePort: 8083
+      type: ClusterIP
+    serviceMonitor:
+      additionalLabels: {}
+      annotations: {}
+      enabled: false
+      honorLabels: false
+      interval: 30s
+      metricRelabelings: []
+      namespace: ""
+      relabelings: []
+      scheme: ""
+      scrapeTimeout: ""
+      selector: {}
+      tlsConfig: {}
+  name: server
+  networkPolicy:
+    create: false
+  nodeSelector: {}
+  pdb:
+    annotations: {}
+    enabled: false
+    labels: {}
+    maxUnavailable: ""
+    minAvailable: ""
+  podAnnotations: {}
+  podLabels: {}
+  priorityClassName: ""
+  readinessProbe:
+    enabled: true
+    failureThreshold: 3
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    successThreshold: 1
+    timeoutSeconds: 1
+  replicas: 2
+  resources: {}
+  route:
+    annotations: {}
+    enabled: false
+    hostname: ""
+    termination_policy: None
+    termination_type: passthrough
+  runtimeClassName: ""
+  service:
+    annotations: {}
+    externalIPs: []
+    externalTrafficPolicy: Cluster
+    labels: {}
+    loadBalancerClass: ""
+    loadBalancerIP: ""
+    loadBalancerSourceRanges: []
+    nodePortHttp: 30080
+    nodePortHttps: 30443
+    servicePortHttp: 80
+    servicePortHttpName: http
+    servicePortHttps: 443
+    servicePortHttpsAppProtocol: ""
+    servicePortHttpsName: https
+    sessionAffinity: None
+    type: ClusterIP
+  serviceAccount:
+    annotations: {}
+    automountServiceAccountToken: true
+    create: true
+    labels: {}
+    name: argocd-server
+  terminationGracePeriodSeconds: 30
+  tolerations: []
+  topologySpreadConstraints: []
+  volumeMounts: []
+  volumes: []
+</file>
+
+<file path="tutorials/cloudflare/application-routes/configure-app-routes.md">
+# Configuring Published Application Routes
+
+When you have an application runnin in the cluster alonog with an ingress resource you have to configure the hostname routes in order for web traffic to be routed to the appropriate ingress.
+
+In cloudflarefirst go to Zero Trust in the side. (The location changes from time to time)
+
+![Alt text](/tutorials/cloudflare/application-routes/zero-trust-loc.png)
+
+Click Networks > Connectors. For the tunnel you want to edit select the menu dots and click Configure.
+
+![Alt text](/tutorials/cloudflare/application-routes/network-connectors.png)
+</file>
+
+<file path="apps/external-secrets-config/postgresql-admin-externalsecret.yaml">
+apiVersion: external-secrets.io/v1beta1
+kind: ExternalSecret
+metadata:
+  name: postgresql-admin
+  namespace: postgresql
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  refreshInterval: 1h
+  secretStoreRef:
+    name: vault-backend
+    kind: ClusterSecretStore
+  target:
+    name: postgresql-admin
+    creationPolicy: Owner
+    template:
+      type: Opaque
+      data:                        # ← Added: template data mappings
+        username: "{{ .username }}"
+        password: "{{ .password }}"
+  data:                            # ← Added: remote reference mappings
+    - secretKey: username
+      remoteRef:
+        key: homelab/postgresql/postgresql-admin
+        property: username
+    - secretKey: password
+      remoteRef:
+        key: homelab/postgresql/postgresql-admin
+        property: password
+</file>
+
+<file path="tutorials/argocd/argocd.md">
+# ArgoCD
+
+ArgoCD was added using helm and the following yaml file [values.yaml](tutorials/argocd/values.yaml). The configuration is working but I didnt trim the fat before running:
+
+There is sample documentation within the ArgoCD docs [Here](https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/#helm). I was directed to where the [helm charts](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd) are being maintained.
+
+
+```
+helm repo add argocd https://argoproj.github.io/argo-helm
+```
+```
+helm repo update
+```
+
+I started with the values.yaml and vibe coded the following yaml file (i think) using a ton of back and forth and error troubleshooting.
+
+```yaml
+global:
+  domain: argocd.dklair.io
+
+# redis
+redis:
+  enabled: false
+
+# redis-ha disables redis single node deployment.
+redis-ha:
+  enabled: true
+  persistentVolume:
+    enabled: true
+    size: 1Gi
+    storageClass: "longhorn"
+
+# -- Application Controller (StatefulSet)
+controller:
+  replicas: 3
+
+# -- Repo Server
+repoServer:
+  replicas: 2
+
+# -- Argo CD Server
+server:
+  replicas: 1
+
+  ingress:
+    enabled: true
+    controller: generic
+    ingressClassName: "traefik"
+    hostname: "argocd.dklair.io"
+    tls: false
+    annotations:
+      traefik.ingress.kubernetes.io/router.entrypoints: web
+
+# -- ApplicationSet Controller
+applicationSet:
+  replicas: 2
+
+# required for Traefik to handle tls.
+params:
+    create: true
+    annotations: {}
+    server.insecure: true
+```
+
+Make sure you run this command from the directory with values.yaml
+
+```
+helm install argocd argo/argo-cd -n argocd --create-namespace --values values.yaml
+```
+</file>
+
+<file path="values/uptime-kuma/values.yaml">
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: uptime.dklair.io  # 🔁 Replace with your domain
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+  tls:
+    - hosts:
+        - uptime.dklair.io  # 🔁 Replace with your domain
+      secretName: uptime-kuma-tls
+
+volume:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 4Gi
+  storageClassName: "longhorn"
+</file>
+
+<file path="values/whoami/values.yaml">
+replicaCount: 1
+
+image:
+  repository: traefik/whoami
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations: {}
+  tls:
+    - hosts:
+        - whoami.dklair.io
+      secretName: whoami-tls
+  hosts:
+    - host: whoami.dklair.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+</file>
+
+<file path="apps/argocd/cloudnativepg.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: cloudnativepg
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cloudnative-pg
+      targetRevision: 0.27.1
+      helm:
+        valueFiles:
+          - $values/values/cloudnativepg/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: cnpg-system
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+</file>
+
+<file path="values/postgresql/values.yaml">
+# === CloudNativePG Cluster Chart v0.6.0 ===
+# Most values are nested under 'cluster:' per chart schema [[1]]
+
+# Chart-level overrides (optional)
+nameOverride: postgresql
+fullNameOverride: postgresql-cluster
+
+# === Cluster configuration (under 'cluster:' key) ===
+cluster:
+  # Number of instances
+  instances: 1
+
+  # Storage configuration
+  storage:
+    size: 10Gi
+    storageClass: longhorn
+
+  # Bootstrap via initdb (THIS IS THE KEY FIX)
+  initdb:   # ← NOT 'bootstrap.initdb'
+    database: admin
+    owner: admin
+    secret:
+      name: postgresql-admin   # ← Secret must have 'username' + 'password' keys
+    encoding: UTF8
+    localeCType: C
+    localeCollate: C
+
+  # PostgreSQL parameters
+  postgresql:
+    parameters:
+      max_connections: "100"
+      shared_buffers: "128MB"
+
+  # Resource limits
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+</file>
+
+<file path="README.md">
+# Homelab
+
+This homelab is running on a k3s cluster with a 3 node control plane and two worker nodes.
+
+## Hardware Setup
+
+### Control Plane
+
+- Node 1
+  - Debian GNU / Linux 12 (Bookworm)
+  - raspberry pi 4b+
+    - 8G Ram
+- Node 2
+  - Debian DNU / Linux 13 (Trixie)
+  - raspberry pi 4b+
+    - 8G Ram
+- Node 3
+  - Debian GNU / Linux 12 (Bookworm)
+  - raspberry pi 4b+
+    - 8G Ram
+
+### Worker Nodes
+
+- Node 4
+  - Debian GNU / Linux 12 (Bookworm)
+  - banana pi 5
+    - 8G Ram
+- Node 5
+  - 1U server
+    - Ubuntu 24.04.3 LTS
+    - Intel Zeon E-2324G
+    - 64G Ram
+    - RTX 4060 8gb
+
+## ArgoCD and Gitops
+
+### Deploying an application
+
+There are two files that need to be created and configured in order to launch the application.
+
+#### Configure values.yaml File
+
+There is a values.yaml file that is placed in the /values/new-app directory. This values.yaml file is configured based on my setup.
+
+The first section defines the replica count as well as some default image and pull policy values. They are not needed but are good to show in case you need to adjust them.
+
+```yaml
+# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+replicaCount: 1
+
+# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+image:
+  repository: traefik/whoami
+  # This sets the pull policy for images.
+  pullPolicy: IfNotPresent
+```
+
+The second step here is the ingress configuration which is how the service is exposed.
+
+It must be enabled and my ingress className is always "my-traefik".
+
+Information on the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) can be found in the link.
+
+```yaml
+ingress:
+  enabled: true # must be set to true.
+  className: 'my-traefik' # for my setup this must be my-traefic. Yours may be different.
+  annotations: {}
+    # traefik.ingress.kubernetes.io/router.entrypoints: web,websecure ## the entrypoint annotation is usually needed but you can try without.
+  hosts:
+    - host: whoami.dklair.io # this is the path setup in cloudflare application routes
+        - path: /
+          pathType: ImplementationSpecific
+```
+
+Together you should have a values.yaml file that looks like this.
+
+Basically if you dont have the configuration here the chart will pull the default values. If you bring in the default values it will use the default values. If you update the default values with your own configuration it will use the updated values you've entered here.
+
+```yaml
+replicaCount: 1
+
+image:
+  repository: traefik/whoami
+  pullPolicy: IfNotPresent
+
+ingress:
+  enabled: true
+  className: 'my-traefik'
+  annotations: {}
+  hosts:
+    - host: whoami.dklair.io
+      paths:
+        - path: /
+          pathType: ImplementationSpecific
+```
+
+---
+
+#### Configure application.yaml File
+
+There is also a application yaml which is placed in the /apps directory once it is ready for deplyment.
+
+The configuration of the application yaml requires some constants:
+
+```yaml
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: whoami  # the name of your application
+  namespace: argocd # this must always be argocd.
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "1"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: whoami
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://harrytang.github.io/helm-charts/ # the helm chart repository
+      targetRevision: 0.1.2 # the version of the chart to deploy
+      chart: whoami # the name of the chart to deploy
+      helm:
+        valueFiles:
+          - $values/values/whoami/values.yaml # the values file to use for the helm chart
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # the git repository containing the values file
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+```
+
+Once completed you must run the command
+
+```
+kubectl apply -f apps/whoami-application.yaml -n argocd
+```
+
+This is because the UI reverts the multiple source configuration to a single source.
+
+At this point you should see the application running in the ArgoCD UI.
+
+![Alt text](/tutorials/readme-images/application-argocd.png)
+
+Select the new whoami application and view the resources deployed.
+
+![Alt text](/tutorials/readme-images/whoami-rec.png)
+
+The application recourse will be deployed into the argocd namespace but the other resources will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
+
+```
+kubectl get application -n argocd
+```
+
+![Alt text](/tutorials/readme-images/app-n-argocd.png)
+
+!!! Note
+    If you have not configured the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) to redirect web traffic to the ingress controller the application service will not be accessible.
+</file>
+
+<file path="apps/argocd/postgresql.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgresql
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  project: default
+  sources:
+    - repoURL: https://cloudnative-pg.github.io/charts
+      chart: cluster
+      targetRevision: "0.6.0"
+      helm:
+        valueFiles:
+          - $values/values/postgresql/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: postgresql
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+</file>
+
+</files>
