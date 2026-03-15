@@ -6,18 +6,9 @@ image:
   tag: "9.13"
   pullPolicy: IfNotPresent
 
-# Configure Environment Variables via Secret (Populated by External Secrets)
-env:
-  email:
-    valueFrom:
-      secretKeyRef:
-        name: pgadmin-admin
-        key: email
-  password:
-    valueFrom:
-      secretKeyRef:
-        name: pgadmin-admin
-        key: password
+existingSecret: pgadmin-admin
+existingSecretEmailKey: email
+existingSecretPasswordKey: password
 
 # Persistence Configuration (Using Longhorn as per your cluster setup)
 persistence:
