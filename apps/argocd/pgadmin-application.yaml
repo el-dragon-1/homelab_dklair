@@ -9,9 +9,9 @@ spec:
   project: default
   sources:
     # 1. The Helm Chart Source
-    - repoURL: https://otwld.github.io/pgadmin4-helm-chart/
+    - repoURL: https://helm.runix.net
       chart: pgadmin4
-      targetRevision: 4.2.0 # Compatible with pgAdmin 9.x
+      targetRevision: 1.59.0 # Compatible with pgAdmin 9.x
       helm:
         valueFiles:
           - $values/values/pgadmin/values.yaml
