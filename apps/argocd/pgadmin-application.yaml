@@ -9,9 +9,9 @@ spec:
   project: default
   sources:
     # 1. The Helm Chart Source
-    - repoURL: oci://registry-1.docker.io/dpage
+    - repoURL: https://helm.runix.net
       chart: pgadmin4
-      targetRevision: 9.13.0
+      targetRevision: 1.59.0
       helm:
         valueFiles:
           - $values/values/pgadmin/values.yaml
