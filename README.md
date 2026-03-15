@@ -2,6 +2,15 @@
 
 This homelab is running on a k3s cluster with a 3 node control plane and two worker nodes.
 
+From time to time the cluster will rewquire troubleshooting using an LLM or general vibe-coding. In order to properly prompt the LLM, use
+
+```
+npx repomix ~/homelab_dklair # change for your repo
+```
+
+This will deconstruct the repo into a single markdown file for uploading into the LLM prompt. This is all public information so there is nothingin the repo
+that cant be uploaded.
+
 ## Hardware Setup
 
 ### Control Plane
