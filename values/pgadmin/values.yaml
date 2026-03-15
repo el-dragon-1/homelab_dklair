@@ -1,0 +1,53 @@
+# values/pgadmin/values.yaml
+
+# Use the official pgAdmin image with specific version
+image:
+  repository: dpage/pgadmin4
+  tag: "9.13"
+  pullPolicy: IfNotPresent
+
+# Configure Environment Variables via Secret (Populated by External Secrets)
+env:
+  email:
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: email
+  password:
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: password
+
+# Persistence Configuration (Using Longhorn as per your cluster setup)
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  size: 4Gi
+  accessMode: ReadWriteOnce
+
+# Ingress Configuration (Traefik + Cert-Manager)
+ingress:
+  enabled: true
+  className: "my-traefik"
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  hosts:
+    - host: pgadmin.dklair.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: pgadmin-tls
+      hosts:
+        - pgadmin.dklair.io
+
+# Resources (Optional, good for K3s)
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
