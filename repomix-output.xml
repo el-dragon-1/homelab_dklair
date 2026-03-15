@@ -45,7 +45,6 @@ apps/
     cert-manager-application.yaml
     cert-manager-cluster-issuer-application.yaml
     cloudnativepg.yaml
-    external-secrets-application.yaml
     external-secrets-config.yaml
     pgadmin-application.yaml
     postgresql.yaml
@@ -71,6 +70,7 @@ tutorials/
     app-n-argocd.png
     application-argocd.png
     whoami-rec.png
+  external-secrets-application.yaml
 values/
   cert-manager/
     values.yaml
@@ -144,32 +144,6 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: cert-manager
-  syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-    syncOptions:
-      - CreateNamespace=true
-</file>
-
-<file path="apps/argocd/external-secrets-application.yaml">
-apiVersion: argoproj.io/v1alpha1
-kind: Application
-metadata:
-  name: external-secrets
-  namespace: argocd
-spec:
-  project: default
-  source:
-    repoURL: https://charts.external-secrets.io
-    chart: external-secrets
-    targetRevision: 0.9.11
-    helm:
-      values: |
-        installCRDs: true
-  destination:
-    server: https://kubernetes.default.svc
-    namespace: secrets
   syncPolicy:
     automated:
       prune: true
@@ -366,6 +340,32 @@ spec:
       remoteRef:
         key: pgadmin/pgadmin-admin
         property: password
+</file>
+
+<file path="tutorials/external-secrets-application.yaml">
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: external-secrets
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://charts.external-secrets.io
+    chart: external-secrets
+    targetRevision: 0.9.11
+    helm:
+      values: |
+        installCRDs: true
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: secrets
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
 </file>
 
 <file path="values/cert-manager/values.yaml">
