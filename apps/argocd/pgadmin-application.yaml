@@ -4,14 +4,14 @@ metadata:
   name: pgadmin
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2" # Sync after external-secrets creates the secret
+    argocd.argoproj.io/sync-wave: "2"
 spec:
   project: default
   sources:
     # 1. The Helm Chart Source
-    - repoURL: https://helm.runix.net
+    - repoURL: oci://registry-1.docker.io/dpage
       chart: pgadmin4
-      targetRevision: 1.59.0 # Compatible with pgAdmin 9.x
+      targetRevision: 9.13.0
       helm:
         valueFiles:
           - $values/values/pgadmin/values.yaml
