@@ -42,6 +42,3 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
-podAnnotations:
-  secret.reloader.stakater.com/reload: "pgadmin-admin"
