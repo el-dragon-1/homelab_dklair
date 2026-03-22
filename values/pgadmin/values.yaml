@@ -23,13 +23,6 @@ envVarsExtra:
         name: pgadmin-admin
         key: secret_key
 
-# This sections is for maintining the sticky session cookie secret key, which is required for pgAdmin to function properly. It should be the same as the one stored in Vault and referenced in the ExternalSecret.
-envVarsExtra:
-  - name: SECRET_KEY
-    valueFrom:
-      secretKeyRef:
-        name: pgadmin-admin
-        key: secret_key
 # Persistence Configuration (Using Longhorn as per your cluster setup)
 persistence:
   enabled: true
