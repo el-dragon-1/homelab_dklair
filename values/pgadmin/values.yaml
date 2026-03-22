@@ -6,9 +6,22 @@ image:
   tag: "9.13"
   pullPolicy: IfNotPresent
 
-existingSecret: pgadmin-admin
-existingSecretEmailKey: email
-existingSecretPasswordKey: password
+envVarsExtra:
+  - name: PGADMIN_DEFAULT_EMAIL
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: email
+  - name: PGADMIN_DEFAULT_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: password
+  - name: SECRET_KEY
+    valueFrom:
+      secretKeyRef:
+        name: pgadmin-admin
+        key: secret_key
 
 # This sections is for maintining the sticky session cookie secret key, which is required for pgAdmin to function properly. It should be the same as the one stored in Vault and referenced in the ExternalSecret.
 envVarsExtra:
