@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-operator
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"  # Deploy early, before apps that need Redis
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: redis-operator
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://ot-container-kit.github.io/helm-charts/
+      targetRevision: 0.11.0
+      chart: redis-operator
+      helm:
+        valueFiles:
+          - $values/values/redis-operator/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

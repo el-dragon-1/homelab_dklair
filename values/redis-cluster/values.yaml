@@ -1,0 +1,66 @@
+# Redis Cluster Configuration
+# This creates a Redis cluster with sentinel for high availability
+
+cluster:
+  name: redis-cluster
+  namespace: redis
+  size: 3  # Number of Redis nodes
+  
+  # Storage configuration
+  storage:
+    storageClass: "longhorn"
+    size: 2Gi
+    accessMode: ReadWriteOnce
+  
+  # Redis configuration
+  redisConfig:
+    additionalRedisConfig: |
+      maxmemory 256mb
+      maxmemory-policy allkeys-lru
+      appendonly yes
+      appendfsync everysec
+  
+  # Sentinel configuration for HA
+  sentinel:
+    enabled: true
+    quorum: 2
+    replicas: 3
+  
+  # Resources
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  
+  # Security
+  securityContext:
+    runAsNonRoot: true
+    runAsUser: 999
+  
+  # Image
+  image:
+    repository: redis
+    tag: 7.2-alpine
+    pullPolicy: IfNotPresent
+
+# Password management via External Secrets
+auth:
+  enabled: true
+  secretName: redis-auth
+  secretKey: password
+
+# Monitoring
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: false  # Enable if you have Prometheus Operator
+
+# Persistence
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  size: 2Gi
+  accessMode: ReadWriteOnce

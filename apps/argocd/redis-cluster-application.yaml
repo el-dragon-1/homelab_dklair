@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: redis-cluster
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"  # Deploy after operator
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: redis
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://ot-container-kit.github.io/helm-charts/
+      targetRevision: 0.11.0
+      chart: redis-cluster
+      helm:
+        valueFiles:
+          - $values/values/redis-cluster/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true

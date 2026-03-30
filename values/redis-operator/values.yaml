@@ -1,0 +1,79 @@
+# Redis Operator Configuration
+replicaCount: 1
+
+image:
+  repository: otcontainerkit/redis-operator
+  tag: v1.2.0
+  pullPolicy: IfNotPresent
+
+# Redis Operator specific settings
+redisOperator:
+  image:
+    repository: otcontainerkit/redis-operator
+    tag: v1.2.0
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 200m
+      memory: 256Mi
+
+# Redis Sentinel Configuration
+redisSentinel:
+  image:
+    repository: redis
+    tag: 7.2-alpine
+  resources:
+    requests:
+      cpu: 50m
+      memory: 64Mi
+    limits:
+      cpu: 100m
+      memory: 128Mi
+
+# Redis Exporter for monitoring
+redisExporter:
+  enabled: true
+  image:
+    repository: oliver006/redis_exporter
+    tag: v1.55.0
+  resources:
+    requests:
+      cpu: 10m
+      memory: 32Mi
+    limits:
+      cpu: 50m
+      memory: 64Mi
+
+# Storage configuration (Longhorn)
+storage:
+  storageClass: "longhorn"
+  size: 1Gi
+
+# Service configuration
+service:
+  type: ClusterIP
+
+# Ingress (if you need external access to Redis - usually not recommended)
+ingress:
+  enabled: false
+
+# Security context
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+
+podSecurityContext:
+  runAsNonRoot: true
+  runAsUser: 999
+
+# Node selector for your cluster
+nodeSelector:
+  kubernetes.io/os: linux
+
+# Tolerations (if needed)
+tolerations: []
+
+# Affinity
+affinity: {}
