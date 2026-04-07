@@ -4,7 +4,7 @@ metadata:
   name: redis-operator
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "1"  # Deploy early, before apps that need Redis
+    argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -18,6 +18,9 @@ spec:
       helm:
         valueFiles:
           - $values/values/redis-operator/values.yaml
+        parameters:
+          - name: installCRDs  # ← Critical: Install CRDs via Helm
+            value: "true"
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values

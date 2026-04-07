@@ -1,9 +1,9 @@
-# Redis Operator Configuration
+# Redis Operator Configuration for K3s Homelab (ARM64)
 replicaCount: 1
 
 image:
   repository: otcontainerkit/redis-operator
-  tag: v1.2.0
+  tag: v1.2.0  # Multi-arch image with ARM64 support
   pullPolicy: IfNotPresent
 
 # Redis Operator specific settings
@@ -18,12 +18,14 @@ redisOperator:
     limits:
       cpu: 200m
       memory: 256Mi
+  # Pass installCRDs via values if chart supports it
+  installCRDs: true
 
 # Redis Sentinel Configuration
 redisSentinel:
   image:
     repository: redis
-    tag: 7.2-alpine
+    tag: 7.2-alpine  # ARM64 compatible
   resources:
     requests:
       cpu: 50m
@@ -34,7 +36,7 @@ redisSentinel:
 
 # Redis Exporter for monitoring
 redisExporter:
-  enabled: true
+  enabled: false  # Disable initially to reduce resource usage on Pi nodes
   image:
     repository: oliver006/redis_exporter
     tag: v1.55.0
@@ -55,25 +57,38 @@ storage:
 service:
   type: ClusterIP
 
-# Ingress (if you need external access to Redis - usually not recommended)
+# Ingress (disabled for internal-only Redis)
 ingress:
   enabled: false
 
-# Security context
+# Security context - relaxed for K3s testing (can tighten later)
 securityContext:
-  runAsNonRoot: true
-  runAsUser: 999
+  runAsNonRoot: false  # ← Changed: K3s may restrict non-root on some setups
+  runAsUser: 0         # ← Changed: Run as root temporarily for testing
 
 podSecurityContext:
-  runAsNonRoot: true
-  runAsUser: 999
+  runAsNonRoot: false  # ← Changed
+  runAsUser: 0         # ← Changed
 
-# Node selector for your cluster
+# Node selector - schedule on your powerful node-5 if issues persist
 nodeSelector:
-  kubernetes.io/os: linux
+  kubernetes.io/hostname: node-5  # Your 1U server (64GB RAM, x86_64)
+  # OR keep generic ARM64 selector if you want to run on Pi nodes:
+  # kubernetes.io/os: linux
 
-# Tolerations (if needed)
-tolerations: []
+# Tolerations (allow scheduling on control-plane if needed)
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
 
 # Affinity
 affinity: {}
+
+# RBAC (ensure it's enabled)
+rbac:
+  create: true
+
+serviceAccount:
+  create: true
+  name: redis-operator
