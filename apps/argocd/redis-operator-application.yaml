@@ -5,6 +5,7 @@ metadata:
   namespace: argocd
   annotations:
     argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/compare-options: IgnoreExtraneous  # Optional: reduce noise
   finalizers:
     - resources-finalizer.argocd.argoproj.io
 spec:
@@ -19,8 +20,10 @@ spec:
         valueFiles:
           - $values/values/redis-operator/values.yaml
         parameters:
-          - name: installCRDs  # ← Critical: Install CRDs via Helm
+          - name: installCRDs
             value: "true"
+          - name: image.tag  # ← Optional: override image tag via parameter
+            value: "v1.2.0"
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values
@@ -33,3 +36,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
       - ServerSideApply=true
+      - RespectIgnoreDifferences=true  # Optional: smoother syncs

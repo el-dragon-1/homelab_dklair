@@ -1,16 +1,31 @@
-# Redis Operator Configuration for K3s Homelab (ARM64)
+# values/redis-operator/values.yaml
 replicaCount: 1
 
 image:
   repository: otcontainerkit/redis-operator
-  tag: v1.2.0  # Multi-arch image with ARM64 support
+  tag: v1.2.0
   pullPolicy: IfNotPresent
 
-# Redis Operator specific settings
+# === CRITICAL FIX: Schedule on x86_64 node-5 ===
+nodeSelector:
+  kubernetes.io/arch: amd64      # ← Force x86_64 architecture
+  kubernetes.io/hostname: node-5 # ← Or explicitly target your server
+
+# Relax security context for K3s testing
+securityContext:
+  runAsNonRoot: false
+  runAsUser: 0
+podSecurityContext:
+  runAsNonRoot: false
+
+# Allow scheduling on control-plane if needed
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+# Keep other settings as-is...
 redisOperator:
-  image:
-    repository: otcontainerkit/redis-operator
-    tag: v1.2.0
   resources:
     requests:
       cpu: 50m
@@ -18,74 +33,21 @@ redisOperator:
     limits:
       cpu: 200m
       memory: 256Mi
-  # Pass installCRDs via values if chart supports it
   installCRDs: true
 
-# Redis Sentinel Configuration
-redisSentinel:
-  image:
-    repository: redis
-    tag: 7.2-alpine  # ARM64 compatible
-  resources:
-    requests:
-      cpu: 50m
-      memory: 64Mi
-    limits:
-      cpu: 100m
-      memory: 128Mi
-
-# Redis Exporter for monitoring
 redisExporter:
-  enabled: false  # Disable initially to reduce resource usage on Pi nodes
-  image:
-    repository: oliver006/redis_exporter
-    tag: v1.55.0
-  resources:
-    requests:
-      cpu: 10m
-      memory: 32Mi
-    limits:
-      cpu: 50m
-      memory: 64Mi
+  enabled: false  # Disable to reduce resource usage
 
-# Storage configuration (Longhorn)
 storage:
   storageClass: "longhorn"
   size: 1Gi
 
-# Service configuration
 service:
   type: ClusterIP
 
-# Ingress (disabled for internal-only Redis)
 ingress:
   enabled: false
 
-# Security context - relaxed for K3s testing (can tighten later)
-securityContext:
-  runAsNonRoot: false  # ← Changed: K3s may restrict non-root on some setups
-  runAsUser: 0         # ← Changed: Run as root temporarily for testing
-
-podSecurityContext:
-  runAsNonRoot: false  # ← Changed
-  runAsUser: 0         # ← Changed
-
-# Node selector - schedule on your powerful node-5 if issues persist
-nodeSelector:
-  kubernetes.io/hostname: node-5  # Your 1U server (64GB RAM, x86_64)
-  # OR keep generic ARM64 selector if you want to run on Pi nodes:
-  # kubernetes.io/os: linux
-
-# Tolerations (allow scheduling on control-plane if needed)
-tolerations:
-  - key: "node-role.kubernetes.io/control-plane"
-    operator: "Exists"
-    effect: "NoSchedule"
-
-# Affinity
-affinity: {}
-
-# RBAC (ensure it's enabled)
 rbac:
   create: true
 
