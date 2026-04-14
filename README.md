@@ -11,36 +11,6 @@ npx repomix ~/homelab_dklair # change for your repo
 This will deconstruct the repo into a single markdown file for uploading into the LLM prompt. This is all public information so there is nothingin the repo
 that cant be uploaded.
 
-## Hardware Setup
-
-### Control Plane
-
-- Node 1
-  - Debian GNU / Linux 12 (Bookworm)
-  - raspberry pi 4b+
-    - 8G Ram
-- Node 2
-  - Debian DNU / Linux 13 (Trixie)
-  - raspberry pi 4b+
-    - 8G Ram
-- Node 3
-  - Debian GNU / Linux 12 (Bookworm)
-  - raspberry pi 4b+
-    - 8G Ram
-
-### Worker Nodes
-
-- Node 4
-  - Debian GNU / Linux 12 (Bookworm)
-  - banana pi 5
-    - 8G Ram
-- Node 5
-  - 1U server
-    - Ubuntu 24.04.3 LTS
-    - Intel Zeon E-2324G
-    - 64G Ram
-    - RTX 4060 8gb
-
 ## ArgoCD and Gitops
 
 ### Deploying an application
