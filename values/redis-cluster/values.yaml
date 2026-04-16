@@ -1,23 +1,25 @@
 # values/redis-cluster/values.yaml
-
-# CRITICAL: Properly nested image config
 image:
   repository: redis
   tag: 7.2-alpine
   pullPolicy: IfNotPresent
 
+# Explicitly override the CR's kubernetesConfig block
+kubernetesConfig:
+  image: "redis:7.2-alpine"
+  imagePullPolicy: "IfNotPresent"
+
 cluster:
   name: redis-cluster
   namespace: redis
-  size: 3
+  clusterSize: 3  # Note: chart uses 'clusterSize', not 'size'
+  announceHostname: false
 
-# Storage configuration
 storage:
   storageClass: "longhorn"
   size: 2Gi
   accessMode: ReadWriteOnce
 
-# Redis configuration
 redisConfig:
   additionalRedisConfig: |
     maxmemory 256mb
@@ -25,7 +27,6 @@ redisConfig:
     appendonly yes
     appendfsync everysec
 
-# Resources
 resources:
   requests:
     cpu: 100m
@@ -34,24 +35,15 @@ resources:
     cpu: 500m
     memory: 512Mi
 
-# Security
 securityContext:
   runAsNonRoot: true
   runAsUser: 999
 
-# Password management via External Secrets
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
 
-# Monitoring
-monitoring:
-  enabled: true
-  serviceMonitor:
-    enabled: false
-
-# Persistence
 persistence:
   enabled: true
   storageClass: "longhorn"
