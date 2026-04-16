@@ -1,20 +1,19 @@
-# values/redis-operator/values.yaml
 replicaCount: 1
-
 image:
   repository: otcontainerkit/redis-operator
   tag: v1.2.0
   pullPolicy: IfNotPresent
 
-# === CRITICAL FIX: Schedule on x86_64 node-5 ===
+# Force scheduling on x86_64 node
 nodeSelector:
-  kubernetes.io/arch: amd64      # ← Force x86_64 architecture
-  kubernetes.io/hostname: eldragon # ← Or explicitly target your server
+  kubernetes.io/arch: amd64
+  kubernetes.io/hostname: eldragon
 
 # Relax security context for K3s testing
 securityContext:
   runAsNonRoot: false
   runAsUser: 0
+
 podSecurityContext:
   runAsNonRoot: false
 
@@ -24,7 +23,6 @@ tolerations:
     operator: "Exists"
     effect: "NoSchedule"
 
-# Keep other settings as-is...
 redisOperator:
   resources:
     requests:
@@ -33,10 +31,10 @@ redisOperator:
     limits:
       cpu: 200m
       memory: 256Mi
-  installCRDs: true
 
+installCRDs: true
 redisExporter:
-  enabled: false  # Disable to reduce resource usage
+  enabled: false
 
 storage:
   storageClass: "longhorn"

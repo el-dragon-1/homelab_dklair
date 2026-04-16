@@ -1,58 +1,42 @@
 # Redis Cluster Configuration
-# This creates a Redis cluster with sentinel for high availability
-# Correct nesting for the ot-container-kit chart
-
-redis:
-  image:
-    repository: redis
-    tag: 7.2-alpine
-    pullPolicy: IfNotPresent
+image:
+  repository: redis
+  tag: 7.2-alpine
+  pullPolicy: IfNotPresent
 
 cluster:
   name: redis-cluster
   namespace: redis
-  size: 3  # Number of Redis nodes
+  size: 3
   announceHostname: false
-  
-  # Storage configuration
-  storage:
-    storageClass: "longhorn"
-    size: 2Gi
-    accessMode: ReadWriteOnce
-  
-  # Redis configuration
-  redisConfig:
-    additionalRedisConfig: |
-      maxmemory 256mb
-      maxmemory-policy allkeys-lru
-      appendonly yes
-      appendfsync everysec
-  
-  ## Sentinel configuration for HA
-  #sentinel:
-    #enabled: true
-    #quorum: 2
-    #replicas: 3
-  
-  ## Resources
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  
-  # Security
-  securityContext:
-    runAsNonRoot: true
-    runAsUser: 999
-  
-  # Image
-  image:
-    repository: redis
-    tag: 7.2-alpine
-    pullPolicy: IfNotPresent
+
+# Storage configuration
+storage:
+  storageClass: "longhorn"
+  size: 2Gi
+  accessMode: ReadWriteOnce
+
+# Redis configuration
+redisConfig:
+  additionalRedisConfig: |
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
+    appendonly yes
+    appendfsync everysec
+
+# Resources
+resources:
+  requests:
+    cpu: 100m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Security
+securityContext:
+  runAsNonRoot: true
+  runAsUser: 999
 
 # Password management via External Secrets
 auth:
@@ -64,7 +48,7 @@ auth:
 monitoring:
   enabled: true
   serviceMonitor:
-    enabled: false  # Enable if you have Prometheus Operator
+    enabled: false
 
 # Persistence
 persistence:
