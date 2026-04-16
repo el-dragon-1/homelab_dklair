@@ -1,4 +1,6 @@
-# Redis Cluster Configuration
+# values/redis-cluster/values.yaml
+
+# CRITICAL: Properly nested image config
 image:
   repository: redis
   tag: 7.2-alpine
@@ -8,7 +10,6 @@ cluster:
   name: redis-cluster
   namespace: redis
   size: 3
-  announceHostname: false
 
 # Storage configuration
 storage:
