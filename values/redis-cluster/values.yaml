@@ -1,5 +1,12 @@
 # Redis Cluster Configuration
 # This creates a Redis cluster with sentinel for high availability
+# Correct nesting for the ot-container-kit chart
+
+redis:
+  image:
+    repository: redis
+    tag: 7.2-alpine
+    pullPolicy: IfNotPresent
 
 cluster:
   name: redis-cluster
