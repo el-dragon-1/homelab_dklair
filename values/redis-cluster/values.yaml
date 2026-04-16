@@ -12,6 +12,7 @@ cluster:
   name: redis-cluster
   namespace: redis
   size: 3  # Number of Redis nodes
+  announceHostname: false
   
   # Storage configuration
   storage:
@@ -27,13 +28,13 @@ cluster:
       appendonly yes
       appendfsync everysec
   
-  # Sentinel configuration for HA
-  sentinel:
-    enabled: true
-    quorum: 2
-    replicas: 3
+  ## Sentinel configuration for HA
+  #sentinel:
+    #enabled: true
+    #quorum: 2
+    #replicas: 3
   
-  # Resources
+  ## Resources
   resources:
     requests:
       cpu: 100m
