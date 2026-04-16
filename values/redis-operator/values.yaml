@@ -9,7 +9,7 @@ image:
 # === CRITICAL FIX: Schedule on x86_64 node-5 ===
 nodeSelector:
   kubernetes.io/arch: amd64      # ← Force x86_64 architecture
-  kubernetes.io/hostname: node-5 # ← Or explicitly target your server
+  kubernetes.io/hostname: eldragon # ← Or explicitly target your server
 
 # Relax security context for K3s testing
 securityContext:
