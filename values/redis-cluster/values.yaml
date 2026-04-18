@@ -1,26 +1,18 @@
 # values/redis-cluster/values.yaml
-image:
-  repository: redis
-  tag: 7.2-alpine
-  pullPolicy: IfNotPresent
-
-# Explicitly override the CR's kubernetesConfig block
 kubernetesConfig:
   image: "redis:7.2-alpine"
-  imagePullPolicy: "IfNotPresent"
+  imagePullPolicy: IfNotPresent
 
 cluster:
   name: redis-cluster
-  dockerImage: "redis:7.2-alpine"
   namespace: redis
-  clusterSize: 3  # Note: chart uses 'clusterSize', not 'size'
-  
-announceHostname: false
+  clusterSize: 3
+  announceHostname: false
 
-storage:
-  storageClass: "longhorn"
-  size: 2Gi
-  accessMode: ReadWriteOnce
+auth:
+  enabled: true
+  secretName: redis-auth
+  secretKey: password
 
 redisConfig:
   additionalRedisConfig: |
@@ -41,10 +33,10 @@ securityContext:
   runAsNonRoot: true
   runAsUser: 999
 
-auth:
-  enabled: true
-  secretName: redis-auth
-  secretKey: password
+storage:
+  storageClass: "longhorn"
+  size: 2Gi
+  accessMode: ReadWriteOnce
 
 persistence:
   enabled: true
