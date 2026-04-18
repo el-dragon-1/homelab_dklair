@@ -1,12 +1,10 @@
-# values/redis-cluster/values.yaml
-
 # Cluster config - THIS IS WHERE THE IMAGE MUST GO
 cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3
-  dockerImage: "redis:7.2-alpine"  # ← CRITICAL: This is what the chart reads
-  announceHostname: false           # ← Prevents the invalid directive error
+  dockerImage: "redis:7.2-alpine"
+  announceHostname: false
 
 # Authentication
 auth:
