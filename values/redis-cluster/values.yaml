@@ -1,16 +1,32 @@
 # values/redis-cluster/values.yaml
+
+# 1. Cluster Configuration (Image goes here!)
 cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3
-  dockerImage: "redis:7.2-alpine"  # ← This is the ONLY key the chart reads for the image
+  dockerImage: "redis:7.2-alpine"  # <-- THIS IS THE FIX
   announceHostname: false
 
+# 2. Authentication
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
 
+# 3. Storage & Persistence
+storage:
+  storageClass: "longhorn"
+  size: 2Gi
+  accessMode: ReadWriteOnce
+
+persistence:
+  enabled: true
+  storageClass: "longhorn"
+  size: 2Gi
+  accessMode: ReadWriteOnce
+
+# 4. Redis Config
 redisConfig:
   additionalRedisConfig: |
     maxmemory 256mb
@@ -18,6 +34,7 @@ redisConfig:
     appendonly yes
     appendfsync everysec
 
+# 5. Resources & Security
 resources:
   requests:
     cpu: 100m
@@ -29,14 +46,3 @@ resources:
 securityContext:
   runAsNonRoot: true
   runAsUser: 999
-
-storage:
-  storageClass: "longhorn"
-  size: 2Gi
-  accessMode: ReadWriteOnce
-
-persistence:
-  enabled: true
-  storageClass: "longhorn"
-  size: 2Gi
-  accessMode: ReadWriteOnce
