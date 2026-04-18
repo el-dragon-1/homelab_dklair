@@ -1,29 +1,30 @@
 # ============================================================
 # Bitnami Redis Cluster Values - Homelab Configuration
+# Chart: redis-cluster v13.0.4
 # ============================================================
 
-# Architecture: cluster mode (no separate replicas)
+# Architecture: cluster mode
 architecture: cluster
 
-# Cluster topology: 3 masters, 0 replicas per master
+# Cluster topology: 3 masters, 0 replicas
 cluster:
-  nodes: 3          # Number of master nodes
-  replicas: 0       # No slave replicas (saves resources)
+  nodes: 3
+  replicas: 0
 
 # Image configuration
 image:
   registry: docker.io
   repository: bitnami/redis-cluster
-  tag: 7.2.13-debian-12-r0  # Redis 7.2 + Bitnami hardening
+  tag: 7.2.13-debian-12-r0
   pullPolicy: IfNotPresent
   debug: false
 
-# Authentication: Use existing Kubernetes Secret from ExternalSecrets
+# Authentication: Use existing Kubernetes Secret
 auth:
   enabled: true
-  existingSecret: redis-auth        # Secret created by redis-auth-externalsecret.yaml
+  existingSecret: redis-auth
   existingSecretPasswordKey: password
-  usePasswordFiles: true            # Mount as file for better security
+  usePasswordFiles: true
 
 # Persistence: Longhorn storage
 primary:
@@ -33,10 +34,8 @@ primary:
     accessModes:
       - ReadWriteOnce
     size: 2Gi
-    # Optional: Add volume claim template annotations if needed
-    # annotations: {}
 
-# Resources per pod (applies to all cluster nodes)
+# Resources per pod
 primary:
   resources:
     requests:
@@ -46,7 +45,7 @@ primary:
       cpu: 500m
       memory: 512Mi
 
-# Node affinity: Force scheduling onto 'eldragon' (amd64)
+# Node affinity: Force scheduling onto 'eldragon'
 primary:
   nodeSelector:
     kubernetes.io/hostname: eldragon
@@ -58,24 +57,15 @@ primary:
 
 # Redis configuration overrides
 commonConfiguration: |-
-  # Memory management
   maxmemory 256mb
   maxmemory-policy allkeys-lru
-  # Persistence
   appendonly yes
   appendfsync everysec
-  # Cluster settings (Bitnami handles these automatically)
   cluster-require-full-coverage no
 
-# Network policy (disable for homelab simplicity)
+# Network policy (disable for homelab)
 networkPolicy:
   enabled: false
-
-# Metrics (optional: enable later for Prometheus)
-metrics:
-  enabled: false
-  # serviceMonitor:
-  #   enabled: false
 
 # Service configuration
 service:
@@ -84,11 +74,10 @@ service:
     redis: 6379
     redisBus: 16379
 
-# Pod security context (Bitnami defaults are good, but explicit is better)
+# Security contexts
 podSecurityContext:
   enabled: true
   fsGroup: 1001
-  sysctls: []
 
 containerSecurityContext:
   enabled: true
@@ -100,22 +89,6 @@ containerSecurityContext:
   runAsNonRoot: true
   runAsUser: 1001
 
-# Startup/Liveness/Readiness probes (Bitnami defaults are solid)
-# Override only if you see probe failures:
-# primary:
-#   startupProbe:
-#     enabled: true
-#     initialDelaySeconds: 10
-#     periodSeconds: 10
-#     timeoutSeconds: 5
-#     successThreshold: 1
-#     failureThreshold: 30  # Allow longer startup for cluster formation
-
-# Extra environment variables (if needed)
-# extraEnvVars: []
-# extraEnvVarsCM: ""
-# extraEnvVarsSecret: ""
-
 # Volume permissions init container (helps with Longhorn)
 volumePermissions:
   enabled: true
@@ -124,16 +97,11 @@ volumePermissions:
     repository: bitnami/os-shell
     tag: 12-debian-12-r28
     pullPolicy: IfNotPresent
-  resources:
-    limits: {}
-    requests: {}
 
-# TLS/SSL: Disabled for now (enable later with cert-manager)
+# TLS: Disabled for now
 tls:
   enabled: false
 
 # Service account
 serviceAccount:
   create: true
-  name: ""  # Auto-generate
-  annotations: {}
