@@ -1,41 +1,21 @@
-# --------------------------------------------------------------
-# 1️⃣  Image – use a Redis version that knows the
-#     `cluster-announce-hostname` directive (>= 7.0)
-# --------------------------------------------------------------
 image:
-  repository: redis                 # official Docker Hub repo
-  tag: "7.2-alpine"                # any >= 7.0 works
+  repository: redis
+  tag: "7.2-alpine"
   pullPolicy: IfNotPresent
-
-# --------------------------------------------------------------
-# 2️⃣  Cluster options – we **disable** the offending line
-# --------------------------------------------------------------
 cluster:
   name: redis-cluster
   namespace: redis
-  size: 3                           # number of master nodes
-  announceHostname: false           # ← BOOLEAN, not quoted → line disappears
-
-# --------------------------------------------------------------
-# 3️⃣  Authentication – you already have an ExternalSecret
-# --------------------------------------------------------------
+  size: 3 
+  announceHostname: false
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
-
-# --------------------------------------------------------------
-# 4️⃣  Persistence (keep your Longhorn PVCs)
-# --------------------------------------------------------------
 persistence:
   enabled: true
   storageClass: longhorn
   size: 2Gi
   accessMode: ReadWriteOnce
-
-# --------------------------------------------------------------
-# 5️⃣  Resources (feel free to tweak)
-# --------------------------------------------------------------
 resources:
   requests:
     cpu: 100m
@@ -43,31 +23,16 @@ resources:
   limits:
     cpu: 500m
     memory: 512Mi
-
-# --------------------------------------------------------------
-# 6️⃣  Security context – run as non‑root (same as default)
-# --------------------------------------------------------------
 securityContext:
   runAsNonRoot: true
   runAsUser: 999
-
-# --------------------------------------------------------------
-# 7️⃣  **ARCHITECTURE requirement** – force pod onto node “eldragon”
-# --------------------------------------------------------------
 nodeSelector:
-  kubernetes.io/hostname: eldragon   # exact node name
+  kubernetes.io/hostname: eldragon
   kubernetes.io/arch: amd64
-
-# If that node carries a NoSchedule taint (e.g. control‑plane),
-# add a toleration so the pod can still be scheduled.
 tolerations:
   - key: "node-role.kubernetes.io/control-plane"
     operator: "Exists"
     effect: "NoSchedule"
-
-# --------------------------------------------------------------
-# 8️⃣  Optional – extra Redis config you already had
-# --------------------------------------------------------------
 redisConfig:
   additionalRedisConfig: |
     maxmemory 256mb
