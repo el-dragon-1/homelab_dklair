@@ -1,12 +1,9 @@
 # values/redis-cluster/values.yaml
-kubernetesConfig:
-  image: "redis:7.2-alpine"
-  imagePullPolicy: IfNotPresent
-
 cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3
+  dockerImage: "redis:7.2-alpine"  # ← This is the ONLY key the chart reads for the image
   announceHostname: false
 
 auth:
