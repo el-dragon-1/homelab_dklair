@@ -1,20 +1,20 @@
 # values/redis-cluster/values.yaml
 
-# 1. Cluster Configuration (Image goes here!)
+# Cluster config - THIS IS WHERE THE IMAGE MUST GO
 cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3
-  dockerImage: "redis:7.2-alpine"  # <-- THIS IS THE FIX
-  announceHostname: false
+  dockerImage: "redis:7.2-alpine"  # ← CRITICAL: This is what the chart reads
+  announceHostname: false           # ← Prevents the invalid directive error
 
-# 2. Authentication
+# Authentication
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
 
-# 3. Storage & Persistence
+# Storage
 storage:
   storageClass: "longhorn"
   size: 2Gi
@@ -26,7 +26,7 @@ persistence:
   size: 2Gi
   accessMode: ReadWriteOnce
 
-# 4. Redis Config
+# Redis config
 redisConfig:
   additionalRedisConfig: |
     maxmemory 256mb
@@ -34,7 +34,7 @@ redisConfig:
     appendonly yes
     appendfsync everysec
 
-# 5. Resources & Security
+# Resources & Security
 resources:
   requests:
     cpu: 100m
