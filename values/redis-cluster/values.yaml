@@ -1,18 +1,26 @@
-# Cluster config - THIS IS WHERE THE IMAGE MUST GO
+# values/redis-cluster/values.yaml
 cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3
-  dockerImage: "redis:7.2-alpine"
-  announceHostname: false
 
-# Authentication
+  # --------------------------------------------------------------------
+  # Image – the chart really reads `image.repository` / `image.tag`,
+  # not `dockerImage`.  Use a Redis >= 7.0 to get the new directive.
+  # --------------------------------------------------------------------
+  image:
+    repository: redis
+    tag: "7.2-alpine"
+
+  # If you *do not* want the new directive (e.g. you are happy with
+  # the default discovery using the pod's IP), set it to an empty string.
+  announceHostname: ""   # <-- disables `cluster-announce-hostname` line
+
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
 
-# Storage
 storage:
   storageClass: "longhorn"
   size: 2Gi
@@ -24,7 +32,6 @@ persistence:
   size: 2Gi
   accessMode: ReadWriteOnce
 
-# Redis config
 redisConfig:
   additionalRedisConfig: |
     maxmemory 256mb
@@ -32,7 +39,6 @@ redisConfig:
     appendonly yes
     appendfsync everysec
 
-# Resources & Security
 resources:
   requests:
     cpu: 100m
