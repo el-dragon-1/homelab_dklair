@@ -11,6 +11,7 @@ kubernetesConfig:
 
 cluster:
   name: redis-cluster
+  dockerImage: "redis:7.2-alpine"
   namespace: redis
   clusterSize: 3  # Note: chart uses 'clusterSize', not 'size'
   
