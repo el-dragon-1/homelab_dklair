@@ -1,7 +1,7 @@
-image:
+redisImage:
   repository: redis
   tag: "7.2-alpine"
-  pullPolicy: IfNotPresent
+  pullPolicy: Always
 cluster:
   name: redis-cluster
   namespace: redis
