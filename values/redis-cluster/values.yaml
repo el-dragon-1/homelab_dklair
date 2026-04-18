@@ -91,7 +91,7 @@ containerSecurityContext:
 
 # Volume permissions init container (helps with Longhorn)
 volumePermissions:
-  enabled: true
+  enabled: false
   image:
     registry: docker.io
     repository: bitnami/os-shell
