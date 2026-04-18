@@ -1,44 +1,41 @@
-# values/redis-cluster/values.yaml
+# --------------------------------------------------------------
+# 1️⃣  Image – use a Redis version that knows the
+#     `cluster-announce-hostname` directive (>= 7.0)
+# --------------------------------------------------------------
+image:
+  repository: redis                 # official Docker Hub repo
+  tag: "7.2-alpine"                # any >= 7.0 works
+  pullPolicy: IfNotPresent
+
+# --------------------------------------------------------------
+# 2️⃣  Cluster options – we **disable** the offending line
+# --------------------------------------------------------------
 cluster:
   name: redis-cluster
   namespace: redis
-  clusterSize: 3
+  size: 3                           # number of master nodes
+  announceHostname: false           # ← BOOLEAN, not quoted → line disappears
 
-  # --------------------------------------------------------------------
-  # Image – the chart really reads `image.repository` / `image.tag`,
-  # not `dockerImage`.  Use a Redis >= 7.0 to get the new directive.
-  # --------------------------------------------------------------------
-  image:
-    repository: redis
-    tag: "7.2-alpine"
-
-  # If you *do not* want the new directive (e.g. you are happy with
-  # the default discovery using the pod's IP), set it to an empty string.
-  announceHostname: ""   # <-- disables `cluster-announce-hostname` line
-
+# --------------------------------------------------------------
+# 3️⃣  Authentication – you already have an ExternalSecret
+# --------------------------------------------------------------
 auth:
   enabled: true
   secretName: redis-auth
   secretKey: password
 
-storage:
-  storageClass: "longhorn"
-  size: 2Gi
-  accessMode: ReadWriteOnce
-
+# --------------------------------------------------------------
+# 4️⃣  Persistence (keep your Longhorn PVCs)
+# --------------------------------------------------------------
 persistence:
   enabled: true
-  storageClass: "longhorn"
+  storageClass: longhorn
   size: 2Gi
   accessMode: ReadWriteOnce
 
-redisConfig:
-  additionalRedisConfig: |
-    maxmemory 256mb
-    maxmemory-policy allkeys-lru
-    appendonly yes
-    appendfsync everysec
-
+# --------------------------------------------------------------
+# 5️⃣  Resources (feel free to tweak)
+# --------------------------------------------------------------
 resources:
   requests:
     cpu: 100m
@@ -47,6 +44,33 @@ resources:
     cpu: 500m
     memory: 512Mi
 
+# --------------------------------------------------------------
+# 6️⃣  Security context – run as non‑root (same as default)
+# --------------------------------------------------------------
 securityContext:
   runAsNonRoot: true
   runAsUser: 999
+
+# --------------------------------------------------------------
+# 7️⃣  **ARCHITECTURE requirement** – force pod onto node “eldragon”
+# --------------------------------------------------------------
+nodeSelector:
+  kubernetes.io/hostname: eldragon   # exact node name
+  kubernetes.io/arch: amd64
+
+# If that node carries a NoSchedule taint (e.g. control‑plane),
+# add a toleration so the pod can still be scheduled.
+tolerations:
+  - key: "node-role.kubernetes.io/control-plane"
+    operator: "Exists"
+    effect: "NoSchedule"
+
+# --------------------------------------------------------------
+# 8️⃣  Optional – extra Redis config you already had
+# --------------------------------------------------------------
+redisConfig:
+  additionalRedisConfig: |
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
+    appendonly yes
+    appendfsync everysec
