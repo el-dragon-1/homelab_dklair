@@ -13,7 +13,8 @@ cluster:
   name: redis-cluster
   namespace: redis
   clusterSize: 3  # Note: chart uses 'clusterSize', not 'size'
-  announceHostname: false
+  
+announceHostname: false
 
 storage:
   storageClass: "longhorn"
