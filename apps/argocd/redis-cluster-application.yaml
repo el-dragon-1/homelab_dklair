@@ -4,9 +4,7 @@ metadata:
   name: redis-cluster
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
-  finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   destination:
     namespace: redis

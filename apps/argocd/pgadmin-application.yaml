@@ -1,24 +1,20 @@
-# when the PGadmin application is deployed, it seems to install and launch perfectly fine. However when I
-# try to access the pgadmin web interface, I get a wrong username or password error.
-
+# pgAdmin: login issues are often Vault/ExternalSecret timing or wrong secret keys—see values/pgadmin.
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: pgadmin
   namespace: argocd
   annotations:
-    argocd.argoproj.io/sync-wave: "2"
+    argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
   sources:
-    # 1. The Helm Chart Source
     - repoURL: https://helm.runix.net
       chart: pgadmin4
       targetRevision: 1.59.0
       helm:
         valueFiles:
           - $values/values/pgadmin/values.yaml
-    # 2. The Values File Source (Your Repo)
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values

@@ -1,17 +1,12 @@
 # ============================================================
 # Bitnami Redis Cluster Values - Homelab Configuration
-# Chart: redis-cluster v13.0.4
+# Chart: redis-cluster v13.0.4 (schema: persistence + redis.*, not primary/auth)
 # ============================================================
 
-# Architecture: cluster mode
-architecture: cluster
-
-# Cluster topology: 3 masters, 0 replicas
 cluster:
   nodes: 3
   replicas: 0
 
-# Image configuration
 image:
   registry: docker.io
   repository: bitnamilegacy/redis-cluster
@@ -23,21 +18,19 @@ global:
   security:
     allowInsecureImages: true
 
-# Authentication: Use existing Kubernetes Secret
-auth:
-  enabled: true
-  existingSecret: redis-auth
-  existingSecretPasswordKey: password
-  usePasswordFiles: true
+usePassword: true
+existingSecret: redis-auth
+existingSecretPasswordKey: password
+usePasswordFiles: true
 
-# Persistence: Longhorn storage
-primary:
-  persistence:
-    enabled: true
-    storageClass: longhorn
-    accessModes:
-      - ReadWriteOnce
-    size: 2Gi
+persistence:
+  enabled: true
+  storageClass: longhorn
+  accessModes:
+    - ReadWriteOnce
+  size: 2Gi
+
+redis:
   resources:
     requests:
       cpu: 100m
@@ -52,27 +45,21 @@ primary:
     - key: "node-role.kubernetes.io/control-plane"
       operator: "Exists"
       effect: "NoSchedule"
+  defaultConfigOverride: |-
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
+    appendonly yes
+    appendfsync everysec
+    cluster-require-full-coverage no
 
-# Redis configuration overrides
-commonConfiguration: |-
-  maxmemory 256mb
-  maxmemory-policy allkeys-lru
-  appendonly yes
-  appendfsync everysec
-  cluster-require-full-coverage no
-
-# Network policy (disable for homelab)
 networkPolicy:
   enabled: false
 
-# Service configuration
 service:
   type: ClusterIP
   ports:
     redis: 6379
-    redisBus: 16379
 
-# Security contexts
 podSecurityContext:
   enabled: true
   fsGroup: 1001
@@ -86,8 +73,8 @@ containerSecurityContext:
   readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1001
+  runAsGroup: 1001
 
-# Volume permissions init container (helps with Longhorn)
 volumePermissions:
   enabled: false
   image:
@@ -96,10 +83,8 @@ volumePermissions:
     tag: 12-debian-12-r47
     pullPolicy: IfNotPresent
 
-# TLS: Disabled for now
 tls:
   enabled: false
 
-# Service account
 serviceAccount:
   create: true
