@@ -4,8 +4,8 @@
 # ============================================================
 
 cluster:
-  nodes: 3
-  replicas: 0
+  nodes: 6
+  replicas: 1
 
 image:
   registry: docker.io
@@ -24,7 +24,11 @@ existingSecretPasswordKey: password
 usePasswordFiles: true
 
 persistence:
-  enabled: false
+  enabled: true
+  storageClass: longhorn
+  accessModes:
+    - ReadWriteOnce
+  size: 8Gi
 
 networkPolicy:
   enabled: false
@@ -44,13 +48,13 @@ containerSecurityContext:
   capabilities:
     drop:
       - ALL
-  readOnlyRootFilesystem: false
+  readOnlyRootFilesystem: true
   runAsNonRoot: true
   runAsUser: 1001
   runAsGroup: 1001
 
 redis:
-  useAOFPersistence: "no"
+  useAOFPersistence: "yes"
   resources:
     requests:
       cpu: 100m
