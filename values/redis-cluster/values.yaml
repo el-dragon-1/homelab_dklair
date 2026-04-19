@@ -14,7 +14,7 @@ cluster:
 # Image configuration
 image:
   registry: docker.io
-  repository: bitnami-legacy/redis-cluster
+  repository: bitnamilegacy/redis-cluster
   tag: 7.2-debian-12
   pullPolicy: IfNotPresent
   debug: false
