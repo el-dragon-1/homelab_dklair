@@ -17,6 +17,13 @@ spec:
       helm:
         valueFiles:
           - $values/values/redis-cluster/values.yaml
+        parameters:
+          - name: persistence.enabled
+            value: "false"
+          - name: redis.useAOFPersistence
+            value: "no"
+          - name: containerSecurityContext.readOnlyRootFilesystem
+            value: "false"
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values
