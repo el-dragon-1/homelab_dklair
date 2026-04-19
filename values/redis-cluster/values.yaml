@@ -14,7 +14,7 @@ cluster:
 # Image configuration
 image:
   registry: docker.io
-  repository: bitnamilegacy/redis-cluster
+  repository: bitnami-legacy/redis-cluster
   tag: 7.2-debian-12
   pullPolicy: IfNotPresent
   debug: false
@@ -38,9 +38,6 @@ primary:
     accessModes:
       - ReadWriteOnce
     size: 2Gi
-
-# Resources per pod
-primary:
   resources:
     requests:
       cpu: 100m
@@ -48,9 +45,6 @@ primary:
     limits:
       cpu: 500m
       memory: 512Mi
-
-# Node affinity: Force scheduling onto 'eldragon'
-primary:
   nodeSelector:
     kubernetes.io/hostname: eldragon
     kubernetes.io/arch: amd64
