@@ -10,9 +10,9 @@ spec:
     namespace: redis
     server: https://kubernetes.default.svc
   sources:
-    # ✅ Bitnami redis-cluster chart (NOT "redis")
+    # Bitnami redis-cluster chart
     - repoURL: https://charts.bitnami.com/bitnami
-      targetRevision: 13.0.4  # ✅ Valid redis-cluster version [[5]]
+      targetRevision: 13.0.4
       chart: redis-cluster
       helm:
         valueFiles:

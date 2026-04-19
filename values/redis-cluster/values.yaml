@@ -1,6 +1,6 @@
 # ============================================================
 # Bitnami Redis Cluster Values - Homelab Configuration
-# Chart: redis-cluster v13.0.4 (schema: persistence + redis.*, not primary/auth)
+# Chart: redis-cluster v13.0.4
 # ============================================================
 
 cluster:
@@ -24,33 +24,7 @@ existingSecretPasswordKey: password
 usePasswordFiles: true
 
 persistence:
-  enabled: true
-  storageClass: longhorn
-  accessModes:
-    - ReadWriteOnce
-  size: 2Gi
-
-redis:
-  resources:
-    requests:
-      cpu: 100m
-      memory: 128Mi
-    limits:
-      cpu: 500m
-      memory: 512Mi
-  nodeSelector:
-    kubernetes.io/hostname: eldragon
-    kubernetes.io/arch: amd64
-  tolerations:
-    - key: "node-role.kubernetes.io/control-plane"
-      operator: "Exists"
-      effect: "NoSchedule"
-  defaultConfigOverride: |-
-    maxmemory 256mb
-    maxmemory-policy allkeys-lru
-    appendonly yes
-    appendfsync everysec
-    cluster-require-full-coverage no
+  enabled: false
 
 networkPolicy:
   enabled: false
@@ -70,18 +44,35 @@ containerSecurityContext:
   capabilities:
     drop:
       - ALL
-  readOnlyRootFilesystem: true
+  readOnlyRootFilesystem: false
   runAsNonRoot: true
   runAsUser: 1001
   runAsGroup: 1001
 
+redis:
+  useAOFPersistence: "no"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 128Mi
+    limits:
+      cpu: 500m
+      memory: 512Mi
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+    kubernetes.io/arch: amd64
+  tolerations:
+    - key: "node-role.kubernetes.io/control-plane"
+      operator: "Exists"
+      effect: "NoSchedule"
+  defaultConfigOverride: |-
+    maxmemory 256mb
+    maxmemory-policy allkeys-lru
+    appendonly no
+    cluster-require-full-coverage no
+
 volumePermissions:
   enabled: false
-  image:
-    registry: docker.io
-    repository: bitnami/os-shell
-    tag: 12-debian-12-r47
-    pullPolicy: IfNotPresent
 
 tls:
   enabled: false
