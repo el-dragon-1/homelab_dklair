@@ -7,21 +7,19 @@ image:
   pullPolicy: IfNotPresent
 
 envVarsExtra:
-  - name: PGADMIN_DEFAULT_EMAIL
-    valueFrom:
-      secretKeyRef:
-        name: pgadmin-admin
-        key: email
-  - name: PGADMIN_DEFAULT_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: pgadmin-admin
-        key: password
   - name: SECRET_KEY
     valueFrom:
       secretKeyRef:
         name: pgadmin-admin
         key: secret_key
+
+existingSecret: pgadmin-admin
+
+secretKeys:
+  pgadminPasswordKey: password
+
+env:
+  email: davidcpolizzi@gmail.com
 
 # Persistence Configuration (Using Longhorn as per your cluster setup)
 persistence:
