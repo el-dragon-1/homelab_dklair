@@ -58,7 +58,7 @@ extraEnvVars:
   - name: DATABASE_TYPE
     value: postgresql
   - name: DATABASE_HOST
-    value: postgresql-cluster-rw.postgresql.svc.cluster.local
+    value: postgresql-rw.postgresql.svc.cluster.local
   - name: DATABASE_PORT
     value: "5432"
   - name: DATABASE_NAME
