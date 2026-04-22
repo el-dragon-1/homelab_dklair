@@ -1,6 +1,6 @@
 # Open WebUI values
 # - Uses existing PostgreSQL cluster (same instance, no new DB service)
-# - Uses existing Redis cluster for websocket manager (same instance)
+# - Uses chart-managed single-node Redis for websocket manager (avoids Redis Cluster MOVED errors)
 # - Exposes service at ai.dklair.io through Traefik
 # - Pins inference (Ollama) to eldragon GPU node
 
@@ -27,8 +27,13 @@ tika:
   enabled: false
 
 websocket:
-  enabled: false
-  manager: memory
+  enabled: true
+  manager: redis
+  redis:
+    enabled: true   # chart deploys a standalone Redis pod - compatible with Open WebUI's non-cluster client
+    nodeSelector:
+      kubernetes.io/hostname: eldragon
+      kubernetes.io/arch: amd64
 
 ingress:
   enabled: true
