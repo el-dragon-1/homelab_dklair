@@ -1,0 +1,88 @@
+# Open WebUI values
+# - Uses existing PostgreSQL cluster (same instance, no new DB service)
+# - Uses existing Redis cluster for websocket manager (same instance)
+# - Exposes service at ai.dklair.io through Traefik
+# - Pins inference (Ollama) to eldragon GPU node
+
+ollama:
+  enabled: true
+  runtimeClassName: nvidia
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+    kubernetes.io/arch: amd64
+  ollama:
+    gpu:
+      enabled: true
+      type: nvidia
+      number: 1
+  persistentVolume:
+    enabled: true
+    storageClass: longhorn
+    size: 40Gi
+
+pipelines:
+  enabled: false
+
+tika:
+  enabled: false
+
+websocket:
+  enabled: true
+  manager: redis
+  redis:
+    enabled: false
+  existingSecret: open-webui-redis
+  existingSecretKey: redis-url
+
+ingress:
+  enabled: true
+  class: my-traefik
+  host: ai.dklair.io
+  tls: true
+  existingSecret: open-webui-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+# Use existing PostgreSQL instance with a dedicated Open WebUI database/user
+# from ExternalSecret in open-webui namespace. This avoids storing a full
+# DATABASE_URL in git.
+extraEnvVars:
+  - name: DATABASE_TYPE
+    value: postgresql
+  - name: DATABASE_HOST
+    value: postgresql-cluster-rw.postgresql.svc.cluster.local
+  - name: DATABASE_PORT
+    value: "5432"
+  - name: DATABASE_NAME
+    value: openwebui
+  - name: DATABASE_USER
+    valueFrom:
+      secretKeyRef:
+        name: open-webui-db
+        key: username
+  - name: DATABASE_PASSWORD
+    valueFrom:
+      secretKeyRef:
+        name: open-webui-db
+        key: password
+
+resources:
+  requests:
+    cpu: 200m
+    memory: 1Gi
+  limits:
+    cpu: 2000m
+    memory: 4Gi
+
+# Pin Open WebUI itself to eldragon as requested.
+nodeSelector:
+  kubernetes.io/hostname: eldragon
+  kubernetes.io/arch: amd64
