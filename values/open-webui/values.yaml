@@ -27,12 +27,8 @@ tika:
   enabled: false
 
 websocket:
-  enabled: true
-  manager: redis
-  redis:
-    enabled: false
-  existingSecret: open-webui-redis
-  existingSecretKey: redis-url
+  enabled: false
+  manager: memory
 
 ingress:
   enabled: true
