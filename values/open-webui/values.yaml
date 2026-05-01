@@ -6,6 +6,9 @@
 
 ollama:
   enabled: true
+  image:
+    repository: ollama/ollama
+    tag: "0.22.1"
   runtimeClassName: nvidia
   nodeSelector:
     kubernetes.io/hostname: eldragon
