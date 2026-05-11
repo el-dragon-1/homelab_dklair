@@ -1,62 +1,144 @@
-# Homelab
+# Homelab - Kubernetes Cluster with GitOps
 
-This homelab is running on a k3s cluster with a 3 node control plane and two worker nodes.
+A production-ready Kubernetes homelab built on K3S with 3 control plane nodes and 2 worker nodes, managed entirely through GitOps using Argo CD.
 
-From time to time the cluster will rewquire troubleshooting using an LLM or general vibe-coding. In order to properly prompt the LLM, use
+## Cluster Overview
+
+- **Orchestration**: Kubernetes 1.34.6+k3s1 (K3S lightweight distribution)
+- **High Availability**: 3-node control plane with KubeVIP virtual IP (192.168.4.20)
+- **Load Balancing**: KubeVIP v1.0.0 for control plane HA and ingress LB
+- **Networking**: Flannel CNI with 192.168.4.0/24 VLAN
+- **Storage**: Longhorn v4.9.0 distributed storage across all nodes
+- **GitOps**: Argo CD for declarative infrastructure and application management
+- **Container Runtime**: containerd via K3S
+
+## Hardware Architecture
+
+For detailed hardware specifications and node configurations, see [HARDWARE.md](HARDWARE.md).
+
+### Control Plane (3x Raspberry Pi 4 8GB)
+- **node1** (192.168.4.110): Primary etcd leader, API server
+- **node2** (192.168.4.115): etcd member, scheduler
+- **node3** (192.168.4.116): etcd member, controller manager
+- **Virtual IP**: 192.168.4.20 (KubeVIP-managed endpoint)
+
+### Worker Nodes (2)
+- **eldragon** (192.168.4.213): GPU compute node (NVIDIA RTX 4060, 64GB RAM, Intel Xeon)
+- **orangepi5** (192.168.4.84): General compute node (8x ARM cores, 8GB RAM, NPU 6 TOPS)
+
+## Network Topology
 
 ```
-npx repomix ~/homelab_dklair # change for your repo
+Internet
+   ↓
+Cloudflare DNS & Routes
+   ↓
+Bananapi R3 Gateway (OpenWRT) - 192.168.4.1
+   ├─ Bananapi R3 AP (OpenWRT, 5GHz mesh backhaul)
+   └─ Netgear GS108PE PoE Switch
+       ├─ Control Plane (3x RPi4)
+       ├─ eldragon GPU Node
+       ├─ orangepi5 Compute Node
+       └─ UPS: APC Back-UPS Pro 1500VA
 ```
 
-This will deconstruct the repo into a single markdown file for uploading into the LLM prompt. This is all public information so there is nothingin the repo
-that cant be uploaded.
+All nodes are configured with static IPs on the 192.168.4.0/24 subnet and connected via the managed switch.
 
-## ArgoCD and Gitops
+## KubeVIP Architecture
 
-### Deploying an application
+KubeVIP provides both control plane HA and load balancing for the cluster:
 
-There are two files that need to be created and configured in order to launch the application.
+### Control Plane HA
+- **Virtual IP**: 192.168.4.20
+- **Endpoint**: Dynamically managed across all 3 control plane nodes
+- **Mode**: Leader election for HA failover
+- **Use Case**: Ensures Kubernetes API server remains available if any control node fails
 
-#### Configure values.yaml File
+### Ingress Load Balancing
+- Manages virtual IPs for Ingress and LoadBalancer services
+- Routes external traffic through Traefik ingress controller
+- Integrates with Longhorn persistent volume endpoints
 
-There is a values.yaml file that is placed in the /values/new-app directory. This values.yaml file is configured based on my setup.
+## K3S Architecture
 
-The first section defines the replica count as well as some default image and pull policy values. They are not needed but are good to show in case you need to adjust them.
+### K3S Components
+K3S is a minimal Kubernetes distribution that includes:
+- **containerd**: Container runtime (replaces Docker daemon)
+- **Flannel**: Default CNI for pod networking
+- **Traefik**: Built-in ingress controller
+- **CoreDNS**: Service DNS discovery
+
+### Deployment Model
+- **Server Nodes** (Control Plane): Run API server, controller manager, scheduler, and etcd
+- **Agent Nodes** (Workers): Run kubelet and kube-proxy for workload execution
+- **Single Binary**: K3S runs as a single systemd service per node
+
+### Data Path
+```
+Applications (Pods)
+   ↓ (kubelet)
+Node Agent (containerd runtime)
+   ↓ (CNI plugin)
+Flannel Network Plugin
+   ↓ (routing)
+Inter-node Communication & External Network
+```
+
+## Storage Architecture
+
+### Longhorn Distributed Storage
+- **Version**: v4.9.0
+- **Replica Factor**: 5 copies across cluster
+- **Storage Nodes**: All 5 nodes (node1, node2, node3, eldragon, orangepi5)
+- **Backend Storage**: NVMe/SSD on each node
+- **Use Cases**: 
+  - Persistent volumes for databases (PostgreSQL via CloudNativePG)
+  - Redis cluster data persistence
+  - Application state storage
+
+## GitOps Workflow
+
+This repository is managed as infrastructure-as-code using Argo CD. All cluster state is declaratively defined in Git.
+
+### Repository Structure
+```
+homelab_dklair/
+├── apps/                          # Application manifests organized by platform
+│   └── argocd/                   # Argo CD Application resources
+│       ├── open-webui-application.yaml
+│       ├── postgresql-application.yaml
+│       ├── redis-cluster-application.yaml
+│       └── ...
+├── values/                         # Helm values files for each application
+│   ├── open-webui/
+│   ├── postgresql/
+│   ├── redis-cluster/
+│   └── ...
+├── application-template.yaml       # Template for new applications
+├── HARDWARE.md                     # Detailed hardware specifications
+└── tutorials/                      # Deployment guides and documentation
+```
+
+From time to time the cluster will require troubleshooting using an LLM. To prepare context for LLM analysis:
+
+```bash
+npx repomix ~/homelab_dklair # Generate single markdown file for upload
+```
+
+This consolidates the repo into a single file suitable for LLM prompts. All content is public and can be uploaded.
+
+## Deploying Applications with GitOps
+
+All applications are deployed through Argo CD using a two-file pattern: a Helm values file and an Argo CD Application manifest.
+
+### Application Deployment Pattern
+
+#### 1. Create Values File
+
+Create a new values file at `values/<app-name>/values.yaml` with application-specific overrides:
 
 ```yaml
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
-replicaCount: 1
-
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
-image:
-  repository: traefik/whoami
-  # This sets the pull policy for images.
-  pullPolicy: IfNotPresent
-```
-
-The second step here is the ingress configuration which is how the service is exposed.
-
-It must be enabled and my ingress className is always "my-traefik".
-
-Information on the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) can be found in the link.
-
-```yaml
-ingress:
-  enabled: true # must be set to true.
-  className: 'my-traefik' # for my setup this must be my-traefic. Yours may be different.
-  annotations: {}
-    # traefik.ingress.kubernetes.io/router.entrypoints: web,websecure ## the entrypoint annotation is usually needed but you can try without.
-  hosts:
-    - host: whoami.dklair.io # this is the path setup in cloudflare application routes
-        - path: /
-          pathType: ImplementationSpecific
-```
-
-Together you should have a values.yaml file that looks like this.
-
-Basically if you dont have the configuration here the chart will pull the default values. If you bring in the default values it will use the default values. If you update the default values with your own configuration it will use the updated values you've entered here.
-
-```yaml
+# Example: values/whoami/values.yaml
 replicaCount: 1
 
 image:
@@ -74,72 +156,152 @@ ingress:
           pathType: ImplementationSpecific
 ```
 
----
+**Values File Sections:**
+- **replicaCount**: Number of pod replicas for the deployment
+- **image**: Container image repository and pull policy
+- **ingress**: Traefik ingress configuration for external access
+  - Set `className: 'my-traefik'` for all apps (cluster standard)
+  - Configure DNS hostnames matching your Cloudflare application routes
+  - For domain setup details, see [cloudflare application routes guide](tutorials/cloudflare/application-routes/configure-app-routes.md)
 
-#### Configure application.yaml File
+#### 2. Create Application Manifest
 
-There is also a application yaml which is placed in the /apps directory once it is ready for deplyment.
-
-The configuration of the application yaml requires some constants:
+Create an Argo CD Application at `apps/argocd/<app-name>-application.yaml` using the template:
 
 ```yaml
+# Example: apps/argocd/whoami-application.yaml
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: whoami  # the name of your application
-  namespace: argocd # this must always be argocd.
+  name: whoami
+  namespace: argocd
   annotations:
     argocd.argoproj.io/managed-by-cluster-argocd: argocd
-    argocd.argoproj.io/sync-wave: "1"
+    argocd.argoproj.io/sync-wave: "1"  # Controls deployment order
   finalizers:
-    - resources-finalizer.argocd.argoproj.io
+    - resources-finalizer.argocd.argoproj.io  # Ensures proper cleanup
 spec:
   destination:
-    namespace: whoami
+    namespace: whoami  # Target namespace for app
     server: https://kubernetes.default.svc
   sources:
-    - repoURL: https://harrytang.github.io/helm-charts/ # the helm chart repository
-      targetRevision: 0.1.2 # the version of the chart to deploy
-      chart: whoami # the name of the chart to deploy
+    - repoURL: https://<helm-repo-url>/  # Helm chart repository
+      chart: whoami                        # Chart name
+      targetRevision: 0.1.2               # Chart version to deploy
       helm:
         valueFiles:
-          - $values/values/whoami/values.yaml # the values file to use for the helm chart
-    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # the git repository containing the values file
+          - $values/values/whoami/values.yaml  # Points to values file
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
-      ref: values
+      ref: values  # Enables $values variable substitution
   project: default
   syncPolicy:
     automated:
-      prune: true
-      selfHeal: true
-      allowEmpty: false
+      prune: true          # Delete resources removed from Git
+      selfHeal: true       # Correct drift from desired state
+      allowEmpty: false    # Prevent accidental deletion
     syncOptions:
-      - CreateNamespace=true
+      - CreateNamespace=true  # Auto-create namespace if missing
 ```
 
-Once completed you must run the command
+**Important Fields:**
+- **sync-wave annotation**: Controls deployment order (lower values deploy first)
+- **sources[0]**: Helm chart repository URL and chart details
+- **sources[1]**: This repository (enables values file reference via `$values`)
+- **syncPolicy.automated**: Keeps cluster in sync with Git state
 
+#### 3. Deploy the Application
+
+Register the application with the cluster:
+
+```bash
+kubectl apply -f apps/argocd/whoami-application.yaml -n argocd
 ```
-kubectl apply -f apps/whoami-application.yaml -n argocd
-```
 
-This is because the UI reverts the multiple source configuration to a single source.
+> **Note**: Apply via `kubectl` instead of the Argo CD UI because the UI reverts multi-source configurations to single-source.
 
-At this point you should see the application running in the ArgoCD UI.
+#### 4. Monitor Deployment
 
-![Alt text](/tutorials/readme-images/application-argocd.png)
+Check application status in Argo CD:
 
-Select the new whoami application and view the resources deployed.
-
-![Alt text](/tutorials/readme-images/whoami-rec.png)
-
-The application recourse will be deployed into the argocd namespace but the other resources will be deployed into the specified namespace from the values.yaml file. In this case, whoami namespace.
-
-```
+```bash
 kubectl get application -n argocd
 ```
 
-![Alt text](/tutorials/readme-images/app-n-argocd.png)
+Visit the Argo CD UI (typically `argocd.dklair.io`) to view sync status, resource tree, and logs.
 
-!!! Note
-    If you have not configured the [cloudflare application routes](tutorials/cloudflare/application-routes/configure-app-routes.md) to redirect web traffic to the ingress controller the application service will not be accessible.
+**Expected Resource Deployment:**
+- Application resource → deployed to `argocd` namespace
+- All other resources → deployed to target namespace (e.g., `whoami`)
+
+#### Using the Application Template
+
+Start new applications from the template:
+
+```bash
+cp application-template.yaml apps/argocd/<app-name>-application.yaml
+# Edit: update name, namespace, chart, and values file path
+```
+
+Then create the corresponding values directory:
+
+```bash
+mkdir -p values/<app-name>
+# Create values/<app-name>/values.yaml
+```
+
+### Sync Waves for Deployment Ordering
+
+Control application deployment order using sync-wave annotations:
+
+```yaml
+annotations:
+  argocd.argoproj.io/sync-wave: "0"   # Deploy first (infrastructure)
+```
+
+```yaml
+annotations:
+  argocd.argoproj.io/sync-wave: "3"   # Deploy after wave 0, 1, 2
+```
+
+**Current Wave Structure:**
+- Wave 0-1: Cert Manager and infrastructure
+- Wave 2-3: Storage (Longhorn, PostgreSQL)
+- Wave 4+: Applications (Open WebUI, etc.)
+
+### Accessing Deployed Applications
+
+All applications are exposed through Traefik ingress at your configured domain:
+
+```
+https://<app-name>.dklair.io
+```
+
+This requires:
+1. DNS routing configured in Cloudflare
+2. Ingress resource created by Helm chart
+3. Traefik ingress controller routing traffic
+
+See [cloudflare application routes guide](tutorials/cloudflare/application-routes/configure-app-routes.md) for complete network setup.
+
+### Troubleshooting Applications
+
+**View application status:**
+```bash
+kubectl describe application <app-name> -n argocd
+```
+
+**Check sync status:**
+```bash
+kubectl get application -n argocd -o wide
+```
+
+**View application logs:**
+```bash
+kubectl logs -n <app-namespace> -l app=<app-name>
+```
+
+**Manually sync if auto-sync is disabled:**
+```bash
+argocd app sync <app-name>
+```

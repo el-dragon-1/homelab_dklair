@@ -23,6 +23,12 @@ ollama:
     storageClass: longhorn
     size: 40Gi
 
+# Open WebUI application image (separate from Ollama)
+image:
+  repository: ghcr.io/open-webui/open-webui
+  tag: "v0.9.5"
+  pullPolicy: IfNotPresent
+
 pipelines:
   enabled: false
 
