@@ -1,0 +1,48 @@
+image:
+  repository: ghcr.io/k8s-at-home/wireguard
+  tag: v1.0.20210424
+  pullPolicy: IfNotPresent
+
+env:
+  TZ: UTC
+  IPTABLES_BACKEND: nft
+
+service:
+  main:
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    ports:
+      http:
+        enabled: false
+      vpn:
+        enabled: true
+        port: 51820
+        protocol: UDP
+
+ingress:
+  main:
+    enabled: false
+
+persistence:
+  wireguard-config:
+    enabled: true
+    mountPath: /etc/wireguard/wg0.conf
+    subPath: wg0.conf
+    type: custom
+    volumeSpec:
+      secret:
+        defaultMode: 0600
+        secretName: wireguard-config
+
+probes:
+  liveness:
+    enabled: false
+  readiness:
+    enabled: false
+  startup:
+    enabled: false
+
+configSecret:
+  enabled: false
+  config: |
+    UNUSED_WHEN_EXTERNAL_SECRET_IS_ENABLED

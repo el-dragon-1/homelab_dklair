@@ -305,3 +305,52 @@ kubectl logs -n <app-namespace> -l app=<app-name>
 ```bash
 argocd app sync <app-name>
 ```
+
+## WireGuard VPN Setup
+
+This repository includes a WireGuard VPN application using the same GitOps pattern described above:
+
+- Argo CD Application: `apps/argocd/wireguard-application.yaml`
+- Helm values: `values/wireguard/values.yaml`
+
+### 1. Configure WireGuard Server Config
+
+This setup is Vault-native and uses External Secrets instead of storing WireGuard config in Git.
+
+Create a Vault KV secret at:
+
+- `homelab/wireguard/wireguard-config`
+- Property: `wg0_conf`
+- Value: full plaintext `wg0.conf` contents (multi-line)
+
+The ExternalSecret manifest at `apps/external-secrets-config/wireguard-config-externalsecret.yaml` syncs this into Kubernetes Secret `wireguard-config` in namespace `wireguard`.
+
+### 2. Deploy Through GitOps (Root Application)
+
+Do not apply WireGuard manifests directly with `kubectl`.
+
+Commit and push these files to the repository:
+
+- `apps/argocd/wireguard-application.yaml`
+- `apps/external-secrets-config/wireguard-config-externalsecret.yaml`
+- `values/wireguard/values.yaml`
+
+Deployment flow:
+
+- Root Argo CD app (`root`) reconciles `apps/argocd/*` and creates the `wireguard` Argo CD application.
+- `external-secrets-config` Argo CD app reconciles `apps/external-secrets-config/*` and creates the WireGuard ExternalSecret.
+- External Secrets Operator syncs Vault key `homelab/wireguard/wireguard-config` into Kubernetes Secret `wireguard-config`.
+- WireGuard chart mounts `wireguard-config` as `/etc/wireguard/wg0.conf`.
+
+### 3. Verify Service and External IP
+
+The WireGuard service is exposed as `LoadBalancer` on UDP `51820`.
+
+```bash
+kubectl get svc -n wireguard
+kubectl get pods -n wireguard
+kubectl get externalsecret -n wireguard
+kubectl get secret wireguard-config -n wireguard
+```
+
+If your router/firewall is not already configured, forward UDP `51820` to the service external IP.
