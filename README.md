@@ -320,7 +320,7 @@ This setup is Vault-native and uses External Secrets instead of storing WireGuar
 Create a Vault KV secret at:
 
 - `homelab/wireguard/wireguard-config`
-- Property: `wg0_conf`
+- Property: `wg0_config`
 - Value: full plaintext `wg0.conf` contents (multi-line)
 
 The ExternalSecret manifest at `apps/external-secrets-config/wireguard-config-externalsecret.yaml` syncs this into Kubernetes Secret `wireguard-config` in namespace `wireguard`.
