@@ -62,8 +62,8 @@ The control plane consists of three Raspberry Pi 4 Model B units configured as a
 
 ## Network & Power
 - **Switch**: Netgear GS108PE 8-Port Gigabit PoE+ Switch
-- **Gateway**: Bananapi R3 (OpenWRT 25.12.0-rc2, DHCP enabled, static IPs assigned)
-- **Access Point**: Bananapi R3 (OpenWRT 25.12.0-rc2, backhauling on 5ghz Mesh Point to Gateway.)
+- **Gateway**: Bananapi R3 (OpenWRT 25.12.4, DHCP enabled, static IPs assigned)
+- **Access Point**: Bananapi R3 (OpenWRT 25.12.4, backhauling on 5ghz Mesh Point to Gateway.)
 - **UPS**: APC Back-UPS Pro 1500VA
 - **Topology**: All nodes on 192.168.4.0/24 VLAN
 
