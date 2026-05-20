@@ -85,6 +85,8 @@ spec:
                         ansible_private_key_file: /work/.ssh/id_ed25519
                         desired_hostname: ${DESIRED_HOSTNAME}
                         openwrt_mode: ${OPENWRT_MODE}
+                        mesh_key: ${MESH_KEY}
+                        smx_homex_ssid_key: ${SMX_HOMEX_SSID_KEY}
                   EOF
                   ANSIBLE_CONFIG=/automation/ansible.cfg ansible-playbook -i /work/inventory.yml /automation/openwrt-playbook.yml --limit "${DEVICE_NAME}"
               volumeMounts:
