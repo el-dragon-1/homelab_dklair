@@ -26,7 +26,7 @@ spec:
                 - name: DESIRED_HOSTNAME
                   value: OpenWrt-AP
                 - name: OPENWRT_MODE
-                  value: audit
+                  value: enforce
                 - name: OPENWRT_HOST
                   valueFrom:
                     secretKeyRef:
