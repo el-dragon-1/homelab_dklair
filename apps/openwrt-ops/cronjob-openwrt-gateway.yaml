@@ -47,6 +47,21 @@ spec:
                     secretKeyRef:
                       name: openwrt-gateway-auth
                       key: ssh_private_key
+                - name: MESH_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: mesh_key
+                - name: OPENWRT_SSID_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: openwrt_ssid_key
+                - name: SMZ_GUEST_SSID_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: smz_guest_ssid_key
               command:
                 - /bin/sh
                 - -ec

@@ -1,0 +1,2 @@
+# Desired state for AP network configuration
+# Populate from the sanitized baseline after you decide what GitOps should enforce.

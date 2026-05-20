@@ -20,9 +20,6 @@ data:
       hosts: all
       gather_facts: false
       vars:
-        # Modes:
-        # - audit: collect state and validate connectivity only.
-        # - enforce: apply desired hostname via UCI and commit.
         openwrt_mode: "audit"
       tasks:
         - name: Read OpenWRT release information
@@ -53,6 +50,17 @@ data:
             uci commit system
           when: openwrt_mode == "enforce"
 
+        - name: Render wireless.uci from template (enforce mode)
+          ansible.builtin.template:
+            src: wireless.uci.j2
+            dest: /tmp/wireless.uci
+            mode: '0600'
+          when: openwrt_mode == "enforce"
+
+        - name: Import wireless config (enforce mode)
+          ansible.builtin.raw: uci import wireless < /tmp/wireless.uci && uci commit wireless
+          when: openwrt_mode == "enforce"
+
         - name: Confirm hostname after enforcement
           ansible.builtin.raw: uci get system.@system[0].hostname
           register: current_hostname
@@ -61,3 +69,51 @@ data:
         - name: Show current hostname
           ansible.builtin.debug:
             msg: "{{ inventory_hostname }} hostname: {{ current_hostname.stdout | trim }}"
+  wireless.uci.j2: |
+    package wireless
+
+    config wifi-device 'radio0'
+      option type 'mac80211'
+      option path 'platform/soc/18000000.wifi'
+      option band '2g'
+      option channel '6'
+      option htmode 'HE20'
+      option cell_density '0'
+      option beacon_int '100'
+
+    config wifi-device 'radio1'
+      option type 'mac80211'
+      option path 'platform/soc/18000000.wifi+1'
+      option band '5g'
+      option channel '36'
+      option htmode 'HE80'
+      option cell_density '0'
+
+    config wifi-iface 'default_radio1'
+      option device 'radio1'
+      option network 'lan'
+      option mode 'mesh'
+      option encryption 'sae'
+      option key '{{ lookup(''env'', ''MESH_KEY'') }}'
+      option mesh_id 'smz5mesh'
+      option mesh_fwding '1'
+      option mesh_rssi_threshold '0'
+
+    config wifi-iface 'wifinet2'
+      option device 'radio0'
+      option mode 'ap'
+      option ssid 'OpenWrt'
+      option encryption 'psk2+ccmp'
+      option network 'iot'
+      option key '{{ lookup(''env'', ''OPENWRT_SSID_KEY'') }}'
+      option dtim_period '1'
+
+    config wifi-iface 'wifinet3'
+      option device 'radio0'
+      option mode 'ap'
+      option ssid 'smz_guest'
+      option encryption 'sae-mixed'
+      option key '{{ lookup(''env'', ''SMZ_GUEST_SSID_KEY'') }}'
+      option network 'smz_guest'
+      option isolate '1'
+      option dtim_period '1'

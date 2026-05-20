@@ -47,6 +47,16 @@ spec:
                     secretKeyRef:
                       name: openwrt-ap-auth
                       key: ssh_private_key
+                - name: MESH_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-ap-auth
+                      key: mesh_key
+                - name: SMX_HOMEX_SSID_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-ap-auth
+                      key: smx_homex_ssid_key
               command:
                 - /bin/sh
                 - -ec
