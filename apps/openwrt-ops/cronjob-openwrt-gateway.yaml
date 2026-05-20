@@ -1,0 +1,78 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: openwrt-gateway-reconcile
+  namespace: openwrt-ops
+  annotations:
+    argocd.argoproj.io/sync-wave: "2"
+spec:
+  schedule: "*/30 * * * *"
+  concurrencyPolicy: Forbid
+  successfulJobsHistoryLimit: 1
+  failedJobsHistoryLimit: 2
+  jobTemplate:
+    spec:
+      backoffLimit: 1
+      template:
+        spec:
+          restartPolicy: Never
+          containers:
+            - name: ansible
+              image: python:3.12-alpine
+              imagePullPolicy: IfNotPresent
+              env:
+                - name: DEVICE_NAME
+                  value: gateway
+                - name: DESIRED_HOSTNAME
+                  value: OpenWrt-Gateway
+                - name: OPENWRT_MODE
+                  value: audit
+                - name: OPENWRT_HOST
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: host
+                - name: OPENWRT_PORT
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: port
+                - name: OPENWRT_USER
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: username
+                - name: SSH_PRIVATE_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gateway-auth
+                      key: ssh_private_key
+              command:
+                - /bin/sh
+                - -ec
+                - |
+                  apk add --no-cache openssh-client gcc musl-dev libffi-dev
+                  pip install --no-cache-dir ansible-core==2.17.3
+                  mkdir -p /work/.ssh
+                  printf "%s" "$SSH_PRIVATE_KEY" > /work/.ssh/id_ed25519
+                  chmod 600 /work/.ssh/id_ed25519
+                  cat >/work/inventory.yml <<EOF
+                  all:
+                    hosts:
+                      ${DEVICE_NAME}:
+                        ansible_host: ${OPENWRT_HOST}
+                        ansible_port: ${OPENWRT_PORT}
+                        ansible_user: ${OPENWRT_USER}
+                        ansible_connection: ssh
+                        ansible_private_key_file: /work/.ssh/id_ed25519
+                        desired_hostname: ${DESIRED_HOSTNAME}
+                        openwrt_mode: ${OPENWRT_MODE}
+                  EOF
+                  ANSIBLE_CONFIG=/automation/ansible.cfg ansible-playbook -i /work/inventory.yml /automation/openwrt-playbook.yml --limit "${DEVICE_NAME}"
+              volumeMounts:
+                - name: automation
+                  mountPath: /automation
+          volumes:
+            - name: automation
+              configMap:
+                name: openwrt-ansible-automation

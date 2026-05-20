@@ -13,15 +13,17 @@ spec:
     namespace: whoami
     server: https://kubernetes.default.svc
   sources:
-    - repoURL: https://harrytang.github.io/helm-charts/ # <<<< the helm chart repository
+    - repoURL: https://harrytang.github.io/helm-charts/ # <<<< the helm chart repository (all apps should deploy from Helm charts)
       targetRevision: 0.1.2 # <<<< the version of the chart to deploy
       chart: whoami # <<<< the name of the chart to deploy
       helm:
         valueFiles:
-          - $values/values/whoami/values.yaml # <<<< the values file to use for the helm chart
+          - $values/values/whoami/values.yaml # <<<< always use values/<app-name>/values.yaml for customization
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # <<<< the git repository containing the values file
       targetRevision: HEAD
       ref: values
+  # For apps that need a database, prefer the existing PostgreSQL instance.
+  # Configure DB connection values in values/<app-name>/values.yaml and source credentials from Kubernetes Secrets.
   project: default
   syncPolicy:
     automated:

@@ -131,6 +131,13 @@ This consolidates the repo into a single file suitable for LLM prompts. All cont
 
 All applications are deployed through Argo CD using a two-file pattern: a Helm values file and an Argo CD Application manifest.
 
+### Repository Standards
+
+- Deploy Kubernetes applications as Helm charts.
+- Store customization only in per-app values files at `values/<app-name>/values.yaml`.
+- For new applications requiring a database, reuse the existing PostgreSQL instance (CloudNativePG) instead of deploying a separate database by default.
+- Only create a dedicated database instance when there is a clear isolation or performance requirement.
+
 ### Application Deployment Pattern
 
 #### 1. Create Values File
@@ -163,6 +170,7 @@ ingress:
   - Set `className: 'my-traefik'` for all apps (cluster standard)
   - Configure DNS hostnames matching your Cloudflare application routes
   - For domain setup details, see [cloudflare application routes guide](tutorials/cloudflare/application-routes/configure-app-routes.md)
+- **database**: Prefer connection settings that point to the shared PostgreSQL cluster (host/db/user/password from Kubernetes Secret via External Secrets)
 
 #### 2. Create Application Manifest
 

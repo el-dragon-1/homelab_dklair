@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: openwrt-ansible-automation
+  namespace: openwrt-ops
+data:
+  ansible.cfg: |
+    [defaults]
+    host_key_checking = False
+    interpreter_python = auto_silent
+    timeout = 20
+    retry_files_enabled = False
+
+    [ssh_connection]
+    pipelining = True
+    ssh_args = -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null
+  openwrt-playbook.yml: |
+    ---
+    - name: OpenWRT reconcile
+      hosts: all
+      gather_facts: false
+      vars:
+        # Modes:
+        # - audit: collect state and validate connectivity only.
+        # - enforce: apply desired hostname via UCI and commit.
+        openwrt_mode: "audit"
+      tasks:
+        - name: Read OpenWRT release information
+          ansible.builtin.raw: cat /etc/openwrt_release
+          register: openwrt_release
+          changed_when: false
+
+        - name: Show target version
+          ansible.builtin.debug:
+            msg: "{{ inventory_hostname }} release: {{ openwrt_release.stdout_lines | default([]) }}"
+
+        - name: Validate UCI is available
+          ansible.builtin.raw: command -v uci
+          changed_when: false
+
+        - name: Capture running UCI config snapshot
+          ansible.builtin.raw: uci export
+          register: uci_export
+          changed_when: false
+
+        - name: Print reconciliation mode
+          ansible.builtin.debug:
+            msg: "Running {{ openwrt_mode }} mode for {{ inventory_hostname }}"
+
+        - name: Apply desired hostname in enforce mode
+          ansible.builtin.raw: |
+            uci set system.@system[0].hostname='{{ desired_hostname }}'
+            uci commit system
+          when: openwrt_mode == "enforce"
+
+        - name: Confirm hostname after enforcement
+          ansible.builtin.raw: uci get system.@system[0].hostname
+          register: current_hostname
+          changed_when: false
+
+        - name: Show current hostname
+          ansible.builtin.debug:
+            msg: "{{ inventory_hostname }} hostname: {{ current_hostname.stdout | trim }}"
