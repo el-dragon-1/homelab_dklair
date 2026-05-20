@@ -19,8 +19,6 @@ data:
     - name: OpenWRT reconcile
       hosts: all
       gather_facts: false
-      vars:
-        openwrt_mode: "audit"
       tasks:
         - name: Read OpenWRT release information
           ansible.builtin.raw: cat /etc/openwrt_release
