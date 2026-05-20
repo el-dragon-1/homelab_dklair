@@ -54,7 +54,8 @@ spec:
                   apk add --no-cache openssh-client gcc musl-dev libffi-dev
                   pip install --no-cache-dir ansible-core==2.17.3
                   mkdir -p /work/.ssh
-                  printf "%s" "$SSH_PRIVATE_KEY" > /work/.ssh/id_ed25519
+                  # Handle keys pasted in Vault UI with either real newlines or escaped \n.
+                  printf "%b" "$SSH_PRIVATE_KEY" | tr -d '\r' > /work/.ssh/id_ed25519
                   chmod 600 /work/.ssh/id_ed25519
                   cat >/work/inventory.yml <<EOF
                   all:
