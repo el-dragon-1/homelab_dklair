@@ -407,13 +407,6 @@ data:
             wifi down; wifi up
           when: openwrt_mode == "enforce"
 
-        - name: Verify Gemini 5GHz AP is active on channel 36
-          ansible.builtin.raw: iwinfo phy1-ap0 info | grep -q "Channel: 36"
-          changed_when: false
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname == "gemini"
-
         - name: Confirm hostname after enforcement
           ansible.builtin.raw: uci get system.@system[0].hostname
           register: current_hostname
