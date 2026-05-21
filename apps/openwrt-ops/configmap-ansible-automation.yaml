@@ -225,7 +225,6 @@ data:
               option ft_over_ds '0'
               option ieee80211k '1'
               option ieee80211v '1'
-              option bss_transition '1'
 
             config wifi-iface 'wifinet2'
               option device 'radio1'
@@ -242,7 +241,6 @@ data:
               option ft_over_ds '0'
               option ieee80211k '1'
               option ieee80211v '1'
-              option bss_transition '1'
             EOF
           when:
             - openwrt_mode == "enforce"
