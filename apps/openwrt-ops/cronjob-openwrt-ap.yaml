@@ -74,33 +74,33 @@ spec:
                     printf "%s" "$KEY" | tr -d '\r\n' | base64 -d > /work/.ssh/id_ed25519
                   fi
                   chmod 600 /work/.ssh/id_ed25519
-                    python - <<'PY'
-                    import json
-                    import os
+                  python - <<'PY'
+                  import json
+                  import os
 
-                    host = os.environ["DEVICE_NAME"]
-                    inventory = {
-                      "all": {
-                        "hosts": {
-                          host: {
-                            "ansible_host": os.environ["OPENWRT_HOST"],
-                            "ansible_port": int(os.environ["OPENWRT_PORT"]),
-                            "ansible_user": os.environ["OPENWRT_USER"],
-                            "ansible_connection": "ssh",
-                            "ansible_private_key_file": "/work/.ssh/id_ed25519",
-                            "desired_hostname": os.environ["DESIRED_HOSTNAME"],
-                            "openwrt_mode": os.environ["OPENWRT_MODE"],
-                            "mesh_key": os.environ["MESH_KEY"],
-                            "smx_homex_ssid_key": os.environ["SMX_HOMEX_SSID_KEY"],
-                          }
+                  host = os.environ["DEVICE_NAME"]
+                  inventory = {
+                    "all": {
+                      "hosts": {
+                        host: {
+                          "ansible_host": os.environ["OPENWRT_HOST"],
+                          "ansible_port": int(os.environ["OPENWRT_PORT"]),
+                          "ansible_user": os.environ["OPENWRT_USER"],
+                          "ansible_connection": "ssh",
+                          "ansible_private_key_file": "/work/.ssh/id_ed25519",
+                          "desired_hostname": os.environ["DESIRED_HOSTNAME"],
+                          "openwrt_mode": os.environ["OPENWRT_MODE"],
+                          "mesh_key": os.environ["MESH_KEY"],
+                          "smx_homex_ssid_key": os.environ["SMX_HOMEX_SSID_KEY"],
                         }
                       }
                     }
+                  }
 
-                    with open("/work/inventory.json", "w", encoding="utf-8") as f:
-                      json.dump(inventory, f)
-                    PY
-                    ANSIBLE_CONFIG=/automation/ansible.cfg ansible-playbook -i /work/inventory.json /automation/openwrt-playbook.yml --limit "${DEVICE_NAME}"
+                  with open("/work/inventory.json", "w", encoding="utf-8") as f:
+                    json.dump(inventory, f)
+                  PY
+                  ANSIBLE_CONFIG=/automation/ansible.cfg ansible-playbook -i /work/inventory.json /automation/openwrt-playbook.yml --limit "${DEVICE_NAME}"
               volumeMounts:
                 - name: automation
                   mountPath: /automation
