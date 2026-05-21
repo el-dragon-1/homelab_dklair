@@ -1,0 +1,24 @@
+
+config wifi-device 'radio0'
+	option type 'mac80211'
+	option path 'platform/soc/18000000.wifi'
+	option disabled '1'
+
+config wifi-device 'radio1'
+	option type 'mac80211'
+	option path 'platform/soc/18000000.wifi+1'
+	option band '5g'
+	option channel '36'
+	option htmode 'HE80'
+	option cell_density '0'
+
+config wifi-iface 'wifinet0'
+	option device 'radio1'
+	option mode 'mesh'
+	option encryption 'sae'
+	option mesh_id 'smz5mesh'
+	option mesh_fwding '1'
+	option mesh_rssi_threshold '0'
+	option network 'lan'
+	option key 'mesh_key'
+
