@@ -248,10 +248,9 @@ data:
 
         - name: Ensure wpad-mesh-wolfssl is installed on Orchid (enforce mode)
           ansible.builtin.raw: |
-            if ! opkg list-installed | grep -q wpad-mesh; then
-              opkg update
-              opkg remove wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls || true
-              opkg install wpad-mesh-wolfssl
+            if ! apk list --installed 2>/dev/null | grep -q wpad-mesh; then
+              apk del wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls 2>/dev/null || true
+              apk add wpad-mesh-wolfssl
             fi
           when:
             - openwrt_mode == "enforce"
@@ -377,7 +376,7 @@ data:
           ansible.builtin.raw: |
             /etc/init.d/network reload || true
             /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
-            wifi reload || wifi up || true
+            wifi down; wifi up
           when: openwrt_mode == "enforce"
 
         - name: Confirm hostname after enforcement
