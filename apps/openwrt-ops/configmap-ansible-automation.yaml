@@ -274,6 +274,7 @@ data:
 
         - name: Install wpad-mesh-wolfssl on Orchid from local package
           ansible.builtin.raw: |
+            sed -i '/^wpad-basic$/d;/^wpad-basic-wolfssl$/d;/^wpad-basic-openssl$/d;/^wpad-basic-mbedtls$/d' /etc/apk/world || true
             apk del wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls 2>/dev/null || true
             apk add --allow-untrusted /tmp/wpad-mesh-wolfssl.apk
           when:
