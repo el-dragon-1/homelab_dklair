@@ -62,10 +62,20 @@ The control plane consists of three Raspberry Pi 4 Model B units configured as a
 
 ## Network & Power
 - **Switch**: Netgear GS108PE 8-Port Gigabit PoE+ Switch
-- **Gateway**: Bananapi R3 (OpenWRT 25.12.4, DHCP enabled, static IPs assigned)
-- **Access Point**: Bananapi R3 (OpenWRT 25.12.4, backhauling on 5ghz Mesh Point to Gateway.)
 - **UPS**: APC Back-UPS Pro 1500VA
 - **Topology**: All nodes on 192.168.4.0/24 VLAN
+
+### OpenWRT Devices (managed via Ansible/ArgoCD GitOps)
+
+| Name | Hardware | IP | Role |
+|------|----------|----|------|
+| gateway | Bananapi R3 | 192.168.4.1 | Router, DHCP server, 802.11s mesh root |
+| ap | Bananapi R3 | 192.168.4.2 | 802.11s mesh point, 5GHz backhaul to gateway |
+| hades | Cudy M3000 (MediaTek MT7981) | 192.168.4.3 | WiFi AP, serves client SSIDs (2.4GHz + 5GHz) |
+| gemini | Cudy M3000 (MediaTek MT7981) | 192.168.4.4 | WiFi AP, serves client SSIDs (2.4GHz + 5GHz ch36, 802.11ax/HE80) |
+| orchid | Cudy M3000 (MediaTek MT7981) | 192.168.4.5 | 802.11s mesh point (wpad-mesh-wolfssl) |
+
+All OpenWRT devices run OpenWRT 25.12.4 and are reconciled via Ansible CronJobs (`openwrt-ops` namespace).
 
 ## Cluster Management
 - **Orchestration**: Kubernetes 1.34.6+k3s1
