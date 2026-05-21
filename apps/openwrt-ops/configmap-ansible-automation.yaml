@@ -246,6 +246,17 @@ data:
             - openwrt_mode == "enforce"
             - inventory_hostname == "gemini"
 
+        - name: Ensure wpad-mesh-wolfssl is installed on Orchid (enforce mode)
+          ansible.builtin.raw: |
+            if ! opkg list-installed | grep -q wpad-mesh; then
+              opkg update
+              opkg remove wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls || true
+              opkg install wpad-mesh-wolfssl
+            fi
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname == "orchid"
+
         - name: Render Orchid wireless config (enforce mode)
           ansible.builtin.raw: |
             cat >/tmp/wireless.uci <<'EOF'
