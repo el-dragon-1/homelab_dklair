@@ -246,15 +246,41 @@ data:
             - openwrt_mode == "enforce"
             - inventory_hostname == "gemini"
 
-        - name: Ensure wpad-mesh-wolfssl is installed on Orchid (enforce mode)
-          ansible.builtin.raw: |
-            if ! apk list --installed 2>/dev/null | grep -q wpad-mesh; then
-              apk del wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls 2>/dev/null || true
-              apk add wpad-mesh-wolfssl
-            fi
+        - name: Check if wpad-mesh-wolfssl is installed on Orchid
+          ansible.builtin.raw: apk list --installed 2>/dev/null | grep -q wpad-mesh && echo "installed" || echo "missing"
+          register: wpad_installed
+          changed_when: false
           when:
             - openwrt_mode == "enforce"
             - inventory_hostname == "orchid"
+
+        - name: Download wpad-mesh-wolfssl on controller and push to Orchid via SCP
+          delegate_to: localhost
+          ansible.builtin.shell: |
+            set -e
+            PKGS_URL="https://downloads.openwrt.org/releases/25.12.4/packages/aarch64_cortex-a53/base"
+            PKG=$(wget -qO- "${PKGS_URL}/" | grep -oE 'wpad-mesh-wolfssl[^"<> ]+\.apk' | head -1)
+            [ -n "$PKG" ] || { echo "ERROR: wpad-mesh-wolfssl not found in package index"; exit 1; }
+            wget -q -O /tmp/wpad-mesh-wolfssl.apk "${PKGS_URL}/${PKG}"
+            scp -i /work/.ssh/id_ed25519 -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null \
+              -P {{ ansible_port }} \
+              /tmp/wpad-mesh-wolfssl.apk \
+              {{ ansible_user }}@{{ ansible_host }}:/tmp/wpad-mesh-wolfssl.apk
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname == "orchid"
+            - wpad_installed.stdout is defined
+            - '"missing" in wpad_installed.stdout'
+
+        - name: Install wpad-mesh-wolfssl on Orchid from local package
+          ansible.builtin.raw: |
+            apk del wpad-basic-wolfssl wpad-basic wpad-basic-openssl wpad-basic-mbedtls 2>/dev/null || true
+            apk add --allow-untrusted /tmp/wpad-mesh-wolfssl.apk
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname == "orchid"
+            - wpad_installed.stdout is defined
+            - '"missing" in wpad_installed.stdout'
 
         - name: Render Orchid wireless config (enforce mode)
           ansible.builtin.raw: |
