@@ -198,6 +198,7 @@ data:
               option type 'mac80211'
               option path 'platform/soc/18000000.wifi+1'
               option band '5g'
+              option country 'US'
               option channel '149'
               option htmode 'HE80'
               option cell_density '0'
