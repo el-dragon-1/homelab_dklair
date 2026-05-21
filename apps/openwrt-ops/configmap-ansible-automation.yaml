@@ -157,7 +157,7 @@ data:
               option ft_over_ds '0'
               option ieee80211k '1'
               option ieee80211v '1'
-              option bss_transition '1'
+              # option bss_transition removed (invalid for hostapd)
 
             config wifi-iface 'wifinet2'
               option device 'radio1'
@@ -174,7 +174,7 @@ data:
               option ft_over_ds '0'
               option ieee80211k '1'
               option ieee80211v '1'
-              option bss_transition '1'
+              # option bss_transition removed (invalid for hostapd)
             EOF
           when:
             - openwrt_mode == "enforce"
