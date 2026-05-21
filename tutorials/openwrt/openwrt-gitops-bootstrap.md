@@ -38,7 +38,7 @@ Each path must contain:
   - `username`
   - `ssh_private_key`
   - `mesh_key`
-  - `smx_homex_ssid_key`
+  - `smz_homex_ssid_key`
 
 The UCI files in `openwrt/baseline/.../wireless.uci` already use these placeholder names, so the playbook can inject them from Vault at runtime.
 

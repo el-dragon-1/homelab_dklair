@@ -1,12 +1,12 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: openwrt-gateway-reconcile
+  name: openwrt-gemini-reconcile
   namespace: openwrt-ops
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
-  schedule: "*/30 * * * *"
+  schedule: "21,51 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
@@ -22,36 +22,46 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: DEVICE_NAME
-                  value: gateway
+                  value: gemini
                 - name: DESIRED_HOSTNAME
-                  value: OpenWrt-Gateway
+                  value: OpenWrt-Gemini
                 - name: OPENWRT_MODE
                   value: enforce
                 - name: OPENWRT_HOST
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-gemini-auth
                       key: host
                 - name: OPENWRT_PORT
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-gemini-auth
                       key: port
                 - name: OPENWRT_USER
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-gemini-auth
                       key: username
                 - name: SSH_PRIVATE_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-gemini-auth
                       key: ssh_private_key
-                - name: MESH_KEY
+                - name: OPENWRT_SSID_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
-                      key: mesh_key
+                      name: openwrt-gemini-auth
+                      key: openwrt_ssid_key
+                - name: SMZ_HOMEX_SSID_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gemini-auth
+                      key: smz_homex_ssid_key
+                - name: SMZ_GUEST_SSID_KEY
+                  valueFrom:
+                    secretKeyRef:
+                      name: openwrt-gemini-auth
+                      key: smz_guest_ssid_key
               command:
                 - /bin/sh
                 - -ec
@@ -85,7 +95,9 @@ spec:
                           "ansible_private_key_file": "/work/.ssh/id_ed25519",
                           "desired_hostname": os.environ["DESIRED_HOSTNAME"],
                           "openwrt_mode": os.environ["OPENWRT_MODE"],
-                          "mesh_key": os.environ["MESH_KEY"],
+                          "openwrt_ssid_key": os.environ["OPENWRT_SSID_KEY"],
+                          "smz_homex_ssid_key": os.environ["SMZ_HOMEX_SSID_KEY"],
+                          "smz_guest_ssid_key": os.environ["SMZ_GUEST_SSID_KEY"],
                         }
                       }
                     }

@@ -1,12 +1,12 @@
 apiVersion: batch/v1
 kind: CronJob
 metadata:
-  name: openwrt-gateway-reconcile
+  name: openwrt-orchid-reconcile
   namespace: openwrt-ops
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
-  schedule: "*/30 * * * *"
+  schedule: "28,58 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
   failedJobsHistoryLimit: 2
@@ -22,35 +22,35 @@ spec:
               imagePullPolicy: IfNotPresent
               env:
                 - name: DEVICE_NAME
-                  value: gateway
+                  value: orchid
                 - name: DESIRED_HOSTNAME
-                  value: OpenWrt-Gateway
+                  value: OpenWrt-Orchid
                 - name: OPENWRT_MODE
                   value: enforce
                 - name: OPENWRT_HOST
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-orchid-auth
                       key: host
                 - name: OPENWRT_PORT
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-orchid-auth
                       key: port
                 - name: OPENWRT_USER
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-orchid-auth
                       key: username
                 - name: SSH_PRIVATE_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-orchid-auth
                       key: ssh_private_key
                 - name: MESH_KEY
                   valueFrom:
                     secretKeyRef:
-                      name: openwrt-gateway-auth
+                      name: openwrt-orchid-auth
                       key: mesh_key
               command:
                 - /bin/sh

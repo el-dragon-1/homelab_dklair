@@ -4,6 +4,12 @@ resources:
   - namespace.yaml
   - externalsecret-openwrt-gateway.yaml
   - externalsecret-openwrt-ap.yaml
+  - externalsecret-openwrt-hades.yaml
+  - externalsecret-openwrt-gemini.yaml
+  - externalsecret-openwrt-orchid.yaml
   - configmap-ansible-automation.yaml
   - cronjob-openwrt-gateway.yaml
   - cronjob-openwrt-ap.yaml
+  - cronjob-openwrt-hades.yaml
+  - cronjob-openwrt-gemini.yaml
+  - cronjob-openwrt-orchid.yaml

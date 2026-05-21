@@ -52,11 +52,6 @@ spec:
                     secretKeyRef:
                       name: openwrt-ap-auth
                       key: mesh_key
-                - name: SMX_HOMEX_SSID_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: openwrt-ap-auth
-                      key: smx_homex_ssid_key
               command:
                 - /bin/sh
                 - -ec
@@ -91,7 +86,6 @@ spec:
                           "desired_hostname": os.environ["DESIRED_HOSTNAME"],
                           "openwrt_mode": os.environ["OPENWRT_MODE"],
                           "mesh_key": os.environ["MESH_KEY"],
-                          "smx_homex_ssid_key": os.environ["SMX_HOMEX_SSID_KEY"],
                         }
                       }
                     }
