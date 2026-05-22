@@ -12,7 +12,9 @@ spec:
   failedJobsHistoryLimit: 2
   jobTemplate:
     spec:
+      activeDeadlineSeconds: 900
       backoffLimit: 1
+      ttlSecondsAfterFinished: 600
       template:
         spec:
           restartPolicy: Never

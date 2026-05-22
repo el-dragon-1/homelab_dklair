@@ -211,6 +211,16 @@ configs:
     application.sync.impersonation.enabled: false
     create: true
     exec.enabled: false
+    resource.customizations.health.batch_CronJob: |
+      hs = {}
+      if obj.spec and obj.spec.suspend == true then
+        hs.status = "Suspended"
+        hs.message = "CronJob is suspended"
+        return hs
+      end
+      hs.status = "Healthy"
+      hs.message = "CronJob is healthy"
+      return hs
     resource.customizations.ignoreResourceUpdates.ConfigMap: |
       jqPathExpressions:
         # Ignore the cluster-autoscaler status
