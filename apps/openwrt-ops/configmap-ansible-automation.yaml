@@ -48,6 +48,27 @@ data:
             uci commit system
           when: openwrt_mode == "enforce"
 
+        - name: Ensure gateway WireGuard WAN redirect (enforce mode)
+          ansible.builtin.raw: |
+            cat >/tmp/gateway-firewall-batch.uci <<'EOF'
+            delete firewall.pivpn
+            set firewall.pivpn=redirect
+            set firewall.pivpn.name='pivpn-wireguard'
+            set firewall.pivpn.src='wan'
+            set firewall.pivpn.dest='lan'
+            set firewall.pivpn.proto='udp'
+            set firewall.pivpn.src_dport='{{ wireguard_lb_port }}'
+            set firewall.pivpn.dest_ip='{{ wireguard_lb_ip }}'
+            set firewall.pivpn.dest_port='{{ wireguard_lb_port }}'
+            set firewall.pivpn.target='DNAT'
+            set firewall.pivpn.enabled='1'
+            EOF
+            uci batch < /tmp/gateway-firewall-batch.uci
+            uci commit firewall
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname == "gateway"
+
         - name: Render gateway wireless config (enforce mode)
           ansible.builtin.raw: |
             cat >/tmp/wireless.uci <<'EOF'

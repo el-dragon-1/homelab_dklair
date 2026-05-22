@@ -27,6 +27,10 @@ spec:
                   value: OpenWrt-Gateway
                 - name: OPENWRT_MODE
                   value: enforce
+                - name: WIREGUARD_LB_IP
+                  value: 192.168.4.101
+                - name: WIREGUARD_LB_PORT
+                  value: "51820"
                 - name: OPENWRT_HOST
                   valueFrom:
                     secretKeyRef:
@@ -86,6 +90,8 @@ spec:
                           "desired_hostname": os.environ["DESIRED_HOSTNAME"],
                           "openwrt_mode": os.environ["OPENWRT_MODE"],
                           "mesh_key": os.environ["MESH_KEY"],
+                          "wireguard_lb_ip": os.environ["WIREGUARD_LB_IP"],
+                          "wireguard_lb_port": int(os.environ["WIREGUARD_LB_PORT"]),
                         }
                       }
                     }

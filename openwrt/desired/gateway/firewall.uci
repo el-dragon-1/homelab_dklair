@@ -1,2 +1,15 @@
-# Desired state for gateway firewall configuration
-# Populate from the sanitized baseline after you decide what GitOps should enforce.
+# Desired state for gateway WAN VPN redirect.
+# This file intentionally stores non-secret policy only.
+
+package firewall
+
+config redirect
+	option name 'pivpn-wireguard'
+	option src 'wan'
+	option src_dport '51820'
+	option dest 'lan'
+	option dest_ip '192.168.4.101'
+	option dest_port '51820'
+	option proto 'udp'
+	option target 'DNAT'
+	option enabled '1'
