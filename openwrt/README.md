@@ -11,6 +11,9 @@ This directory holds sanitized OpenWRT configuration snapshots and the desired s
 
 - `gateway/`: Bananapi R3 gateway
 - `ap/`: Bananapi R3 access point with mesh backhaul
+- `hades/`: Bananapi R3 AP with LAN, IoT, and guest SSIDs
+- `gemini/`: Bananapi R3 AP with LAN, IoT, and guest SSIDs
+- `orchid/`: Bananapi R3 mesh AP
 
 ## File Convention
 
@@ -30,6 +33,9 @@ Keep all secrets for each device in a single root path so the current ExternalSe
 
 - `homelab/openwrt/gateway`
 - `homelab/openwrt/ap`
+- `homelab/openwrt/hades`
+- `homelab/openwrt/gemini`
+- `homelab/openwrt/orchid`
 
 For each device path, store:
 

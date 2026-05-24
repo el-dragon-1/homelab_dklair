@@ -1,0 +1,45 @@
+package firewall
+
+config zone 'iot_zone'
+  option name 'iot_zone'
+  list network 'iot'
+  option input 'ACCEPT'
+  option output 'ACCEPT'
+  option forward 'ACCEPT'
+
+config zone 'guest'
+  option name 'guest'
+  list network 'smz_guest'
+  option input 'ACCEPT'
+  option output 'ACCEPT'
+  option forward 'ACCEPT'
+
+config forwarding 'fwd_iot_wan'
+  option src 'iot_zone'
+  option dest 'wan'
+
+config forwarding 'fwd_guest_wan'
+  option src 'guest'
+  option dest 'wan'
+
+config rule 'allow_mdns'
+  option name 'Allow mDNS'
+  option src 'lan'
+  option dest 'lan'
+  list proto 'udp'
+  option src_port '5353'
+  list dest_ip '224.0.0.251'
+  option dest_port '5353'
+  option target 'ACCEPT'
+
+config rule 'block_iot_lan'
+  option name 'Block IoT to LAN'
+  option src 'iot_zone'
+  option dest 'lan'
+  option proto 'all'
+  option family 'ipv4'
+  option target 'DROP'
+
+config forwarding 'fwd_lan_iot'
+  option src 'lan'
+  option dest 'iot_zone'

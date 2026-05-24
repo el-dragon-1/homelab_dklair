@@ -77,6 +77,8 @@ The control plane consists of three Raspberry Pi 4 Model B units configured as a
 
 All OpenWRT devices run OpenWRT 25.12.4 and are reconciled via Ansible CronJobs (`openwrt-ops` namespace).
 
+`openwrt-ops` reconciliation jobs use a 15-minute runtime cap (`activeDeadlineSeconds: 900`) and 10-minute post-completion cleanup TTL (`ttlSecondsAfterFinished: 600`) to avoid stale running jobs.
+
 ## Cluster Management
 - **Orchestration**: Kubernetes 1.34.6+k3s1
 - **CNI**: Flannel (Default K3S CNI)

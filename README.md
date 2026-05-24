@@ -138,6 +138,15 @@ All applications are deployed through Argo CD using a two-file pattern: a Helm v
 - For new applications requiring a database, reuse the existing PostgreSQL instance (CloudNativePG) instead of deploying a separate database by default.
 - Only create a dedicated database instance when there is a clear isolation or performance requirement.
 
+### OpenWRT Ops Runtime Guardrails
+
+The `openwrt-ops` CronJobs include runtime safeguards to prevent stale long-running jobs from degrading application health:
+
+- `activeDeadlineSeconds: 900` (hard 15-minute runtime cap)
+- `ttlSecondsAfterFinished: 600` (cleanup finished Jobs after 10 minutes)
+
+Argo CD is configured with a CronJob health customization (`resource.customizations.health.batch_CronJob`) in [tutorials/argocd/values.yaml](tutorials/argocd/values.yaml) so `openwrt-ops` health reflects operational state accurately.
+
 ### Application Deployment Pattern
 
 #### 1. Create Values File

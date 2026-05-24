@@ -133,140 +133,32 @@ data:
             - openwrt_mode == "enforce"
             - inventory_hostname == "ap"
 
-        - name: Render Hades wireless config (enforce mode)
+        - name: Stage desired wireless config for hades/gemini/orchid
           ansible.builtin.raw: |
             cat >/tmp/wireless.uci <<'EOF'
-            package wireless
-
-            config wifi-device 'radio0'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi'
-              option band '2g'
-              option channel '1'
-              option htmode 'HE20'
-              option cell_density '0'
-              option beacon_int '100'
-
-            config wifi-device 'radio1'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi+1'
-              option band '5g'
-              option channel '36'
-              option htmode 'HE80'
-              option cell_density '0'
-
-            config wifi-iface 'wifinet0'
-              option device 'radio0'
-              option mode 'ap'
-              option ssid 'OpenWrt'
-              option encryption 'psk2+ccmp'
-              option network 'iot'
-              option key '{{ openwrt_ssid_key }}'
-              option dtim_period '1'
-
-            config wifi-iface 'wifinet1'
-              option device 'radio1'
-              option mode 'ap'
-              option ssid 'smz_homex'
-              option encryption 'sae-mixed'
-              option key '{{ smz_homex_ssid_key }}'
-              option network 'lan'
-              option ocv '0'
-              option ieee80211r '1'
-              option ft_psk_generate_local '1'
-              option mobility_domain '1234'
-              option ft_over_ds '0'
-              option ieee80211k '1'
-              option ieee80211v '1'
-              # option bss_transition removed (invalid for hostapd)
-
-            config wifi-iface 'wifinet2'
-              option device 'radio1'
-              option mode 'ap'
-              option ssid 'smz_guest'
-              option encryption 'sae-mixed'
-              option key '{{ smz_guest_ssid_key }}'
-              option network 'smz_guest'
-              option isolate '1'
-              option dtim_period '1'
-              option ieee80211r '1'
-              option ft_psk_generate_local '1'
-              option mobility_domain '5678'
-              option ft_over_ds '0'
-              option ieee80211k '1'
-              option ieee80211v '1'
-              # option bss_transition removed (invalid for hostapd)
+            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/wireless.uci') | trim }}
             EOF
           when:
             - openwrt_mode == "enforce"
-            - inventory_hostname == "hades"
+            - inventory_hostname in ["hades", "gemini", "orchid"]
 
-        - name: Render Gemini wireless config (enforce mode)
+        - name: Stage desired network config for hades/gemini
           ansible.builtin.raw: |
-            cat >/tmp/wireless.uci <<'EOF'
-            package wireless
-
-            config wifi-device 'radio0'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi'
-              option band '2g'
-              option channel '6'
-              option htmode 'HE20'
-              option cell_density '0'
-              option beacon_int '100'
-
-            config wifi-device 'radio1'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi+1'
-              option band '5g'
-              option country 'US'
-              option channel '36'
-              option htmode 'HE80'
-              option cell_density '0'
-
-            config wifi-iface 'wifinet0'
-              option device 'radio0'
-              option mode 'ap'
-              option ssid 'OpenWrt'
-              option encryption 'psk2+ccmp'
-              option network 'iot'
-              option key '{{ openwrt_ssid_key }}'
-              option dtim_period '1'
-
-            config wifi-iface 'wifinet1'
-              option device 'radio1'
-              option mode 'ap'
-              option ssid 'smz_homex'
-              option encryption 'sae-mixed'
-              option key '{{ smz_homex_ssid_key }}'
-              option network 'lan'
-              option ocv '0'
-              option ieee80211r '1'
-              option ft_psk_generate_local '1'
-              option mobility_domain '1234'
-              option ft_over_ds '0'
-              option ieee80211k '1'
-              option ieee80211v '1'
-
-            config wifi-iface 'wifinet2'
-              option device 'radio1'
-              option mode 'ap'
-              option ssid 'smz_guest'
-              option encryption 'sae-mixed'
-              option key '{{ smz_guest_ssid_key }}'
-              option network 'smz_guest'
-              option isolate '1'
-              option dtim_period '1'
-              option ieee80211r '1'
-              option ft_psk_generate_local '1'
-              option mobility_domain '5678'
-              option ft_over_ds '0'
-              option ieee80211k '1'
-              option ieee80211v '1'
+            cat >/tmp/network.uci <<'EOF'
+            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/network.uci') | trim }}
             EOF
           when:
             - openwrt_mode == "enforce"
-            - inventory_hostname == "gemini"
+            - inventory_hostname in ["hades", "gemini"]
+
+        - name: Stage desired firewall config for hades/gemini
+          ansible.builtin.raw: |
+            cat >/tmp/firewall.uci <<'EOF'
+            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/firewall.uci') | trim }}
+            EOF
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname in ["hades", "gemini"]
 
         - name: Check if wpad-mesh-wolfssl is installed on Orchid
           ansible.builtin.raw: apk list --installed 2>/dev/null | grep -q wpad-mesh && echo "installed" || echo "missing"
@@ -305,118 +197,18 @@ data:
             - wpad_installed.stdout is defined
             - '"missing" in wpad_installed.stdout'
 
-        - name: Render Orchid wireless config (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/wireless.uci <<'EOF'
-            package wireless
-
-            config wifi-device 'radio0'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi'
-              option disabled '1'
-
-            config wifi-device 'radio1'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi+1'
-              option band '5g'
-              option channel '36'
-              option htmode 'HE80'
-              option cell_density '0'
-
-            config wifi-iface 'wifinet0'
-              option device 'radio1'
-              option mode 'mesh'
-              option encryption 'sae'
-              option mesh_id 'smz5mesh'
-              option mesh_fwding '1'
-              option mesh_rssi_threshold '0'
-              option network 'lan'
-              option key '{{ mesh_key }}'
-            EOF
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname == "orchid"
-
         - name: Import wireless config (enforce mode)
           ansible.builtin.raw: uci import wireless < /tmp/wireless.uci && uci commit wireless
           when: openwrt_mode == "enforce"
 
-        - name: Ensure hades/gemini network interfaces for SSIDs (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/network-batch.uci <<'EOF'
-            set network.iot=interface
-            set network.iot.proto='static'
-            set network.iot.ipaddr='10.1.1.1'
-            set network.iot.netmask='255.255.255.0'
-            set network.iot.igmp_snooping='0'
-
-            set network.smz_guest=interface
-            set network.smz_guest.proto='static'
-            set network.smz_guest.ipaddr='10.2.2.1'
-            set network.smz_guest.netmask='255.255.255.0'
-            EOF
-            uci batch < /tmp/network-batch.uci
-            uci commit network
+        - name: Import network config for hades/gemini (enforce mode)
+          ansible.builtin.raw: uci import network < /tmp/network.uci && uci commit network
           when:
             - openwrt_mode == "enforce"
             - inventory_hostname in ["hades", "gemini"]
 
-        - name: Ensure hades/gemini firewall zones and rules for SSIDs (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/firewall-batch.uci <<'EOF'
-            delete firewall.iot_zone
-            set firewall.iot_zone=zone
-            set firewall.iot_zone.name='iot_zone'
-            add_list firewall.iot_zone.network='iot'
-            set firewall.iot_zone.input='ACCEPT'
-            set firewall.iot_zone.output='ACCEPT'
-            set firewall.iot_zone.forward='ACCEPT'
-
-            delete firewall.guest
-            set firewall.guest=zone
-            set firewall.guest.name='guest'
-            add_list firewall.guest.network='smz_guest'
-            set firewall.guest.input='ACCEPT'
-            set firewall.guest.output='ACCEPT'
-            set firewall.guest.forward='ACCEPT'
-
-            delete firewall.fwd_iot_wan
-            set firewall.fwd_iot_wan=forwarding
-            set firewall.fwd_iot_wan.src='iot_zone'
-            set firewall.fwd_iot_wan.dest='wan'
-
-            delete firewall.fwd_guest_wan
-            set firewall.fwd_guest_wan=forwarding
-            set firewall.fwd_guest_wan.src='guest'
-            set firewall.fwd_guest_wan.dest='wan'
-
-            delete firewall.allow_mdns
-            set firewall.allow_mdns=rule
-            set firewall.allow_mdns.name='Allow mDNS'
-            set firewall.allow_mdns.src='lan'
-            set firewall.allow_mdns.dest='lan'
-            add_list firewall.allow_mdns.proto='udp'
-            set firewall.allow_mdns.src_port='5353'
-            add_list firewall.allow_mdns.dest_ip='224.0.0.251'
-            set firewall.allow_mdns.dest_port='5353'
-            set firewall.allow_mdns.target='ACCEPT'
-
-            delete firewall.block_iot_lan
-            set firewall.block_iot_lan=rule
-            set firewall.block_iot_lan.name='Block IoT to LAN'
-            set firewall.block_iot_lan.src='iot_zone'
-            set firewall.block_iot_lan.dest='lan'
-            set firewall.block_iot_lan.proto='all'
-            set firewall.block_iot_lan.family='ipv4'
-            set firewall.block_iot_lan.target='DROP'
-
-            delete firewall.fwd_lan_iot
-            set firewall.fwd_lan_iot=forwarding
-            set firewall.fwd_lan_iot.src='lan'
-            set firewall.fwd_lan_iot.dest='iot_zone'
-            EOF
-            uci batch < /tmp/firewall-batch.uci
-            uci commit firewall
+        - name: Import firewall config for hades/gemini (enforce mode)
+          ansible.builtin.raw: uci import firewall < /tmp/firewall.uci && uci commit firewall
           when:
             - openwrt_mode == "enforce"
             - inventory_hostname in ["hades", "gemini"]

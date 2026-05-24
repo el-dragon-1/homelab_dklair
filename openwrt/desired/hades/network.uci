@@ -1,0 +1,12 @@
+package network
+
+config interface 'iot'
+  option proto 'static'
+  option ipaddr '10.1.1.1'
+  option netmask '255.255.255.0'
+  option igmp_snooping '0'
+
+config interface 'smz_guest'
+  option proto 'static'
+  option ipaddr '10.2.2.1'
+  option netmask '255.255.255.0'
