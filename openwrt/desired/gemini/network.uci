@@ -1,5 +1,39 @@
 package network
 
+config interface 'loopback'
+  option device 'lo'
+  option proto 'static'
+  option ipaddr '127.0.0.1'
+  option netmask '255.0.0.0'
+
+config globals 'globals'
+  option ula_prefix 'fd10:1d51:bae0::/48'
+  option dhcp_default_duid '00041e9df80f354f4f87811c58b81c2d372e'
+  option packet_steering '1'
+
+config device
+  option name 'br-lan'
+  option type 'bridge'
+  list ports 'eth1'
+
+config interface 'lan'
+  option device 'br-lan'
+  option proto 'static'
+  option ipaddr '192.168.4.4'
+  option netmask '255.255.255.0'
+  option ip6assign '60'
+  option multipath 'off'
+
+config interface 'wan'
+  option device 'eth0'
+  option proto 'dhcp'
+  option disabled '1'
+  option multipath 'off'
+
+config interface 'wan6'
+  option device 'eth0'
+  option proto 'dhcpv6'
+
 config interface 'iot'
   option proto 'static'
   option ipaddr '10.1.1.1'
