@@ -37,3 +37,4 @@ server:
 
 ui:
   enabled: true
+  serviceType: LoadBalancer
