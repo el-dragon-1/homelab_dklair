@@ -20,7 +20,9 @@ server:
         path = "/vault/data"
       }
 
-      service_registration "kubernetes" {}
+  serviceAccount:
+    serviceDiscovery:
+      enabled: false
 
   dataStorage:
     enabled: true
