@@ -136,7 +136,7 @@ data:
         - name: Stage desired wireless config for hades/gemini/orchid
           ansible.builtin.raw: |
             cat >/tmp/wireless.uci <<'EOF'
-            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/wireless.uci') | trim }}
+            {{ lookup('ansible.builtin.template', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/wireless.uci') | trim }}
             EOF
           when:
             - openwrt_mode == "enforce"
@@ -145,7 +145,7 @@ data:
         - name: Stage desired network config for hades/gemini
           ansible.builtin.raw: |
             cat >/tmp/network.uci <<'EOF'
-            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/network.uci') | trim }}
+            {{ lookup('ansible.builtin.template', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/network.uci') | trim }}
             EOF
           when:
             - openwrt_mode == "enforce"
@@ -154,7 +154,7 @@ data:
         - name: Stage desired firewall config for hades/gemini
           ansible.builtin.raw: |
             cat >/tmp/firewall.uci <<'EOF'
-            {{ lookup('ansible.builtin.file', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/firewall.uci') | trim }}
+            {{ lookup('ansible.builtin.template', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/firewall.uci') | trim }}
             EOF
           when:
             - openwrt_mode == "enforce"
