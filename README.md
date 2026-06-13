@@ -2,6 +2,10 @@
 
 A production-ready Kubernetes homelab built on K3S with 3 control plane nodes and 2 worker nodes, managed entirely through GitOps using Argo CD.
 
+## Working In This Repo
+
+Repo-wide agent instructions live in [.github/copilot-instructions.md](.github/copilot-instructions.md). For cluster changes, start with this README and [HARDWARE.md](HARDWARE.md). For OpenWRT changes, start with [openwrt/README.md](openwrt/README.md).
+
 ## Cluster Overview
 
 - **Orchestration**: Kubernetes 1.34.6+k3s1 (K3S lightweight distribution)
