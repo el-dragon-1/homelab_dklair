@@ -29,6 +29,8 @@ spec:
                   value: OpenWrt-Gateway
                 - name: OPENWRT_MODE
                   value: enforce
+                - name: OPENWRT_MESH_RECONCILE
+                  value: "false"
                 - name: WIREGUARD_LB_IP
                   value: 192.168.4.101
                 - name: WIREGUARD_LB_PORT
@@ -91,6 +93,7 @@ spec:
                           "ansible_private_key_file": "/work/.ssh/id_ed25519",
                           "desired_hostname": os.environ["DESIRED_HOSTNAME"],
                           "openwrt_mode": os.environ["OPENWRT_MODE"],
+                          "openwrt_mesh_reconcile": os.environ.get("OPENWRT_MESH_RECONCILE", "false").lower() in ("1", "true", "yes"),
                           "mesh_key": os.environ["MESH_KEY"],
                           "wireguard_lb_ip": os.environ["WIREGUARD_LB_IP"],
                           "wireguard_lb_port": int(os.environ["WIREGUARD_LB_PORT"]),

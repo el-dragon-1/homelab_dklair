@@ -100,6 +100,7 @@ data:
           when:
             - openwrt_mode == "enforce"
             - inventory_hostname == "gateway"
+            - openwrt_mesh_reconcile | default(false) | bool
 
         - name: Render AP wireless config (enforce mode)
           ansible.builtin.raw: |
@@ -132,6 +133,7 @@ data:
           when:
             - openwrt_mode == "enforce"
             - inventory_hostname == "ap"
+            - openwrt_mesh_reconcile | default(false) | bool
 
         - name: Stage desired wireless config for hades/gemini/orchid
           ansible.builtin.raw: |
@@ -140,7 +142,7 @@ data:
             EOF
           when:
             - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini", "orchid"]
+            - inventory_hostname in ["hades", "gemini"] or (inventory_hostname == "orchid" and (openwrt_mesh_reconcile | default(false) | bool))
 
         - name: Check if wpad-mesh-wolfssl is installed on Orchid
           ansible.builtin.raw: apk list --installed 2>/dev/null | grep -q wpad-mesh && echo "installed" || echo "missing"
@@ -181,7 +183,9 @@ data:
 
         - name: Import wireless config (enforce mode)
           ansible.builtin.raw: uci import wireless < /tmp/wireless.uci && uci commit wireless
-          when: openwrt_mode == "enforce"
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname in ["hades", "gemini"] or (inventory_hostname in ["gateway", "ap", "orchid"] and (openwrt_mesh_reconcile | default(false) | bool))
 
         - name: Ensure hades/gemini network interfaces for SSIDs (enforce mode)
           ansible.builtin.raw: |
@@ -263,12 +267,28 @@ data:
             - openwrt_mode == "enforce"
             - inventory_hostname in ["hades", "gemini"]
 
-        - name: Reload network, firewall, and wireless (enforce mode)
+        - name: Apply hades/gemini interface updates without full network reload
           ansible.builtin.raw: |
-            /etc/init.d/network reload || true
+            ifup iot || true
+            ifup smz_guest || true
             /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
-            wifi down; wifi up
-          when: openwrt_mode == "enforce"
+            wifi reload || (wifi down; wifi up)
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname in ["hades", "gemini"]
+
+        - name: Reload gateway firewall after redirect enforcement
+          ansible.builtin.raw: /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname == "gateway"
+
+        - name: Reload mesh wireless only when explicitly enabled
+          ansible.builtin.raw: wifi reload || (wifi down; wifi up)
+          when:
+            - openwrt_mode == "enforce"
+            - inventory_hostname in ["gateway", "ap", "orchid"]
+            - openwrt_mesh_reconcile | default(false) | bool
 
         - name: Confirm hostname after enforcement
           ansible.builtin.raw: uci get system.@system[0].hostname
