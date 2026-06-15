@@ -42,107 +42,44 @@ data:
           ansible.builtin.debug:
             msg: "Running {{ openwrt_mode }} mode for {{ inventory_hostname }}"
 
-        - name: Apply desired hostname in enforce mode
-          ansible.builtin.raw: |
-            uci set system.@system[0].hostname='{{ desired_hostname }}'
-            uci commit system
+        - name: Define declarative UCI package list
+          ansible.builtin.set_fact:
+            desired_uci_packages:
+              - system
+              - network
+              - dhcp
+              - firewall
+              - wireless
           when: openwrt_mode == "enforce"
 
-        - name: Ensure gateway WireGuard WAN redirect (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/gateway-firewall-batch.uci <<'EOF'
-            delete firewall.pivpn
-            set firewall.pivpn=redirect
-            set firewall.pivpn.name='pivpn-wireguard'
-            set firewall.pivpn.src='wan'
-            set firewall.pivpn.dest='lan'
-            set firewall.pivpn.proto='udp'
-            set firewall.pivpn.src_dport='{{ wireguard_lb_port }}'
-            set firewall.pivpn.dest_ip='{{ wireguard_lb_ip }}'
-            set firewall.pivpn.dest_port='{{ wireguard_lb_port }}'
-            set firewall.pivpn.target='DNAT'
-            set firewall.pivpn.enabled='1'
-            EOF
-            uci batch < /tmp/gateway-firewall-batch.uci
-            uci commit firewall
+        - name: Verify desired package files exist
+          ansible.builtin.stat:
+            path: "/work/repo/openwrt/desired/{{ inventory_hostname }}/{{ item }}.uci"
+          delegate_to: localhost
+          loop: "{{ desired_uci_packages }}"
+          register: desired_uci_stats
+          when: openwrt_mode == "enforce"
+
+        - name: Fail if declarative desired files are missing
+          ansible.builtin.fail:
+            msg: >-
+              Missing required desired files for {{ inventory_hostname }}: {{ desired_uci_stats.results
+              | rejectattr('stat.exists')
+              | map(attribute='item')
+              | map('regex_replace', '^(.*)$', '\\1.uci')
+              | join(', ') }}
           when:
             - openwrt_mode == "enforce"
-            - inventory_hostname == "gateway"
+            - desired_uci_stats is defined
+            - (desired_uci_stats.results | rejectattr('stat.exists') | list | length) > 0
 
-        - name: Render gateway wireless config (enforce mode)
+        - name: Stage desired package configs from repo
           ansible.builtin.raw: |
-            cat >/tmp/wireless.uci <<'EOF'
-            package wireless
-
-            config wifi-device 'radio0'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi'
-              option disabled '1'
-
-            config wifi-device 'radio1'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi+1'
-              option band '5g'
-              option channel '36'
-              option htmode 'HE80'
-              option cell_density '0'
-
-            config wifi-iface 'default_radio1'
-              option device 'radio1'
-              option network 'lan'
-              option mode 'mesh'
-              option encryption 'sae'
-              option key '{{ mesh_key }}'
-              option mesh_id 'smz5mesh'
-              option mesh_fwding '1'
-              option mesh_rssi_threshold '0'
+            cat >/tmp/{{ item }}.uci <<'EOF'
+            {{ lookup('ansible.builtin.template', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/' ~ item ~ '.uci') | trim }}
             EOF
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname == "gateway"
-            - openwrt_mesh_reconcile | default(false) | bool
-
-        - name: Render AP wireless config (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/wireless.uci <<'EOF'
-            package wireless
-
-            config wifi-device 'radio0'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi'
-              option disabled '1'
-
-            config wifi-device 'radio1'
-              option type 'mac80211'
-              option path 'platform/soc/18000000.wifi+1'
-              option band '5g'
-              option channel '36'
-              option htmode 'HE80'
-              option cell_density '0'
-
-            config wifi-iface 'wifinet3'
-              option device 'radio1'
-              option mode 'mesh'
-              option encryption 'sae'
-              option mesh_id 'smz5mesh'
-              option mesh_fwding '1'
-              option mesh_rssi_threshold '0'
-              option network 'lan'
-              option key '{{ mesh_key }}'
-            EOF
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname == "ap"
-            - openwrt_mesh_reconcile | default(false) | bool
-
-        - name: Stage desired wireless config for hades/gemini/orchid
-          ansible.builtin.raw: |
-            cat >/tmp/wireless.uci <<'EOF'
-            {{ lookup('ansible.builtin.template', '/work/repo/openwrt/desired/' ~ inventory_hostname ~ '/wireless.uci') | trim }}
-            EOF
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini"] or (inventory_hostname == "orchid" and (openwrt_mesh_reconcile | default(false) | bool))
+          loop: "{{ desired_uci_packages }}"
+          when: openwrt_mode == "enforce"
 
         - name: Check if wpad-mesh-wolfssl is installed on Orchid
           ansible.builtin.raw: apk list --installed 2>/dev/null | grep -q wpad-mesh && echo "installed" || echo "missing"
@@ -181,114 +118,33 @@ data:
             - wpad_installed.stdout is defined
             - '"missing" in wpad_installed.stdout'
 
-        - name: Import wireless config (enforce mode)
-          ansible.builtin.raw: uci import wireless < /tmp/wireless.uci && uci commit wireless
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini"] or (inventory_hostname in ["gateway", "ap", "orchid"] and (openwrt_mesh_reconcile | default(false) | bool))
+        - name: Import desired package configs (enforce mode)
+          ansible.builtin.raw: uci import {{ item }} < /tmp/{{ item }}.uci && uci commit {{ item }}
+          loop: "{{ desired_uci_packages }}"
+          when: openwrt_mode == "enforce"
 
-        - name: Ensure hades/gemini network interfaces for SSIDs (enforce mode)
+        - name: Apply network interfaces without full network restart
           ansible.builtin.raw: |
-            cat >/tmp/network-batch.uci <<'EOF'
-            set network.iot=interface
-            set network.iot.proto='static'
-            set network.iot.ipaddr='10.1.1.1'
-            set network.iot.netmask='255.255.255.0'
-            set network.iot.igmp_snooping='0'
-
-            set network.smz_guest=interface
-            set network.smz_guest.proto='static'
-            set network.smz_guest.ipaddr='10.2.2.1'
-            set network.smz_guest.netmask='255.255.255.0'
-            EOF
-            uci batch < /tmp/network-batch.uci
-            uci commit network
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini"]
-
-        - name: Ensure hades/gemini firewall zones and rules for SSIDs (enforce mode)
-          ansible.builtin.raw: |
-            cat >/tmp/firewall-batch.uci <<'EOF'
-            delete firewall.iot_zone
-            set firewall.iot_zone=zone
-            set firewall.iot_zone.name='iot_zone'
-            add_list firewall.iot_zone.network='iot'
-            set firewall.iot_zone.input='ACCEPT'
-            set firewall.iot_zone.output='ACCEPT'
-            set firewall.iot_zone.forward='ACCEPT'
-
-            delete firewall.guest
-            set firewall.guest=zone
-            set firewall.guest.name='guest'
-            add_list firewall.guest.network='smz_guest'
-            set firewall.guest.input='ACCEPT'
-            set firewall.guest.output='ACCEPT'
-            set firewall.guest.forward='ACCEPT'
-
-            delete firewall.fwd_iot_wan
-            set firewall.fwd_iot_wan=forwarding
-            set firewall.fwd_iot_wan.src='iot_zone'
-            set firewall.fwd_iot_wan.dest='wan'
-
-            delete firewall.fwd_guest_wan
-            set firewall.fwd_guest_wan=forwarding
-            set firewall.fwd_guest_wan.src='guest'
-            set firewall.fwd_guest_wan.dest='wan'
-
-            delete firewall.allow_mdns
-            set firewall.allow_mdns=rule
-            set firewall.allow_mdns.name='Allow mDNS'
-            set firewall.allow_mdns.src='lan'
-            set firewall.allow_mdns.dest='lan'
-            add_list firewall.allow_mdns.proto='udp'
-            set firewall.allow_mdns.src_port='5353'
-            add_list firewall.allow_mdns.dest_ip='224.0.0.251'
-            set firewall.allow_mdns.dest_port='5353'
-            set firewall.allow_mdns.target='ACCEPT'
-
-            delete firewall.block_iot_lan
-            set firewall.block_iot_lan=rule
-            set firewall.block_iot_lan.name='Block IoT to LAN'
-            set firewall.block_iot_lan.src='iot_zone'
-            set firewall.block_iot_lan.dest='lan'
-            set firewall.block_iot_lan.proto='all'
-            set firewall.block_iot_lan.family='ipv4'
-            set firewall.block_iot_lan.target='DROP'
-
-            delete firewall.fwd_lan_iot
-            set firewall.fwd_lan_iot=forwarding
-            set firewall.fwd_lan_iot.src='lan'
-            set firewall.fwd_lan_iot.dest='iot_zone'
-            EOF
-            uci batch < /tmp/firewall-batch.uci
-            uci commit firewall
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini"]
-
-        - name: Apply hades/gemini interface updates without full network reload
-          ansible.builtin.raw: |
+            ifup lan || true
+            ifup wan || true
+            ifup wan6 || true
             ifup iot || true
             ifup smz_guest || true
-            /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
-            wifi reload || (wifi down; wifi up)
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["hades", "gemini"]
+          when: openwrt_mode == "enforce"
 
-        - name: Reload gateway firewall after redirect enforcement
+        - name: Reload firewall service after desired import
           ansible.builtin.raw: /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname == "gateway"
+          when: openwrt_mode == "enforce"
 
-        - name: Reload mesh wireless only when explicitly enabled
+        - name: Reload DHCP services after desired import
+          ansible.builtin.raw: |
+            /etc/init.d/dnsmasq restart || /etc/init.d/dnsmasq reload || true
+            /etc/init.d/odhcpd restart || /etc/init.d/odhcpd reload || true
+          when: openwrt_mode == "enforce"
+
+        - name: Reload wireless service after desired import
           ansible.builtin.raw: wifi reload || (wifi down; wifi up)
-          when:
-            - openwrt_mode == "enforce"
-            - inventory_hostname in ["gateway", "ap", "orchid"]
-            - openwrt_mesh_reconcile | default(false) | bool
+          when: openwrt_mode == "enforce"
 
         - name: Confirm hostname after enforcement
           ansible.builtin.raw: uci get system.@system[0].hostname

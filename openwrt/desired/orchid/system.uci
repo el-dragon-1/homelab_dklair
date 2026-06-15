@@ -1,17 +1,17 @@
-package system
 
 config system
-	option hostname 'OpenWrt-Gateway'
-	option timezone 'GMT0'
-	option zonename 'UTC'
+	option hostname 'OpenWrt-Orchid'
+	option timezone 'CST6CDT,M3.2.0,M11.1.0'
 	option ttylogin '0'
-	option log_size '128'
+	option log_size '64'
 	option urandom_seed '0'
-	option compat_version '1.3'
+	option zonename 'America/Chicago'
+	option log_proto 'udp'
+	option conloglevel '8'
+	option cronloglevel '7'
+	option clock_hourcycle 'h23'
 
 config timeserver 'ntp'
-	option enabled '1'
-	option enable_server '0'
 	list server '0.openwrt.pool.ntp.org'
 	list server '1.openwrt.pool.ntp.org'
 	list server '2.openwrt.pool.ntp.org'

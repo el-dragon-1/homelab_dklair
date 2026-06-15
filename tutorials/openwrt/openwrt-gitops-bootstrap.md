@@ -2,18 +2,15 @@
 
 This setup introduces OpenWRT fleet automation with Argo CD, Vault, External Secrets, and Ansible.
 
+The operating model is fully declarative: reconciles import UCI packages from `openwrt/desired/<device>/*.uci`.
+
 ## What This Deploys
 
 - Namespace: `openwrt-ops`
-- 2 ExternalSecrets:
-  - `openwrt-gateway-auth`
-  - `openwrt-ap-auth`
-- 2 CronJobs:
-  - `openwrt-gateway-reconcile`
-  - `openwrt-ap-reconcile`
+- ExternalSecrets and CronJobs for gateway, ap, hades, gemini, and orchid
 - Shared Ansible playbook in ConfigMap
 
-The CronJobs run in `audit` mode by default so no configuration changes are pushed yet.
+CronJobs run in `enforce` mode when unsuspended.
 
 ## Vault Paths and Required Properties
 
@@ -73,9 +70,23 @@ In each CronJob manifest, change:
 
 - `OPENWRT_MODE` from `audit` to `enforce`
 
-Current enforce logic only sets hostname with UCI and commits `system`.
+Reconcile imports and commits these packages for each device:
 
-Expand the playbook gradually (firewall, DHCP, wireless) after validation.
+- `system`
+- `network`
+- `dhcp`
+- `firewall`
+- `wireless`
+
+If any required desired file is missing, reconcile should fail fast instead of applying partial assumptions.
+
+Recommended rollout pattern:
+
+1. Keep CronJobs suspended while preparing desired files.
+2. Verify all five desired files exist for each target device.
+3. Unsuspend one device CronJob at a time.
+4. Validate connectivity and SSIDs/mesh after each reconcile.
+5. Continue to the next device.
 
 ## Repository Standards Reminder
 
@@ -136,6 +147,8 @@ Use these as the starting point for the sanitized `baseline/` or `desired/` tree
 - `/tmp/openwrt-baseline/ap-wireless.uci` -> `openwrt/baseline/ap/wireless.uci`
 
 The same filenames should be reused under `openwrt/desired/` once you have converted the baseline into the state you actually want GitOps to enforce.
+
+For fully declarative operation, do not leave placeholder desired files in place.
 
 ### What Stays Out of Git
 

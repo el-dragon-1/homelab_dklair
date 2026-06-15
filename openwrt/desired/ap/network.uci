@@ -1,2 +1,44 @@
-# Desired state for AP network configuration
-# Populate from the sanitized baseline after you decide what GitOps should enforce.
+package network
+
+config interface 'loopback'
+	option device 'lo'
+	option proto 'static'
+	list ipaddr '127.0.0.1/8'
+
+config globals 'globals'
+	option dhcp_default_duid '0004f125840c69ef4ea8a10c0e4306941ac9'
+	option ula_prefix 'fd08:2419:f30::/48'
+	option packet_steering '2'
+
+config device
+	option name 'br-lan'
+	option type 'bridge'
+	list ports 'lan1'
+	list ports 'lan2'
+	list ports 'lan3'
+	list ports 'lan4'
+	list ports 'sfp2'
+
+config interface 'lan'
+	option device 'br-lan'
+	option proto 'static'
+	option ip6assign '60'
+	option ipaddr '192.168.4.2'
+	option netmask '255.255.255.0'
+	option gateway '192.168.4.1'
+	option peerdns '0'
+
+config device
+	option name 'br-wan'
+	option type 'bridge'
+	list ports 'sfp1'
+	list ports 'wan'
+
+config device
+	option name 'sfp1'
+	option macaddr 'da:5e:5c:e1:a8:5b'
+
+config device
+	option name 'wan'
+	option macaddr 'da:5e:5c:e1:a8:5b'
+

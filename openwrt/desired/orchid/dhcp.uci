@@ -1,4 +1,3 @@
-package dhcp
 
 config dnsmasq
 	option domainneeded '1'
@@ -24,14 +23,15 @@ config dnsmasq
 
 config dhcp 'lan'
 	option interface 'lan'
-	option start '50'
-	option limit '200'
+	option start '100'
+	option limit '150'
 	option leasetime '12h'
 	option dhcpv4 'server'
 	option dhcpv6 'server'
 	option ra 'server'
 	list ra_flags 'managed-config'
 	list ra_flags 'other-config'
+	option ignore '1'
 	option ra_preference 'medium'
 
 config dhcp 'wan'
@@ -45,50 +45,4 @@ config odhcpd 'odhcpd'
 	option loglevel '4'
 	option piodir '/tmp/odhcpd-piodir'
 	option hostsdir '/tmp/hosts'
-
-config host
-	option name 'node1'
-	option ip '192.168.4.110'
-	list mac 'd8:3a:dd:5d:82:29'
-
-config host
-	option name 'node2'
-	option ip '192.168.4.115'
-	list mac 'd8:3a:dd:89:fe:e0'
-
-config host
-	option name 'node3'
-	option ip '192.168.4.116'
-	list mac 'd8:3a:dd:89:fe:e6'
-
-config host
-	option name 'orangepi5'
-	option ip '192.168.4.84'
-	list mac '3a:aa:de:79:ce:78'
-
-config host
-	option name 'el_dragon'
-	option ip '192.168.4.213'
-	list mac '7c:c2:55:e8:4d:8a'
-
-config dhcp 'iot'
-	option interface 'iot'
-	option start '100'
-	option limit '150'
-	option leasetime '12h'
-	option dhcpv4 'server'
-	option force '1'
-
-config dhcp 'smz_guest'
-	option interface 'smz_guest'
-	option start '100'
-	option limit '150'
-	option leasetime '2h'
-	option dhcpv4 'server'
-	option force '1'
-
-config host
-	option name 'lb-2'
-	option ip '192.168.4.177'
-	list mac 'dc:a6:32:c3:21:35'
 

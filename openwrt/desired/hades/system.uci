@@ -1,13 +1,12 @@
-package system
 
 config system
-	option hostname 'OpenWrt-AP'
+	option hostname 'OpenWrt-Hades'
 	option timezone 'CST6CDT,M3.2.0,M11.1.0'
-	option zonename 'America/Chicago'
 	option ttylogin '0'
-	option log_size '128'
+	option log_size '64'
 	option urandom_seed '0'
-	option compat_version '1.3'
+	option description 'AP hardwired to the gateway for client 5ghz and 2.4ghz bands.'
+	option zonename 'America/Chicago'
 	option clock_hourcycle 'h23'
 	option log_proto 'udp'
 	option conloglevel '8'
