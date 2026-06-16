@@ -54,16 +54,6 @@ spec:
                     secretKeyRef:
                       name: openwrt-gateway-auth
                       key: mesh_key
-                - name: OPENWRT_SSID_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: openwrt-gateway-auth
-                      key: openwrt_ssid_key
-                - name: SMZ_GUEST_SSID_KEY
-                  valueFrom:
-                    secretKeyRef:
-                      name: openwrt-gateway-auth
-                      key: smz_guest_ssid_key
               command:
                 - /bin/sh
                 - -ec
@@ -99,8 +89,6 @@ spec:
                           "desired_hostname": os.environ["DESIRED_HOSTNAME"],
                           "openwrt_mode": os.environ["OPENWRT_MODE"],
                           "mesh_key": os.environ["MESH_KEY"],
-                          "openwrt_ssid_key": os.environ["OPENWRT_SSID_KEY"],
-                          "smz_guest_ssid_key": os.environ["SMZ_GUEST_SSID_KEY"],
                         }
                       }
                     }
