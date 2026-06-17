@@ -67,6 +67,32 @@ Optional overrides can be passed to Ansible when needed:
 
 Use these overrides only for staged maintenance windows when remote recovery is available.
 
+## SSID Segmentation Notes
+
+Current intent:
+
+- `smz_homex` maps to `lan` and is allowed to reach IoT/guest devices.
+- `OpenWrt` maps to `iot` and should not initiate access to `lan`.
+- `smz_guest` maps to `smz_guest` and should not initiate access to `lan`.
+- All three networks should have internet egress.
+
+Gateway firewall policy enforces this model with:
+
+- `iot_zone -> wan` forwarding
+- `guest -> wan` forwarding
+- `lan -> iot_zone` forwarding
+- `lan -> guest` forwarding
+- explicit `DROP` rules for `iot_zone -> lan` and `guest -> lan`
+
+### Current Limitation (Temporary)
+
+Today, `hades` and `gemini` still define local L3 interfaces for `iot` (`10.1.1.0/24`) and
+`smz_guest` (`10.2.2.0/24`) while the gateway also owns those same subnets. This overlap can
+cause inconsistent internet reachability from AP-hosted SSIDs.
+
+Safe next phase is to migrate APs to bridge-only segmentation for IoT/guest (no AP-local L3
+ownership for those subnets) and keep gateway as the single L3 owner.
+
 ## Failsafe Recovery
 
 Use this when a device is unreachable after a reconcile or network/firewall change.

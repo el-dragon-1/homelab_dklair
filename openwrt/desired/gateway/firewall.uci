@@ -174,7 +174,19 @@ config rule
 	option proto 'all'
 	option family 'ipv4'
 
+config rule
+	option name 'Block Guest to LAN'
+	option src 'guest'
+	option dest 'lan'
+	option target 'DROP'
+	option proto 'all'
+	option family 'ipv4'
+
 config forwarding
 	option src 'lan'
 	option dest 'iot_zone'
+
+config forwarding
+	option src 'lan'
+	option dest 'guest'
 
