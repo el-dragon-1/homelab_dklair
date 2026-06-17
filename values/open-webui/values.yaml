@@ -6,7 +6,7 @@
 
 ollama:
   enabled: true
-  runtimeClassName: ""
+  runtimeClassName: nvidia
   image:
     repository: ollama/ollama
     tag: "0.30.8"
