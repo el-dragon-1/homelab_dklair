@@ -6,6 +6,7 @@
 
 ollama:
   enabled: true
+  runtimeClassName: ""
   image:
     repository: ollama/ollama
     tag: "0.30.8"
