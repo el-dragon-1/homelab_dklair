@@ -182,6 +182,22 @@ config rule
 	option proto 'all'
 	option family 'ipv4'
 
+config rule
+	option name 'Block IoT subnet to LAN subnet'
+	option src 'iot_zone'
+	option dest_ip '192.168.4.0/24'
+	option target 'DROP'
+	option proto 'all'
+	option family 'ipv4'
+
+config rule
+	option name 'Block Guest subnet to LAN subnet'
+	option src 'guest'
+	option dest_ip '192.168.4.0/24'
+	option target 'DROP'
+	option proto 'all'
+	option family 'ipv4'
+
 config forwarding
 	option src 'lan'
 	option dest 'iot_zone'
