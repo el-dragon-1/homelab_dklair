@@ -24,6 +24,10 @@ need_cmd() {
 
 need_cmd kubectl
 
+if [[ -z "${KUBECONFIG:-}" && -f "$HOME/kube/k3s.yaml" ]]; then
+  export KUBECONFIG="$HOME/kube/k3s.yaml"
+fi
+
 info "Checking Argo CD application sync and health"
 status_line="$(kubectl get application -n "$NS_ARGOCD" "$APP_NAME" -o jsonpath='{.status.sync.status} {.status.health.status} {.status.sync.revisions}')"
 sync_status="$(echo "$status_line" | awk '{print $1}')"
