@@ -6,6 +6,7 @@ metadata:
   annotations:
     argocd.argoproj.io/sync-wave: "2"
 spec:
+  suspend: false
   schedule: "28,58 * * * *"
   concurrencyPolicy: Forbid
   successfulJobsHistoryLimit: 1
