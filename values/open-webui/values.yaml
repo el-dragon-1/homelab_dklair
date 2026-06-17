@@ -5,7 +5,23 @@
 # - Pins inference (Ollama) to eldragon GPU node
 
 ollama:
-  enabled: false
+  enabled: true
+  image:
+    repository: ollama/ollama
+    tag: "0.22.1"
+  runtimeClassName: nvidia
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+    kubernetes.io/arch: amd64
+  ollama:
+    gpu:
+      enabled: true
+      type: nvidia
+      number: 1
+  persistentVolume:
+    enabled: true
+    storageClass: longhorn
+    size: 40Gi
 
 # Open WebUI application image (separate from Ollama)
 image:
