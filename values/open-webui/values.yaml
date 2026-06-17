@@ -8,7 +8,7 @@ ollama:
   enabled: true
   image:
     repository: ollama/ollama
-    tag: "0.22.1"
+    tag: "0.30.8"
   runtimeClassName: nvidia
   nodeSelector:
     kubernetes.io/hostname: eldragon
@@ -26,7 +26,7 @@ ollama:
 # Open WebUI application image (separate from Ollama)
 image:
   repository: ghcr.io/open-webui/open-webui
-  tag: "v0.9.5"
+  tag: "v0.9.6"
   pullPolicy: IfNotPresent
 
 pipelines:
