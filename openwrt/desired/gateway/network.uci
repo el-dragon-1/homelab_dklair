@@ -19,8 +19,35 @@ config device
 	list ports 'lan4'
 	list ports 'sfp2'
 
-config interface 'lan'
+config bridge-vlan
 	option device 'br-lan'
+	option vlan '1'
+	list ports 'lan1:u*'
+	list ports 'lan2:u*'
+	list ports 'lan3:u*'
+	list ports 'lan4:u*'
+	list ports 'sfp2:u*'
+
+config bridge-vlan
+	option device 'br-lan'
+	option vlan '10'
+	list ports 'lan1:t'
+	list ports 'lan2:t'
+	list ports 'lan3:t'
+	list ports 'lan4:t'
+	list ports 'sfp2:t'
+
+config bridge-vlan
+	option device 'br-lan'
+	option vlan '20'
+	list ports 'lan1:t'
+	list ports 'lan2:t'
+	list ports 'lan3:t'
+	list ports 'lan4:t'
+	list ports 'sfp2:t'
+
+config interface 'lan'
+	option device 'br-lan.1'
 	option proto 'static'
 	option ip6assign '60'
 	list ipaddr '192.168.4.1/24'
@@ -51,12 +78,14 @@ config interface 'wan6'
 	option proto 'dhcpv6'
 
 config interface 'iot'
+	option device 'br-lan.10'
 	option proto 'static'
 	option ipaddr '10.1.1.1'
 	option netmask '255.255.255.0'
 	option igmp_snooping '0'
 
 config interface 'smz_guest'
+	option device 'br-lan.20'
 	option proto 'static'
 	option ipaddr '10.2.2.1'
 	option netmask '255.255.255.0'

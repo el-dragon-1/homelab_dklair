@@ -84,14 +84,42 @@ Gateway firewall policy enforces this model with:
 - `lan -> guest` forwarding
 - explicit `DROP` rules for `iot_zone -> lan` and `guest -> lan`
 
-### Current Limitation (Temporary)
+### Prior Limitation (Resolved By Phase 2)
 
-Today, `hades` and `gemini` still define local L3 interfaces for `iot` (`10.1.1.0/24`) and
-`smz_guest` (`10.2.2.0/24`) while the gateway also owns those same subnets. This overlap can
-cause inconsistent internet reachability from AP-hosted SSIDs.
+Previously, `hades` and `gemini` also owned L3 interfaces for `iot` (`10.1.1.0/24`) and
+`smz_guest` (`10.2.2.0/24`) while gateway owned the same subnets. That overlap could cause
+inconsistent internet reachability from AP-hosted SSIDs.
 
-Safe next phase is to migrate APs to bridge-only segmentation for IoT/guest (no AP-local L3
-ownership for those subnets) and keep gateway as the single L3 owner.
+Phase 2 moves APs to bridge-only segmentation for IoT/guest and keeps gateway as the single L3
+owner for those subnets.
+
+### Phase 2 (Bridge-VLAN Ownership Model)
+
+Target model:
+
+- Gateway is the only L3 owner for:
+	- `lan` on `br-lan.1` (`192.168.4.1/24`)
+	- `iot` on `br-lan.10` (`10.1.1.1/24`)
+	- `smz_guest` on `br-lan.20` (`10.2.2.1/24`)
+- Hades and Gemini carry VLANs 10/20 as bridge transport only:
+	- `iot` -> `br-lan.10` with `proto none`
+	- `smz_guest` -> `br-lan.20` with `proto none`
+	- management remains on `lan` (`br-lan.1`)
+
+This removes overlapping subnet ownership and restores deterministic routing for internet egress
+and cross-zone policy enforcement.
+
+#### Staged Rollout (Required)
+
+1. Keep all OpenWrt reconcile CronJobs suspended.
+2. Apply gateway first and validate:
+	 - clients on `OpenWrt` and `smz_guest` get DHCP from gateway
+	 - internet egress works from both SSIDs
+	 - `iot -> lan` and `guest -> lan` initiations are blocked
+	 - `lan -> iot` and `lan -> guest` initiations work
+3. Apply Gemini only, validate management IP and SSID internet access.
+4. Apply Hades only, validate the same checks.
+5. Resume scheduled reconciles one device at a time.
 
 ## Failsafe Recovery
 
