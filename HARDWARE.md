@@ -40,7 +40,7 @@ The control plane consists of three Raspberry Pi 4 Model B units configured as a
 - **Host**: Custom Desktop PC
 - **CPU**: Intel(R) Xeon(R) E-2324G CPU @ 3.10GHz
 - **RAM**: 64GB DDR4 3200MHz
-- **GPU**: NVIDIA GeForce RTX 4060 (8GB VRAM), Driver v580.126.09, CUDA v12.4
+- **GPU**: NVIDIA GeForce RTX 4060 (8GB VRAM), Driver v580.159.03, CUDA v12.4
 - **Storage**: 256GB NVMe SSD (OS), 4TB SATA SSD (data)
 - **Network**: 2.5GbE (static IP: 192.168.4.213), Wi-Fi 6 (disabled)
 - **Power Supply**: Corsair RM600x (600W, 80+ Gold)
@@ -48,6 +48,53 @@ The control plane consists of three Raspberry Pi 4 Model B units configured as a
 - **Role**: Primary GPU-accelerated workloads, CUDA compute
 - **OS**: Ubuntu 24.04.3 LTS
 - **Software**: NVIDIA Container Toolkit, CUDA 12.4
+
+#### GPU Recovery Runbook (eldragon)
+
+Use this when `nvidia.com/gpu` shows `0` on `eldragon` and GPU workloads (for example `open-webui-ollama`) are Pending.
+
+1. Confirm node GPU resource is missing:
+
+    ```bash
+    export KUBECONFIG=~/kube/k3s.yaml
+    kubectl get node eldragon -o jsonpath='{.status.capacity.nvidia\.com/gpu} {.status.allocatable.nvidia\.com/gpu}' && echo
+    ```
+
+2. Check GPU operator driver-validation logs:
+
+    ```bash
+    kubectl logs -n gpu-operator $(kubectl get pod -n gpu-operator -o name | grep nvidia-container-toolkit-daemonset | head -1 | cut -d/ -f2) -c driver-validation --tail=120
+    ```
+
+    If you see `NVIDIA-SMI has failed because it couldn't communicate with the NVIDIA driver`, continue.
+
+3. Confirm kernel/module mismatch on host:
+
+    ```bash
+    kubectl debug node/eldragon -it --image=ubuntu -- chroot /host bash -lc 'uname -r; dpkg -l | grep -E "linux-modules-nvidia-580-open|nvidia-driver-580-open"'
+    ```
+
+4. Install matching NVIDIA kernel modules on host:
+
+    ```bash
+    kubectl debug node/eldragon -it --image=ubuntu -- chroot /host bash -lc 'export DEBIAN_FRONTEND=noninteractive; apt-get update; apt-get install -y linux-modules-nvidia-580-open-generic'
+    ```
+
+5. Recycle NVIDIA operator pods on `eldragon`:
+
+    ```bash
+    kubectl get pods -n gpu-operator -o wide | grep eldragon
+    kubectl delete pod -n gpu-operator <gpu-feature-discovery-pod> <nvidia-container-toolkit-pod> <nvidia-dcgm-exporter-pod> <nvidia-device-plugin-pod> <nvidia-operator-validator-pod>
+    ```
+
+6. Verify recovery:
+
+    ```bash
+    kubectl get node eldragon -o jsonpath='{.status.capacity.nvidia\.com/gpu} {.status.allocatable.nvidia\.com/gpu}' && echo
+    kubectl get pods -n gpu-operator -o wide | grep eldragon
+    ```
+
+Expected result: `1 1` for GPU capacity/allocatable and NVIDIA daemonset pods Running on `eldragon`.
 
 ### orangepi5 (General Compute Node)
 - **Host**: Orange Pi 5
