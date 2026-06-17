@@ -9,7 +9,6 @@ ollama:
   image:
     repository: ollama/ollama
     tag: "0.30.8"
-  runtimeClassName: nvidia
   nodeSelector:
     kubernetes.io/hostname: eldragon
     kubernetes.io/arch: amd64
