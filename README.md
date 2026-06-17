@@ -144,7 +144,8 @@ After updating Open WebUI or Ollama values, run the post-update validation scrip
 This verifies:
 - Argo CD app sync and health for open-webui
 - Ollama deployment rollout and service endpoints
-- GPU resource request and runtime class in deployment spec
+- GPU resource request, runtime class, and CPU cap in deployment spec
+- Ollama throttling env settings (`OLLAMA_NUM_PARALLEL`, `OLLAMA_MAX_LOADED_MODELS`)
 - NVIDIA device visibility in the Ollama container
 - A short inference run and GPU processor usage via ollama ps
 

@@ -15,6 +15,14 @@ ollama:
       value: all
     - name: NVIDIA_DRIVER_CAPABILITIES
       value: compute,utility
+    # Best-effort GPU throttling knob; effective when CUDA MPS is active.
+    - name: CUDA_MPS_ACTIVE_THREAD_PERCENTAGE
+      value: "95"
+    # Reduce concurrent generation pressure to keep sustained thermals lower.
+    - name: OLLAMA_NUM_PARALLEL
+      value: "1"
+    - name: OLLAMA_MAX_LOADED_MODELS
+      value: "1"
   nodeSelector:
     kubernetes.io/hostname: eldragon
     kubernetes.io/arch: amd64
@@ -27,6 +35,14 @@ ollama:
     enabled: true
     storageClass: longhorn
     size: 40Gi
+  resources:
+    requests:
+      cpu: 500m
+      memory: 2Gi
+    limits:
+      # Enforced CPU cap for Ollama container.
+      cpu: 950m
+      memory: 8Gi
 
 # Open WebUI application image (separate from Ollama)
 image:

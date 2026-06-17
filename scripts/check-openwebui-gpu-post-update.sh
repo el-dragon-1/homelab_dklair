@@ -50,9 +50,18 @@ info "Checking runtime class and GPU resource requests"
 runtime_class="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.runtimeClassName}')"
 [[ "$runtime_class" == "nvidia" ]] || fail "Ollama runtimeClassName is not nvidia (got: $runtime_class)"
 
-gpu_req="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.containers[0].resources.requests.nvidia\.com/gpu}')"
-[[ "$gpu_req" == "1" ]] || fail "Ollama GPU request is not 1 (got: $gpu_req)"
-pass "Ollama deployment requests GPU with nvidia runtime"
+  gpu_limit="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.containers[0].resources.limits.nvidia\.com/gpu}')"
+  [[ "$gpu_limit" == "1" ]] || fail "Ollama GPU limit is not 1 (got: $gpu_limit)"
+cpu_limit="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.containers[0].resources.limits.cpu}')"
+[[ "$cpu_limit" == "950m" ]] || fail "Ollama CPU limit is not 950m (got: $cpu_limit)"
+
+env_parallel="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="OLLAMA_NUM_PARALLEL")].value}')"
+[[ "$env_parallel" == "1" ]] || fail "OLLAMA_NUM_PARALLEL is not 1 (got: $env_parallel)"
+
+env_loaded_models="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.containers[0].env[?(@.name=="OLLAMA_MAX_LOADED_MODELS")].value}')"
+[[ "$env_loaded_models" == "1" ]] || fail "OLLAMA_MAX_LOADED_MODELS is not 1 (got: $env_loaded_models)"
+
+pass "Ollama deployment sets GPU limit, enforces CPU cap, and has thermal throttle env settings"
 
 info "Selecting running Ollama pod"
 ollama_pod="$(kubectl get pods -n "$NS_OPENWEBUI" -l app.kubernetes.io/component=open-webui-ollama -o jsonpath='{range .items[*]}{.metadata.name}{" "}{.status.phase}{"\n"}{end}' | awk '$2=="Running"{print $1; exit}')"
