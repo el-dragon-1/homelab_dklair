@@ -160,7 +160,7 @@ config rule
 	option target		ACCEPT
 
 config rule
-	option name		Block IoT to LAN
+	option name		'Block IoT to LAN'
 	option src		iot_zone
 	option dest		lan
 	option target		DROP
