@@ -46,7 +46,7 @@ endpoint_count="$(kubectl get endpoints -n "$NS_OPENWEBUI" open-webui-ollama -o 
 [[ "$endpoint_count" -ge 1 ]] || fail "Ollama service has no endpoints"
 pass "Ollama service has endpoint(s)"
 
-info "Checking runtime class and GPU resource requests"
+info "Checking runtime class and Ollama resource limits"
 runtime_class="$(kubectl get deploy -n "$NS_OPENWEBUI" open-webui-ollama -o jsonpath='{.spec.template.spec.runtimeClassName}')"
 [[ "$runtime_class" == "nvidia" ]] || fail "Ollama runtimeClassName is not nvidia (got: $runtime_class)"
 
