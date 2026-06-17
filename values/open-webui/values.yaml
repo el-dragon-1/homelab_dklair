@@ -10,6 +10,11 @@ ollama:
   image:
     repository: ollama/ollama
     tag: "0.30.8"
+  extraEnv:
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: all
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: compute,utility
   nodeSelector:
     kubernetes.io/hostname: eldragon
     kubernetes.io/arch: amd64
