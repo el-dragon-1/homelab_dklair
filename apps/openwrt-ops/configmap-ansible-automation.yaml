@@ -42,6 +42,13 @@ data:
           ansible.builtin.debug:
             msg: "Running {{ openwrt_mode }} mode for {{ inventory_hostname }}"
 
+        - name: Define runtime safety profile
+          ansible.builtin.set_fact:
+            openwrt_runtime_profile: "{{ 'gateway' if inventory_hostname == 'gateway' else 'remote' }}"
+            openwrt_apply_remote_network_runtime: "{{ (openwrt_apply_remote_network_runtime | default(false)) | bool }}"
+            openwrt_apply_remote_firewall_runtime: "{{ (openwrt_apply_remote_firewall_runtime | default(false)) | bool }}"
+          when: openwrt_mode == "enforce"
+
         - name: Define declarative UCI package list
           ansible.builtin.set_fact:
             desired_uci_packages:
@@ -123,18 +130,52 @@ data:
           loop: "{{ desired_uci_packages }}"
           when: openwrt_mode == "enforce"
 
-        - name: Apply network interfaces without full network restart
+        - name: Apply network interfaces on gateway profile
           ansible.builtin.raw: |
             ifup lan || true
             ifup wan || true
             ifup wan6 || true
             ifup iot || true
             ifup smz_guest || true
-          when: openwrt_mode == "enforce"
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "gateway"
 
-        - name: Reload firewall service after desired import
+        - name: Apply minimal network interface refresh on remote profile when enabled
+          ansible.builtin.raw: ifup lan || true
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "remote"
+            - openwrt_apply_remote_network_runtime | bool
+
+        - name: Note remote network runtime apply is disabled by default
+          ansible.builtin.debug:
+            msg: "Skipping runtime network ifup on {{ inventory_hostname }} (remote safety default)."
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "remote"
+            - not (openwrt_apply_remote_network_runtime | bool)
+
+        - name: Reload firewall service on gateway profile
           ansible.builtin.raw: /etc/init.d/firewall restart || /etc/init.d/firewall reload || true
-          when: openwrt_mode == "enforce"
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "gateway"
+
+        - name: Reload firewall service on remote profile when enabled
+          ansible.builtin.raw: /etc/init.d/firewall reload || true
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "remote"
+            - openwrt_apply_remote_firewall_runtime | bool
+
+        - name: Note remote firewall runtime apply is disabled by default
+          ansible.builtin.debug:
+            msg: "Skipping runtime firewall reload on {{ inventory_hostname }} (remote safety default)."
+          when:
+            - openwrt_mode == "enforce"
+            - openwrt_runtime_profile == "remote"
+            - not (openwrt_apply_remote_firewall_runtime | bool)
 
         - name: Reload DHCP services after desired import
           ansible.builtin.raw: |

@@ -50,6 +50,107 @@ The OpenWRT automation imports package configs from `openwrt/desired/<device>/<p
 - Keep secret values templated (for example `{{ mesh_key }}`, `{{ smz_homex_ssid_key }}`) and resolve them at runtime from Vault/External Secrets.
 - Prefer targeted runtime refreshes (`ifup`, service reloads, `wifi reload`) over broad network restarts where possible.
 
+### Runtime Safety Defaults
+
+To reduce remote lockout risk during enforcement:
+
+- `gateway` uses full runtime apply (network `ifup` set plus firewall service reload/restart).
+- AP-class remote nodes (`ap`, `hades`, `gemini`, `orchid`) default to conservative runtime behavior:
+	- no automatic network `ifup`
+	- no automatic firewall reload
+	- DHCP and wireless runtime refresh still run
+
+Optional overrides can be passed to Ansible when needed:
+
+- `openwrt_apply_remote_network_runtime=true`
+- `openwrt_apply_remote_firewall_runtime=true`
+
+Use these overrides only for staged maintenance windows when remote recovery is available.
+
+## Failsafe Recovery
+
+Use this when a device is unreachable after a reconcile or network/firewall change.
+
+### 1. Enter Failsafe Mode
+
+1. Power cycle the router.
+2. Hold the reset button during boot until the status LED indicates failsafe mode.
+3. Connect your laptop directly by Ethernet.
+4. Set your laptop to the same subnet as the failsafe address (commonly `192.168.1.0/24`).
+5. Confirm reachability:
+
+```bash
+ping 192.168.1.1
+```
+
+### 2. Resolve SSH Host Key Mismatch
+
+After reset/failsafe, SSH host keys often change.
+
+```bash
+ssh-keygen -R 192.168.1.1
+ssh-keygen -R '[192.168.1.1]:22'
+ssh -o StrictHostKeyChecking=accept-new root@192.168.1.1
+```
+
+For one-time emergency access only:
+
+```bash
+ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@192.168.1.1
+```
+
+### 3. Reset Broken Overlay Config
+
+In the router shell:
+
+```sh
+mount_root
+firstboot -y
+reboot -f
+```
+
+This clears persistent overlay config and returns to a known-safe state.
+
+### 4. Reapply Minimal Management Config
+
+After reboot and reconnecting over SSH, set the management LAN back to the intended static address.
+
+Example for `gemini` (`192.168.4.4`):
+
+```sh
+uci set network.lan.proto='static'
+uci set network.lan.ipaddr='192.168.4.4'
+uci set network.lan.netmask='255.255.255.0'
+uci set network.lan.gateway='192.168.4.1'
+uci set network.lan.peerdns='0'
+uci -q delete network.lan.dns
+uci add_list network.lan.dns='1.1.1.1'
+uci set network.wan.proto='none'
+uci set network.wan6.proto='none'
+uci set dhcp.lan.ignore='1'
+uci commit network
+uci commit dhcp
+reboot -f
+```
+
+### 5. Validate Before Reconcile
+
+After the device comes back on its management IP:
+
+```sh
+uci show network.lan
+uci show network.wan
+uci show network.wan6
+uci show dhcp.lan | grep ignore
+uci show firewall | head -n 40
+```
+
+Operational guardrails:
+
+- Keep affected reconcile CronJobs suspended during recovery.
+- Recover one device at a time.
+- Run one manual reconcile job and observe connectivity before resuming schedules.
+
 ## Device Coverage Checklist
 
 Before enabling or unsuspending reconcile jobs for any device, verify:
