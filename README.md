@@ -135,6 +135,19 @@ This consolidates the repo into a single file suitable for LLM prompts. All cont
 
 All applications are deployed through Argo CD using a two-file pattern: a Helm values file and an Argo CD Application manifest.
 
+### Open WebUI Post-Update GPU Checks
+
+After updating Open WebUI or Ollama values, run the post-update validation script:
+
+./scripts/check-openwebui-gpu-post-update.sh
+
+This verifies:
+- Argo CD app sync and health for open-webui
+- Ollama deployment rollout and service endpoints
+- GPU resource request and runtime class in deployment spec
+- NVIDIA device visibility in the Ollama container
+- A short inference run and GPU processor usage via ollama ps
+
 ### Repository Standards
 
 - Deploy Kubernetes applications as Helm charts.
