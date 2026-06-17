@@ -152,7 +152,7 @@ config forwarding
 config rule
 	option src		lan
 	option dest		lan
-	option name		Allow mDNS
+	option name		'Allow mDNS'
 	list proto		udp
 	option src_port		5353
 	list dest_ip		224.0.0.251
