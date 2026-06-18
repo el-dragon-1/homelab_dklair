@@ -156,6 +156,15 @@ config redirect
 	option src_dport '51820'
 	option dest_ip '192.168.4.84'
 
+config redirect
+	option dest 'lan'
+	option target 'DNAT'
+	option name 'pivpn-openvpn'
+	option src 'wan'
+	option proto 'udp'
+	option src_dport '1194'
+	option dest_ip '192.168.4.84'
+
 config rule
 	option src 'lan'
 	option dest 'lan'
@@ -165,6 +174,36 @@ config rule
 	list dest_ip '224.0.0.251'
 	option dest_port '5353'
 	option target 'ACCEPT'
+
+config redirect
+	option name 'Force DNS to Pi-hole from LAN'
+	option src 'lan'
+	option proto 'tcp udp'
+	option src_dport '53'
+	option dest 'lan'
+	option dest_ip '192.168.4.84'
+	option dest_port '53'
+	option target 'DNAT'
+
+config redirect
+	option name 'Force DNS to Pi-hole from IoT'
+	option src 'iot_zone'
+	option proto 'tcp udp'
+	option src_dport '53'
+	option dest 'lan'
+	option dest_ip '192.168.4.84'
+	option dest_port '53'
+	option target 'DNAT'
+
+config redirect
+	option name 'Force DNS to Pi-hole from Guest'
+	option src 'guest'
+	option proto 'tcp udp'
+	option src_dport '53'
+	option dest 'lan'
+	option dest_ip '192.168.4.84'
+	option dest_port '53'
+	option target 'DNAT'
 
 config rule
 	option name 'Block IoT to LAN'
