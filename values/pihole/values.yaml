@@ -1,0 +1,65 @@
+replicaCount: 1
+
+image:
+  repository: pihole/pihole
+  pullPolicy: IfNotPresent
+
+admin:
+  enabled: true
+  existingSecret: pihole-admin
+  passwordKey: password
+
+persistentVolumeClaim:
+  enabled: true
+  storageClass: longhorn
+  size: 1Gi
+  accessModes:
+    - ReadWriteOnce
+
+ingress:
+  enabled: true
+  ingressClassName: my-traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  hosts:
+    - pihole.dklair.io
+  path: /
+  pathType: Prefix
+  tls:
+    - secretName: pihole-tls
+      hosts:
+        - pihole.dklair.io
+
+serviceDhcp:
+  enabled: false
+
+serviceDns:
+  type: LoadBalancer
+  mixedService: true
+  loadBalancerIP: 192.168.4.102
+  externalTrafficPolicy: Local
+
+serviceWeb:
+  type: ClusterIP
+  http:
+    enabled: true
+  https:
+    enabled: false
+
+extraEnvVars:
+  FTLCONF_dns_listeningMode: all
+  TZ: UTC
+
+DNS1: 1.1.1.1
+DNS2: 1.0.0.1
+
+virtualHost: pihole.dklair.io
+
+resources:
+  requests:
+    cpu: 50m
+    memory: 128Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi

@@ -1,0 +1,30 @@
+# Pi-hole provides LAN DNS over a LoadBalancer service and the admin UI through Traefik.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: pihole
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "5"
+spec:
+  project: default
+  sources:
+    - repoURL: https://mojo2600.github.io/pihole-kubernetes/
+      chart: pihole
+      targetRevision: 2.36.0
+      helm:
+        valueFiles:
+          - $values/values/pihole/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: pihole
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true
