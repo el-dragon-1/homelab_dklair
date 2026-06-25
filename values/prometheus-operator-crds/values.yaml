@@ -1,0 +1,3 @@
+# Prometheus Operator CRDs are installed as a dedicated app so
+# Alertmanager/Prometheus kinds exist before kube-prometheus-stack sync.
+{}
