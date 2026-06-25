@@ -2,7 +2,7 @@
 # Adjust hostnames, secrets, and retention to your needs.
 
 crds:
-  enabled: true
+  enabled: false
 
 defaultRules:
   create: true
