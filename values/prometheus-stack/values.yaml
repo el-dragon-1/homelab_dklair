@@ -1,0 +1,108 @@
+# kube-prometheus-stack defaults for a k3s homelab.
+# Adjust hostnames, secrets, and retention to your needs.
+
+crds:
+  enabled: true
+
+defaultRules:
+  create: true
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: telegram-receiver
+      group_by: ['alertname', 'cluster', 'service']
+      group_wait: 10s
+      group_interval: 10s
+      repeat_interval: 12h
+    receivers:
+      - name: telegram-receiver
+        telegram_configs:
+          - send_resolved: true
+            api_url: https://api.telegram.org
+            bot_token_file: /etc/alertmanager/secrets/alertmanager-receivers/telegram-bot-token
+            chat_id_file: /etc/alertmanager/secrets/alertmanager-receivers/telegram-chat-id
+  alertmanagerSpec:
+    replicas: 1
+    storage:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 5Gi
+    volumes:
+      - name: alertmanager-receivers
+        secret:
+          secretName: alertmanager-receivers
+    volumeMounts:
+      - name: alertmanager-receivers
+        mountPath: /etc/alertmanager/secrets/alertmanager-receivers
+        readOnly: true
+
+prometheus:
+  enabled: true
+  prometheusSpec:
+    replicas: 1
+    retention: 30d
+    retentionSize: 20GB
+    walCompression: true
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: longhorn
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 40Gi
+
+grafana:
+  enabled: true
+  admin:
+    existingSecret: grafana-admin
+    userKey: admin-username
+    passwordKey: admin-password
+  persistence:
+    enabled: true
+    type: pvc
+    storageClassName: longhorn
+    accessModes:
+      - ReadWriteOnce
+    size: 10Gi
+  ingress:
+    enabled: true
+    ingressClassName: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    hosts:
+      - grafana.dklair.io
+    tls:
+      - hosts:
+          - grafana.dklair.io
+        secretName: grafana-tls
+
+kubeEtcd:
+  enabled: false
+
+kubeScheduler:
+  enabled: false
+
+kubeControllerManager:
+  enabled: false
+
+kubeProxy:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+kube-state-metrics:
+  enabled: true
+
+prometheusOperator:
+  enabled: true
