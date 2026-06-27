@@ -205,7 +205,7 @@ vault kv patch homelab/openwrt/ap -delete-fields=smz_homex_ssid_key
 
 ```sh
 git add apps/openwrt-ops/
-git commit -m "feat(openwrt-ops): add Hades, Gemini, Orchid; move client SSIDs; enable 802.11k/v/r"
+git commit -m "feat(openwrt): improve legacy client compatibility on smz_homex and smz_guest"
 git push
 ```
 
@@ -230,7 +230,7 @@ kubectl create job --from=cronjob/openwrt-orchid-reconcile orchid-manual-$(date 
 
 ---
 
-## Fast Roaming (802.11k/v/r) Notes
+## Client Compatibility Notes
 
 - `smz_homex` and `smz_guest` are currently configured as WPA2-only (`psk2+ccmp`)
   on Hades and Gemini to keep older devices associating reliably.
