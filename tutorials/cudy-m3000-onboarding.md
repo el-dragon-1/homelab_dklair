@@ -232,15 +232,12 @@ kubectl create job --from=cronjob/openwrt-orchid-reconcile orchid-manual-$(date 
 
 ## Fast Roaming (802.11k/v/r) Notes
 
-- **Mobility domain `1234`** — used by `smz_homex` on both Hades and Gemini.
-  All APs broadcasting the same SSID **must share the same mobility domain**.
-  Change `1234` to any 4 hex characters you prefer (consistent across devices).
-- **Mobility domain `5678`** — used by `smz_guest` on both Hades and Gemini.
-- **`ft_psk_generate_local '1'`** — each AP generates FT keys locally; no
-  separate FT key material is needed in the config.
-- **`ft_over_ds '0'`** — FT Over the Air (recommended for small wired networks).
-- Both Hades (ch 36) and Gemini (ch 149) use different 5 GHz channels to reduce
-  co-channel interference while still supporting fast roaming across channels.
+- `smz_homex` and `smz_guest` are currently configured as WPA2-only (`psk2+ccmp`)
+  on Hades and Gemini to keep older devices associating reliably.
+- If you want to re-enable WPA3 or 802.11r/k/v later, do it as a separate rollout
+  after confirming client support.
+- Both Hades and Gemini stay on different 5 GHz channels to reduce
+  co-channel interference.
 
 ---
 
@@ -250,6 +247,6 @@ kubectl create job --from=cronjob/openwrt-orchid-reconcile orchid-manual-$(date 
 |---------|---------------------------|-------------------------------------------|
 | Gateway | **Disabled**              | `smz5mesh` (802.11s mesh backhaul)        |
 | AP      | **Disabled**              | `smz5mesh` (802.11s mesh backhaul)        |
-| Hades   | `OpenWrt` IoT (psk2+ccmp) | `smz_homex` + `smz_guest` (802.11k/v/r)  |
-| Gemini  | `OpenWrt` IoT (psk2+ccmp) | `smz_homex` + `smz_guest` (802.11k/v/r)  |
+| Hades   | `OpenWrt` IoT (psk2+ccmp) | `smz_homex` + `smz_guest` (WPA2-only)    |
+| Gemini  | `OpenWrt` IoT (psk2+ccmp) | `smz_homex` + `smz_guest` (WPA2-only)    |
 | Orchid  | **Disabled**              | `smz5mesh` (802.11s mesh backhaul)        |
