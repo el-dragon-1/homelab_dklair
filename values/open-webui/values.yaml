@@ -4,8 +4,11 @@
 # - Exposes service at ai.dklair.io through Traefik
 # - Pins inference (Ollama) to eldragon GPU node
 
+replicaCount: 0
+
 ollama:
   enabled: true
+  replicaCount: 0
   runtimeClassName: nvidia
   image:
     repository: ollama/ollama
