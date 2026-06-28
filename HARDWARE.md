@@ -127,7 +127,7 @@ All OpenWRT devices run OpenWRT 25.12.4 and are reconciled via Ansible CronJobs 
 `openwrt-ops` reconciliation jobs use a 15-minute runtime cap (`activeDeadlineSeconds: 900`) and 10-minute post-completion cleanup TTL (`ttlSecondsAfterFinished: 600`) to avoid stale running jobs.
 
 ## Cluster Management
-- **Orchestration**: Kubernetes 1.34.6+k3s1
+- **Orchestration**: Kubernetes 1.36.2+k3s1
 - **CNI**: Flannel (Default K3S CNI)
 - **Load Balancer & HA**: KubeVIP v1.0.0 (managing control plane VIP 192.168.4.20)
 - **Control Plane IP**: 192.168.4.20 (KubeVIP-managed virtual IP)

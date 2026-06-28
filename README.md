@@ -8,7 +8,7 @@ Repo-wide agent instructions live in [.github/copilot-instructions.md](.github/c
 
 ## Cluster Overview
 
-- **Orchestration**: Kubernetes 1.34.6+k3s1 (K3S lightweight distribution)
+- **Orchestration**: Kubernetes 1.36.2+k3s1 (K3S lightweight distribution)
 - **High Availability**: 3-node control plane with KubeVIP virtual IP (192.168.4.20)
 - **Load Balancing**: KubeVIP v1.0.0 for control plane HA and ingress LB
 - **Networking**: Flannel CNI with 192.168.4.0/24 VLAN
