@@ -9,6 +9,21 @@ defaultRules:
 
 alertmanager:
   enabled: true
+  ingress:
+    enabled: true
+    ingressClassName: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    hosts:
+      - alertmanager.dklair.io
+    paths:
+      - /
+    pathType: Prefix
+    tls:
+      - hosts:
+          - alertmanager.dklair.io
+        secretName: alertmanager-tls
   config:
     global:
       resolve_timeout: 5m
