@@ -1,0 +1,13 @@
+# Keep Longhorn components on tainted control-plane nodes.
+global:
+  nodeSelector:
+    node-role.kubernetes.io/control-plane: "true"
+  tolerations:
+    - key: homelab.io/control-infra
+      operator: Equal
+      value: "true"
+      effect: NoSchedule
+
+defaultSettings:
+  taintToleration: homelab.io/control-infra=true:NoSchedule
+  systemManagedComponentsNodeSelector: node-role.kubernetes.io/control-plane:true

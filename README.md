@@ -95,6 +95,7 @@ Inter-node Communication & External Network
 - **Replica Factor**: 5 copies across cluster
 - **Storage Nodes**: All 5 nodes (node1, node2, node3, eldragon, orangepi5)
 - **Backend Storage**: NVMe/SSD on each node
+- **GitOps Management**: Argo CD app at `apps/argocd/longhorn-application.yaml` with values in `values/longhorn/values.yaml`
 - **Use Cases**: 
   - Persistent volumes for databases (PostgreSQL via CloudNativePG)
   - Redis cluster data persistence
