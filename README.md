@@ -96,6 +96,7 @@ Inter-node Communication & External Network
 - **Storage Nodes**: All 5 nodes (node1, node2, node3, eldragon, orangepi5)
 - **Backend Storage**: NVMe/SSD on each node
 - **GitOps Management**: Argo CD app at `apps/argocd/longhorn-application.yaml` with values in `values/longhorn/values.yaml`
+- **Operations Runbook**: `tutorials/longhorn/all-node-health-checks.md`
 - **Use Cases**: 
   - Persistent volumes for databases (PostgreSQL via CloudNativePG)
   - Redis cluster data persistence
@@ -131,6 +132,15 @@ npx repomix ~/homelab_dklair # Generate single markdown file for upload
 ```
 
 This consolidates the repo into a single file suitable for LLM prompts. All content is public and can be uploaded.
+
+### Longhorn Runbook Trigger Points
+
+Run `tutorials/longhorn/all-node-health-checks.md` after any of the following:
+
+- Longhorn chart/version changes
+- Node taint or node-selector changes
+- Argo CD syncs that modify Longhorn resources
+- Alerts related to Longhorn DaemonSet rollout or storage health
 
 ## Deploying Applications with GitOps
 
