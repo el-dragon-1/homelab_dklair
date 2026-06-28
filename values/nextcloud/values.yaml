@@ -13,6 +13,33 @@ nextcloud:
   trustedDomains:
     - nextcloud.dklair.io
 
+  # Explicit reverse-proxy trust configuration to satisfy Nextcloud's
+  # forwarded-for header security checks behind Traefik.
+  extraEnv:
+    - name: TRUSTED_PROXIES
+      value: "10.42.0.0/16 10.43.0.0/16"
+    - name: FORWARDED_FOR_HEADERS
+      value: "HTTP_X_FORWARDED_FOR"
+
+  # Admin hardening defaults.
+  configs:
+    z-admin-defaults.config.php: |-
+      <?php
+      $CONFIG = array (
+        'maintenance_window_start' => 3,
+        'default_phone_region' => 'US',
+        'server_id' => 'nextcloud-k3s-01',
+      );
+
+internalDatabase:
+  enabled: false
+
+mariadb:
+  enabled: false
+
+postgresql:
+  enabled: false
+
 externalDatabase:
   enabled: true
   type: postgresql
@@ -32,6 +59,7 @@ ingress:
   annotations:
     cert-manager.io/cluster-issuer: letsencrypt-prod
     traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    traefik.ingress.kubernetes.io/router.middlewares: nextcloud-nextcloud-security-headers@kubernetescrd
   tls:
     - secretName: nextcloud-tls
       hosts:
@@ -43,6 +71,18 @@ phpClientHttpsFix:
   enabled: true
   protocol: https
 
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  master:
+    persistence:
+      enabled: false
+  replica:
+    replicaCount: 0
+    persistence:
+      enabled: false
+
 persistence:
   enabled: true
   storageClass: longhorn
@@ -51,3 +91,15 @@ persistence:
 cronjob:
   enabled: true
   type: sidecar
+
+# Traefik middleware applied via ingress annotation to set strict security headers.
+extraManifests:
+  - apiVersion: traefik.io/v1alpha1
+    kind: Middleware
+    metadata:
+      name: nextcloud-security-headers
+    spec:
+      headers:
+        stsSeconds: 15552000
+        stsIncludeSubdomains: true
+        stsPreload: true
