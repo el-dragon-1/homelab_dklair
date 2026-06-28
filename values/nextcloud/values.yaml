@@ -26,6 +26,11 @@ nextcloud:
     z-admin-defaults.config.php: |-
       <?php
       $CONFIG = array (
+        'trusted_domains' =>
+        array (
+          0 => 'localhost',
+          1 => 'nextcloud.dklair.io',
+        ),
         'maintenance_window_start' => 3,
         'default_phone_region' => 'US',
         'server_id' => 'nextcloud-k3s-01',
