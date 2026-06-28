@@ -25,6 +25,7 @@ alertmanager:
             api_url: https://api.telegram.org
             bot_token_file: /etc/alertmanager/secrets/alertmanager-receivers/telegram-bot-token
             chat_id: 8328718822
+      - name: "null"
   alertmanagerSpec:
     replicas: 1
     storage:
