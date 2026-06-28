@@ -1,0 +1,53 @@
+# Nextcloud values for the shared cluster deployment.
+# Uses the existing PostgreSQL instance in the cluster and keeps secrets out of git.
+
+nextcloud:
+  host: nextcloud.dklair.io
+  username: admin
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-admin
+    usernameKey: username
+    passwordKey: password
+
+  trustedDomains:
+    - nextcloud.dklair.io
+
+externalDatabase:
+  enabled: true
+  type: postgresql
+  host: postgresql-rw.postgresql.svc.cluster.local:5432
+  database: nextcloud
+  existingSecret:
+    enabled: true
+    secretName: nextcloud-db
+    usernameKey: username
+    passwordKey: password
+
+ingress:
+  enabled: true
+  className: my-traefik
+  path: /
+  pathType: Prefix
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  tls:
+    - secretName: nextcloud-tls
+      hosts:
+        - nextcloud.dklair.io
+
+# HTTPS ingress termination is handled by Traefik, so Nextcloud should
+# generate https URLs and callbacks.
+phpClientHttpsFix:
+  enabled: true
+  protocol: https
+
+persistence:
+  enabled: true
+  storageClass: longhorn
+  size: 20Gi
+
+cronjob:
+  enabled: true
+  type: sidecar
