@@ -21,10 +21,17 @@ backendConfigMap:
   DATABASE_HOST: postgresql-rw.postgresql.svc.cluster.local
   DATABASE_PORT: "5432"
   DATABASE_NAME: baserow
+  # Run migrations at application startup to avoid Redis dependency in chart pre-sync hook.
+  MIGRATE_ON_STARTUP: "true"
 
 # Use cluster Traefik instead of bundled Caddy ingress controller.
 caddy:
   enabled: false
 
 ingress:
+  enabled: false
+
+# Disable chart migration hook job. It runs as a pre-sync hook and currently fails
+# before Redis resources are created.
+migration:
   enabled: false
