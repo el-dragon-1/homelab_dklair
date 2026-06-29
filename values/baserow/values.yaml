@@ -1,0 +1,30 @@
+# Baserow values
+# - Deploys via Traefik + cert-manager
+# - Reuses shared PostgreSQL (CloudNativePG) instead of chart-managed Postgres
+# - Pulls DB credentials from ExternalSecret-managed Secret baserow-db
+
+global:
+  baserow:
+    domain: baserow.dklair.io
+    backendDomain: api.baserow.dklair.io
+    objectsDomain: objects.baserow.dklair.io
+    envFrom:
+      - secretRef:
+          name: baserow-db
+
+# Use existing PostgreSQL cluster, not chart-managed dependency.
+postgresql:
+  enabled: false
+
+# Provide external PostgreSQL connection details (non-secret values only).
+backendConfigMap:
+  DATABASE_HOST: postgresql-rw.postgresql.svc.cluster.local
+  DATABASE_PORT: "5432"
+  DATABASE_NAME: baserow
+
+# Use cluster Traefik instead of bundled Caddy ingress controller.
+caddy:
+  enabled: false
+
+ingress:
+  enabled: false

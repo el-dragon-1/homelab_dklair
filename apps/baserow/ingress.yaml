@@ -1,0 +1,68 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: baserow
+  namespace: baserow
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+spec:
+  ingressClassName: my-traefik
+  tls:
+    - secretName: baserow-tls
+      hosts:
+        - baserow.dklair.io
+        - api.baserow.dklair.io
+        - objects.baserow.dklair.io
+  rules:
+    - host: baserow.dklair.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-frontend
+                port:
+                  number: 80
+    - host: api.baserow.dklair.io
+      http:
+        paths:
+          - path: /ws/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /mcp/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /assistant/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-wsgi
+                port:
+                  number: 80
+    - host: objects.baserow.dklair.io
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-minio
+                port:
+                  number: 9000
