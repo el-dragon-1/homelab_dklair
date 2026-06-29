@@ -17,6 +17,9 @@ spec:
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      path: apps/nextcloud
   destination:
     server: https://kubernetes.default.svc
     namespace: nextcloud

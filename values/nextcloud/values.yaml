@@ -96,15 +96,3 @@ persistence:
 cronjob:
   enabled: true
   type: sidecar
-
-# Traefik middleware applied via ingress annotation to set strict security headers.
-extraManifests:
-  - apiVersion: traefik.io/v1alpha1
-    kind: Middleware
-    metadata:
-      name: nextcloud-security-headers
-    spec:
-      headers:
-        stsSeconds: 15552000
-        stsIncludeSubdomains: true
-        stsPreload: true
