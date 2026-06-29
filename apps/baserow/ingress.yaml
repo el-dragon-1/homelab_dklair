@@ -18,6 +18,34 @@ spec:
     - host: baserow.dklair.io
       http:
         paths:
+          - path: /ws/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /mcp/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /assistant/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-asgi
+                port:
+                  number: 80
+          - path: /api/
+            pathType: Prefix
+            backend:
+              service:
+                name: baserow-baserow-backend-wsgi
+                port:
+                  number: 80
           - path: /
             pathType: Prefix
             backend:

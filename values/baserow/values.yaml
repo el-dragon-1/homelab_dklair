@@ -6,7 +6,8 @@
 global:
   baserow:
     domain: baserow.dklair.io
-    backendDomain: api.baserow.dklair.io
+    # Use the same public host for UI and API to avoid split-DNS/proxy issues.
+    backendDomain: baserow.dklair.io
     objectsDomain: objects.baserow.dklair.io
     envFrom:
       - secretRef:
