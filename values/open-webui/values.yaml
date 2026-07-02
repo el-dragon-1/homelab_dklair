@@ -109,10 +109,13 @@ extraEnvVars:
   - name: WEB_SEARCH_ENGINE
     value: brave
   - name: WEB_SEARCH_RESULT_COUNT
-    value: "5"
+    value: "3"
   # Brave free tier is rate-limited; sequential requests are more reliable.
   - name: WEB_SEARCH_CONCURRENT_REQUESTS
     value: "1"
+  # Prevent multi-query fan-out per message, which can trigger Brave 429s.
+  - name: ENABLE_SEARCH_QUERY_GENERATION
+    value: "False"
   - name: BRAVE_SEARCH_API_KEY
     valueFrom:
       secretKeyRef:
