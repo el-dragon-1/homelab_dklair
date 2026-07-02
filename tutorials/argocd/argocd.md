@@ -1,5 +1,9 @@
 # ArgoCD
 
+## Related Runbooks
+
+- Nextcloud theming safeguard and post-login 500 troubleshooting: [tutorials/nextcloud/theming-safeguard-runbook.md](../nextcloud/theming-safeguard-runbook.md)
+
 ArgoCD was added using helm and the following yaml file [values.yaml](tutorials/argocd/values.yaml). The configuration is working but I didnt trim the fat before running:
 
 There is sample documentation within the ArgoCD docs [Here](https://argo-cd.readthedocs.io/en/stable/operator-manual/installation/#helm). I was directed to where the [helm charts](https://github.com/argoproj/argo-helm/tree/main/charts/argo-cd) are being maintained.

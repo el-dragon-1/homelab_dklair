@@ -160,6 +160,10 @@ This verifies:
 - NVIDIA device visibility in the Ollama container
 - A short inference run and GPU processor usage via ollama ps
 
+### Nextcloud Post-Install/Upgrade Safeguard
+
+Nextcloud safeguard details and troubleshooting are documented in [tutorials/nextcloud/theming-safeguard-runbook.md](tutorials/nextcloud/theming-safeguard-runbook.md).
+
 ### Repository Standards
 
 - Deploy Kubernetes applications as Helm charts.

@@ -36,6 +36,23 @@ nextcloud:
         'server_id' => 'nextcloud-k3s-01',
       );
 
+  # Enforce known-good theming defaults after install/upgrade.
+  # This avoids user-session 500 errors observed when user theming
+  # color values are invalid or empty.
+  hooks:
+    post-installation: |-
+      #!/bin/sh
+      set -eu
+      php occ config:app:set theming disable-user-theming --value='yes' || true
+      php occ config:app:set theming color --value='#0082c9' || true
+      php occ config:app:set theming background_color --value='#0082c9' || true
+    post-upgrade: |-
+      #!/bin/sh
+      set -eu
+      php occ config:app:set theming disable-user-theming --value='yes' || true
+      php occ config:app:set theming color --value='#0082c9' || true
+      php occ config:app:set theming background_color --value='#0082c9' || true
+
 internalDatabase:
   enabled: false
 

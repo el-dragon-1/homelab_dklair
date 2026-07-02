@@ -12,6 +12,8 @@ spec:
       chart: nextcloud
       targetRevision: 9.1.4
       helm:
+        # Safeguard details and troubleshooting:
+        # tutorials/nextcloud/theming-safeguard-runbook.md
         valueFiles:
           - $values/values/nextcloud/values.yaml
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
