@@ -1,14 +1,14 @@
 # Open WebUI values
 # - Uses existing PostgreSQL cluster (same instance, no new DB service)
-# - Uses chart-managed single-node Redis for websocket manager (avoids Redis Cluster MOVED errors)
+# - Disables websocket support to avoid Redis dependency failures on single replica
 # - Exposes service at ai.dklair.io through Traefik
-# - Pins inference (Ollama) to eldragon GPU node
+# - Runs local Ollama inference pinned to eldragon GPU node
 
 replicaCount: 1
 
 ollama:
   enabled: true
-  replicaCount: 0
+  replicaCount: 1
   runtimeClassName: nvidia
   image:
     repository: ollama/ollama
@@ -60,10 +60,10 @@ tika:
   enabled: false
 
 websocket:
-  enabled: true
-  manager: redis
+  enabled: false
+  manager: memory
   redis:
-    enabled: true   # chart deploys a standalone Redis pod - compatible with Open WebUI's non-cluster client
+    enabled: false  # single-replica Open WebUI uses in-memory websocket state; avoids Redis dependency failures
 
 ingress:
   enabled: true
