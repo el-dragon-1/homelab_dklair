@@ -115,7 +115,7 @@ extraEnvVars:
     value: "1"
   # Prevent multi-query fan-out per message, which can trigger Brave 429s.
   - name: ENABLE_SEARCH_QUERY_GENERATION
-    value: "False"
+    value: "True"
   - name: BRAVE_SEARCH_API_KEY
     valueFrom:
       secretKeyRef:
