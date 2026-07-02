@@ -4,7 +4,7 @@
 # - Exposes service at ai.dklair.io through Traefik
 # - Pins inference (Ollama) to eldragon GPU node
 
-replicaCount: 0
+replicaCount: 1
 
 ollama:
   enabled: true
