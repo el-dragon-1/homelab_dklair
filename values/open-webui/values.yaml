@@ -107,10 +107,12 @@ extraEnvVars:
   - name: ENABLE_WEB_SEARCH
     value: "True"
   - name: WEB_SEARCH_ENGINE
-    value: brave
+    value: searxng
+  - name: SEARXNG_QUERY_URL
+    value: http://searxng.searxng.svc.cluster.local:8080/search
   - name: WEB_SEARCH_RESULT_COUNT
     value: "3"
-  # Brave free tier is rate-limited; sequential requests are more reliable.
+  # Keep search requests sequential to reduce provider/API bursts.
   - name: WEB_SEARCH_CONCURRENT_REQUESTS
     value: "1"
   # Prevent multi-query fan-out per message, which can trigger Brave 429s.

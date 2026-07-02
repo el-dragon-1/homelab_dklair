@@ -1,0 +1,27 @@
+replicaCount: 1
+
+service:
+  type: ClusterIP
+  port: 8080
+
+ingress:
+  enabled: false
+
+# Keep this internal-only for Open WebUI web search.
+config:
+  useDefaultSettings: true
+  settings:
+    server:
+      base_url: http://searxng.searxng.svc.cluster.local:8080/
+      limiter: false
+      public_instance: false
+      method: GET
+
+# In-cluster deployment does not require persistent cache for this use case.
+persistence:
+  cache:
+    enabled: false
+
+# Open WebUI search volume is low; disable built-in Valkey to reduce moving parts.
+valkey:
+  enabled: false
