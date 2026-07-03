@@ -16,6 +16,15 @@ ingress:
 config:
   useDefaultSettings: true
   settings:
+    engines:
+      # DuckDuckGo is currently CAPTCHA-blocked from this egress IP and often returns zero results.
+      - name: duckduckgo
+        disabled: true
+      # Keep non-web/specialized engines disabled for Open WebUI query flow.
+      - name: wikipedia
+        disabled: true
+      - name: brave
+        disabled: true
     search:
       formats:
         - html
