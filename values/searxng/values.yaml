@@ -20,6 +20,19 @@ config:
       # DuckDuckGo is currently CAPTCHA-blocked from this egress IP and often returns zero results.
       - name: duckduckgo
         disabled: true
+      # Measured as consistently zero-result in current cluster egress path.
+      - name: startpage
+        disabled: true
+      - name: qwant
+        disabled: true
+      - name: google
+        disabled: true
+      - name: yahoo
+        disabled: true
+      - name: mojeek
+        disabled: true
+      - name: naver
+        disabled: true
       # Keep non-web/specialized engines disabled for Open WebUI query flow.
       - name: wikipedia
         disabled: true
