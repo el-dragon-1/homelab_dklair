@@ -11,10 +11,14 @@ ingress:
 config:
   useDefaultSettings: true
   settings:
+    search:
+      formats:
+        - html
+        - json
     server:
       base_url: http://searxng.searxng.svc.cluster.local:8080/
       limiter: false
-      public_instance: true
+      public_instance: false
       method: GET
 
 # In-cluster deployment does not require persistent cache for this use case.

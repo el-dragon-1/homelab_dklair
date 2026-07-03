@@ -7,6 +7,12 @@ metadata:
     argocd.argoproj.io/sync-wave: "3"
 spec:
   project: default
+  ignoreDifferences:
+    - kind: Secret
+      name: searxng-runtime
+      namespace: searxng
+      jsonPointers:
+        - /data/SEARXNG_SECRET
   sources:
     - repoURL: https://techpipe-io.github.io/searxng-helm-chart/
       chart: searxng
