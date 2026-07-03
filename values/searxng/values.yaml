@@ -4,6 +4,11 @@ service:
   type: ClusterIP
   port: 8080
 
+# Pin runtime secret value so Helm rendering is deterministic under Argo CD.
+secret:
+  create: true
+  value: "searxng-runtime-secret-change-me-if-rotating"
+
 ingress:
   enabled: false
 
