@@ -110,14 +110,16 @@ extraEnvVars:
     value: searxng
   - name: SEARXNG_QUERY_URL
     value: http://searxng.searxng.svc.cluster.local:8080/search
+  - name: SEARXNG_LANGUAGE
+    value: all
   - name: WEB_SEARCH_RESULT_COUNT
     value: "3"
   # Keep search requests sequential to reduce provider/API bursts.
   - name: WEB_SEARCH_CONCURRENT_REQUESTS
     value: "1"
-  # Prevent multi-query fan-out per message, which can trigger Brave 429s.
+  # Use the user's query directly; generated queries can be over-specific and return no results.
   - name: ENABLE_SEARCH_QUERY_GENERATION
-    value: "True"
+    value: "False"
   - name: BRAVE_SEARCH_API_KEY
     valueFrom:
       secretKeyRef:
