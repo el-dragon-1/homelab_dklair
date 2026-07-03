@@ -14,7 +14,7 @@ config:
     server:
       base_url: http://searxng.searxng.svc.cluster.local:8080/
       limiter: false
-      public_instance: false
+      public_instance: true
       method: GET
 
 # In-cluster deployment does not require persistent cache for this use case.
