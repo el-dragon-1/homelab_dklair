@@ -117,9 +117,9 @@ extraEnvVars:
   # Keep search requests sequential to reduce provider/API bursts.
   - name: WEB_SEARCH_CONCURRENT_REQUESTS
     value: "1"
-  # Use the user's query directly; generated queries can be over-specific and return no results.
+  # Required by current Open WebUI middleware path; disabling triggers generation errors.
   - name: ENABLE_SEARCH_QUERY_GENERATION
-    value: "False"
+    value: "True"
   - name: BRAVE_SEARCH_API_KEY
     valueFrom:
       secretKeyRef:
