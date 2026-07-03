@@ -107,7 +107,12 @@ extraEnvVars:
   - name: ENABLE_WEB_SEARCH
     value: "True"
   - name: WEB_SEARCH_ENGINE
-    value: brave
+    value: tavily
+  - name: TAVILY_API_KEY
+    valueFrom:
+      secretKeyRef:
+        name: open-webui-search
+        key: tavily_api_key
   - name: WEB_SEARCH_RESULT_COUNT
     value: "3"
   # Keep search requests sequential to reduce provider/API bursts.
