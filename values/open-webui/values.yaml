@@ -120,6 +120,12 @@ extraEnvVars:
   # Keep search requests sequential to reduce provider/API bursts.
   - name: WEB_SEARCH_CONCURRENT_REQUESTS
     value: "1"
+  # Use search snippets directly as sources; avoids failures when downstream pages block the web loader.
+  - name: BYPASS_WEB_SEARCH_WEB_LOADER
+    value: "True"
+  # Skip embedding/retrieval for web search and attach fetched snippets directly.
+  - name: BYPASS_WEB_SEARCH_EMBEDDING_AND_RETRIEVAL
+    value: "True"
   # Required by current Open WebUI middleware path; disabling triggers web-search errors.
   - name: ENABLE_SEARCH_QUERY_GENERATION
     value: "True"
