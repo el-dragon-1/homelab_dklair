@@ -86,6 +86,8 @@ persistence:
 # from ExternalSecret in open-webui namespace. This avoids storing a full
 # DATABASE_URL in git.
 extraEnvVars:
+  - name: ENABLE_PERSISTENT_CONFIG
+    value: "False"
   - name: DATABASE_TYPE
     value: postgresql
   - name: DATABASE_HOST
