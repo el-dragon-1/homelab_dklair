@@ -18,6 +18,11 @@ existingSecret: pgadmin-admin
 secretKeys:
   pgadminPasswordKey: password
 
+serverDefinitions:
+  enabled: true
+  resourceType: Secret
+  existingSecret: pgadmin-admin
+
 env:
   email: davidcpolizzi@gmail.com
 
