@@ -117,17 +117,6 @@ kubeProxy:
 nodeExporter:
   enabled: true
 
-prometheus-node-exporter:
-  affinity:
-    nodeAffinity:
-      requiredDuringSchedulingIgnoredDuringExecution:
-        nodeSelectorTerms:
-          - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-                  - node3
-
 kube-state-metrics:
   enabled: true
 
