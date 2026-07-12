@@ -1,0 +1,56 @@
+authentik:
+  enabled: false
+
+global:
+  env:
+    - name: AUTHENTIK_SECRET_KEY
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: secret_key
+    - name: AUTHENTIK_POSTGRESQL__HOST
+      value: postgresql-rw.postgresql.svc.cluster.local
+    - name: AUTHENTIK_POSTGRESQL__PORT
+      value: "5432"
+    - name: AUTHENTIK_POSTGRESQL__NAME
+      value: authentik
+    - name: AUTHENTIK_POSTGRESQL__USER
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: username
+    - name: AUTHENTIK_POSTGRESQL__PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: password
+    - name: AUTHENTIK_BOOTSTRAP_EMAIL
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: bootstrap_email
+    - name: AUTHENTIK_BOOTSTRAP_PASSWORD
+      valueFrom:
+        secretKeyRef:
+          name: authentik-credentials
+          key: bootstrap_password
+    - name: AUTHENTIK_DISABLE_UPDATE_CHECK
+      value: "true"
+
+server:
+  replicas: 1
+  ingress:
+    enabled: true
+    ingressClassName: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    hosts:
+      - authentik.dklair.io
+    tls:
+      - secretName: authentik-tls
+        hosts:
+          - authentik.dklair.io
+
+worker:
+  replicas: 1

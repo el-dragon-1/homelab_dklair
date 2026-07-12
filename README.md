@@ -164,6 +164,10 @@ This verifies:
 
 Nextcloud safeguard details and troubleshooting are documented in [tutorials/nextcloud/theming-safeguard-runbook.md](tutorials/nextcloud/theming-safeguard-runbook.md).
 
+### Authentik Bootstrap
+
+Authentik uses the shared PostgreSQL instance and bootstrap credentials from Vault-synced secrets. Before the first sync, run [scripts/provision-authentik-db-from-secrets.sh](scripts/provision-authentik-db-from-secrets.sh) so the Authentik role and database exist in PostgreSQL.
+
 ### Repository Standards
 
 - Deploy Kubernetes applications as Helm charts.
