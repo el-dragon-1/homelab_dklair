@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: authentik-user-settings
+  namespace: authentik
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+data:
+  user_settings.py: |
+    SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+    USE_X_FORWARDED_HOST = True

@@ -39,6 +39,16 @@ global:
     - name: AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS
       value: 10.42.0.0/16,10.43.0.0/16
 
+  volumeMounts:
+    - name: authentik-user-settings
+      mountPath: /data/user_settings.py
+      subPath: user_settings.py
+
+  volumes:
+    - name: authentik-user-settings
+      configMap:
+        name: authentik-user-settings
+
 server:
   replicas: 1
   ingress:
