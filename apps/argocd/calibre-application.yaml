@@ -13,9 +13,9 @@ spec:
     namespace: calibre
     server: https://kubernetes.default.svc
   sources:
-    - repoURL: https://geek-cookbook.github.io/charts
+    - repoURL: https://k8s-home-lab.github.io/helm-charts
       chart: calibre-web
-      targetRevision: 8.4.2
+      targetRevision: 9.1.1
       helm:
         valueFiles:
           - $values/values/calibre/values.yaml
