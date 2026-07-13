@@ -1,0 +1,45 @@
+image:
+  repository: linuxserver/calibre-web
+  tag: version-0.6.12
+  pullPolicy: IfNotPresent
+
+env:
+  TZ: America/New_York
+  PUID: "1001"
+  PGID: "1001"
+
+service:
+  main:
+    ports:
+      http:
+        port: 8083
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: calibre.dklair.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - calibre.dklair.io
+        secretName: calibre-tls
+
+persistence:
+  config:
+    enabled: true
+    mountPath: /config
+    accessMode: ReadWriteOnce
+    size: 15Gi
+    storageClass: longhorn
+  books:
+    enabled: true
+    mountPath: /books
+    accessMode: ReadWriteOnce
+    size: 50Gi
+    storageClass: longhorn
