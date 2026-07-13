@@ -1,0 +1,57 @@
+image:
+  repository: ghcr.io/gethomepage/homepage
+  tag: v1.13.2
+  pullPolicy: IfNotPresent
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: my-traefik
+    hosts:
+      - host: homepage.dklair.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - homepage.dklair.io
+        secretName: homepage-tls
+
+env:
+  - name: HOMEPAGE_ALLOWED_HOSTS
+    value: homepage.dklair.io
+
+config:
+  settingsString: |
+    title: Homelab Dashboard
+    headerStyle: boxed
+
+  bookmarks:
+    - Infrastructure:
+        - Argo CD:
+            - abbr: CD
+              href: https://argocd.dklair.io
+        - Longhorn:
+            - abbr: LH
+              href: https://longhorn.dklair.io
+        - Pi-hole:
+            - abbr: DNS
+              href: https://pihole.dklair.io
+        - Vault:
+            - abbr: KV
+              href: https://vault.dklair.io
+
+  services:
+    - Applications:
+        - Nextcloud:
+            href: https://nextcloud.dklair.io
+            description: Files and collaboration
+        - Open WebUI:
+            href: https://open-webui.dklair.io
+            description: Local AI chat
+        - pgAdmin:
+            href: https://pgadmin.dklair.io
+            description: PostgreSQL administration
+        - Uptime Kuma:
+            href: https://uptime-kuma.dklair.io
+            description: Service monitoring
