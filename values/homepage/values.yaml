@@ -55,3 +55,6 @@ config:
         - Uptime Kuma:
             href: https://uptime-kuma.dklair.io
             description: Service monitoring
+        - Home Assistant:
+            href: https://home-assistant.dklair.io
+            description: Home automation

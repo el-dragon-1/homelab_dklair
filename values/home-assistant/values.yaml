@@ -1,0 +1,32 @@
+env:
+  - name: TZ
+    value: America/New_York
+
+configuration:
+  enabled: true
+  trusted_proxies:
+    - 10.0.0.0/8
+    - 172.16.0.0/12
+    - 192.168.0.0/16
+    - 127.0.0.0/8
+
+ingress:
+  enabled: true
+  className: my-traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts:
+    - host: home-assistant.dklair.io
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: home-assistant-tls
+      hosts:
+        - home-assistant.dklair.io
+
+persistence:
+  enabled: true
+  accessMode: ReadWriteOnce
+  size: 10Gi
+  storageClass: longhorn
