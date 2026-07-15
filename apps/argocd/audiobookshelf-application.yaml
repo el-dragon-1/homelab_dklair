@@ -1,0 +1,32 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: audiobookshelf
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/managed-by-cluster-argocd: argocd
+    argocd.argoproj.io/sync-wave: "5"
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    namespace: audiobookshelf
+    server: https://kubernetes.default.svc
+  sources:
+    - repoURL: https://k8s-home-lab.github.io/helm-charts
+      chart: audiobookshelf
+      targetRevision: 2.0.1
+      helm:
+        valueFiles:
+          - $values/values/audiobookshelf/values.yaml
+    - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
+      targetRevision: HEAD
+      ref: values
+  project: default
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+      allowEmpty: false
+    syncOptions:
+      - CreateNamespace=true

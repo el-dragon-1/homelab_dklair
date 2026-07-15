@@ -1,0 +1,49 @@
+image:
+  repository: ghcr.io/advplyr/audiobookshelf
+  tag: 2.32.1
+  pullPolicy: IfNotPresent
+
+env:
+  TZ: America/New_York
+
+service:
+  main:
+    ports:
+      http:
+        port: 80
+
+ingress:
+  main:
+    enabled: true
+    ingressClassName: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+    hosts:
+      - host: audiobookshelf.dklair.io
+        paths:
+          - path: /
+            pathType: Prefix
+    tls:
+      - hosts:
+          - audiobookshelf.dklair.io
+        secretName: audiobookshelf-tls
+
+persistence:
+  config:
+    enabled: true
+    mountPath: /config
+    accessMode: ReadWriteOnce
+    size: 10Gi
+    storageClass: longhorn
+  metadata:
+    enabled: true
+    mountPath: /metadata
+    accessMode: ReadWriteOnce
+    size: 20Gi
+    storageClass: longhorn
+  media:
+    enabled: true
+    mountPath: /audiobooks
+    accessMode: ReadWriteOnce
+    size: 100Gi
+    storageClass: longhorn
