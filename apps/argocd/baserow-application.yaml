@@ -28,6 +28,16 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: baserow
+  ignoreDifferences:
+    - kind: Secret
+      name: baserow-minio
+      namespace: baserow
+      jsonPointers:
+        - /data
+    - group: apps
+      kind: Deployment
+      jsonPointers:
+        - /spec/template/metadata/annotations
   syncPolicy:
     automated:
       prune: true
