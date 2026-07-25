@@ -21,6 +21,7 @@ Use this file to preserve durable outcomes from Argo CD troubleshooting and oper
   - Restrict placement to node1, node2, node3, orangepi5.
   - Keep hard pod anti-affinity by hostname so replicas run on separate nodes.
   - Tolerate homelab.io/control-infra:NoSchedule to allow control-plane placement.
+  - If one replica stays Pending during rollout, check for control-plane taint tolerance and anti-affinity conflicts first.
 
 ## Open Questions
 - Evaluate whether to add topology spread constraints for stronger distribution behavior during rollouts.
