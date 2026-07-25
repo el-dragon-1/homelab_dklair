@@ -42,6 +42,18 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Working Fixes
 - Before the first sync or after credential drift, run [../../scripts/provision-authentik-db-from-secrets.sh](../../scripts/provision-authentik-db-from-secrets.sh) so the role, database, and schema grants match the Vault-synced Secret.
 - The provisioning helper prefers Secret `postgresql-superuser` and falls back to `postgresql-admin`; preserve that lookup order unless cluster admin-secret conventions change.
+- For a new protected app, reuse the embedded outpost and create one Proxy Provider plus one Authentik Application per hostname; reuse groups and policies when the access rules are shared.
+- When attaching Authentik to an app ingress, set `traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik-forward-auth@kubernetescrd` in the app's `values/<app>/values.yaml` ingress annotations.
+- If the chart schema rejects ingress annotations, set `spec.sources[].helm.skipSchemaValidation: true` only for that Argo CD application source, then resync.
+- After changing ingress annotations, verify the middleware exists in namespace `authentik`, sync the app, and test the URL in a private browser window before assuming auth is broken.
+
+## Deployment Workflow
+- Start in Authentik Admin with `Applications -> Providers` to create or reuse the Proxy Provider.
+- Bind the provider to the Authentik Application.
+- Add the Application to the embedded Proxy Outpost.
+- Update the target app ingress annotation in its values file and commit the change.
+- Sync `external-secrets-config` if the middleware was added or changed, then sync the target app.
+- Validate with a private browser session and cluster checks if the redirect or access behavior is unexpected.
 
 ## Dependencies And Secrets
 - Secret `authentik-credentials` provides the Authentik secret key, PostgreSQL username/password, and bootstrap email/password.
