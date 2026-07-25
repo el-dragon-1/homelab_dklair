@@ -8,6 +8,18 @@ metadata:
     argocd.argoproj.io/sync-wave: "1"
   finalizers:
     - resources-finalizer.argocd.argoproj.io
+# Pre-deployment review checklist:
+# - Read the upstream Helm chart docs before creating the app manifest.
+# - Confirm whether the chart creates its own database, ingress, persistence,
+#   controllers, or other stateful components that need explicit disabling.
+# - Confirm the replica model is safe for the workload before enabling HA.
+# - Prefer ARM64 scheduling on this cluster when the image supports it.
+# - If AMD64 is required, keep the workload to a single replica and pin it to
+#   the appropriate AMD64 node or node pool with affinity or selectors.
+# - For PostgreSQL-backed apps, create the Vault secret path first, sync the
+#   ExternalSecret, run the provisioner script, and only then sync the app.
+# - Prefer the shared PostgreSQL instance unless isolation or performance
+#   requirements justify a dedicated database.
 spec:
   destination:
     namespace: whoami
@@ -22,8 +34,6 @@ spec:
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git # <<<< the git repository containing the values file
       targetRevision: HEAD
       ref: values
-  # For apps that need a database, prefer the existing PostgreSQL instance.
-  # Configure DB connection values in values/<app-name>/values.yaml and source credentials from Kubernetes Secrets.
   project: default
   syncPolicy:
     automated:

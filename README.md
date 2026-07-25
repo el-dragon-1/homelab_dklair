@@ -157,6 +157,20 @@ Run `tutorials/longhorn/all-node-health-checks.md` after any of the following:
 
 All applications are deployed through Argo CD using a two-file pattern: a Helm values file and an Argo CD Application manifest.
 
+### Pre-Deployment Review
+
+Before adding or updating an app, review the upstream Helm chart first and confirm the deployment model fits this cluster.
+
+- Check whether the chart creates its own database, ingress, persistence, or other stateful controllers that need explicit disabling.
+- Confirm whether the workload can safely run with multiple replicas before treating it as HA.
+- Prefer ARM64 scheduling when the image supports it, since most worker capacity in this cluster is ARM64.
+- If the image requires AMD64, keep the workload to a single replica and pin it to the appropriate AMD64 node or node pool.
+- Keep app-specific overrides in [values/<app-name>/values.yaml](values/) and preserve the repo's two-source Argo CD pattern.
+- For database-backed apps, prefer the shared PostgreSQL instance unless there is a clear isolation or performance requirement.
+- If a database is needed, create or update the Vault secret path first, sync the ExternalSecret, run the app-specific provisioning script, and only then deploy the Argo CD application.
+
+The goal is to catch chart-level deployment requirements before the app is synced, rather than discovering them after rollout.
+
 ### Open WebUI Post-Update GPU Checks
 
 After updating Open WebUI or Ollama values, run the post-update validation script:
