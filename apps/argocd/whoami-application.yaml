@@ -15,6 +15,7 @@ spec:
       targetRevision: 0.1.2
       chart: whoami
       helm:
+        skipSchemaValidation: true
         valueFiles:
           - $values/values/whoami/values.yaml
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git

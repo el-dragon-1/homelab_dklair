@@ -23,14 +23,15 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, ingress mismatches, and unexpected response or routing behavior.
 
 ## Troubleshooting History
-- Date:
-- Issue:
-- Root cause:
-- Fix:
-- Validation:
+- Date: 2026-07-25
+- Issue: Argo CD failed to render whoami chart when adding Traefik middleware annotation under `ingress.annotations`.
+- Root cause: Upstream chart version `0.1.2` has a strict `values.schema.json` that sets `ingress.annotations.additionalProperties=false`, which rejects annotation keys.
+- Fix: Set `skipSchemaValidation: true` in [../../apps/argocd/whoami-application.yaml](../../apps/argocd/whoami-application.yaml) Helm source and keep the middleware annotation in [values.yaml](values.yaml).
+- Validation: `get_errors` reports no YAML issues in both files; next validation is a successful Argo CD sync and browser redirect to Authentik.
 
 ## Working Fixes
-- Keep short, validated repair steps worth reusing.
+- For whoami chart `0.1.2`, keep `spec.sources[0].helm.skipSchemaValidation: true` when using ingress annotations.
+- Protect whoami with Authentik by setting `traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik-forward-auth@kubernetescrd` in [values.yaml](values.yaml).
 
 ## Dependencies And Secrets
 - Note ingress, DNS, and any minimal config inputs that matter during changes.
