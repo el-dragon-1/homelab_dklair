@@ -39,6 +39,9 @@ Cloudflare DNS & Routes
    ↓
 Bananapi R3 Gateway (OpenWRT) - 192.168.4.1
    ├─ Bananapi R3 AP (OpenWRT, 5GHz mesh backhaul)
+  ├─ Cudy M3000 hades (OpenWRT AP)
+  ├─ Cudy M3000 gemini (OpenWRT AP)
+  ├─ Cudy M3000 orchid (OpenWRT mesh AP)
    └─ Netgear GS108PE PoE Switch
        ├─ Control Plane (3x RPi4)
        ├─ eldragon GPU Node
@@ -46,7 +49,7 @@ Bananapi R3 Gateway (OpenWRT) - 192.168.4.1
        └─ UPS: APC Back-UPS Pro 1500VA
 ```
 
-All nodes are configured with static IPs on the 192.168.4.0/24 subnet and connected via the managed switch.
+All nodes and OpenWRT devices are configured with static IPs on the 192.168.4.0/24 subnet and connected via the managed switch or mesh backhaul.
 
 ## KubeVIP Architecture
 
@@ -124,14 +127,6 @@ homelab_dklair/
 ├── HARDWARE.md                     # Detailed hardware specifications
 └── tutorials/                      # Deployment guides and documentation
 ```
-
-From time to time the cluster will require troubleshooting using an LLM. To prepare context for LLM analysis:
-
-```bash
-npx repomix ~/homelab_dklair # Generate single markdown file for upload
-```
-
-This consolidates the repo into a single file suitable for LLM prompts. All content is public and can be uploaded.
 
 ### Per-App Copilot Context
 
