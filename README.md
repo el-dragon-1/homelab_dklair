@@ -41,15 +41,15 @@ Bananapi R3 Gateway (OpenWRT) - 192.168.4.1
    ├─ Bananapi R3 AP (OpenWRT, 5GHz mesh backhaul)
    ├─ Cudy M3000 hades (OpenWRT AP)
    ├─ Cudy M3000 gemini (OpenWRT AP)
-   ├─ Cudy M3000 orchid (OpenWRT mesh AP)
-   └─ Netgear GS108PE PoE Switch
-       ├─ Control Plane (3x RPi4)
-       ├─ eldragon GPU Node
-       ├─ orangepi5 Compute Node
-       └─ UPS: APC Back-UPS Pro 1500VA
+   │  └─ Netgear GS108PE PoE Switch
+   │     ├─ Control Plane (3x RPi4)
+   │     ├─ eldragon GPU Node
+   │     ├─ orangepi5 Compute Node
+   │     └─ UPS: APC Back-UPS Pro 1500VA
+   └─ Cudy M3000 orchid (OpenWRT mesh AP)
 ```
 
-All nodes and OpenWRT devices are configured with static IPs on the 192.168.4.0/24 subnet and connected via the managed switch or mesh backhaul.
+All nodes and OpenWRT devices are configured with static IPs on the 192.168.4.0/24 subnet, with the managed switch uplinked through Gemini and remote links carried over mesh backhaul where applicable.
 
 ## KubeVIP Architecture
 
