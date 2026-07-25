@@ -3,6 +3,7 @@
 ## Related Runbooks
 
 - Nextcloud theming safeguard and post-login 500 troubleshooting: [tutorials/nextcloud/theming-safeguard-runbook.md](../nextcloud/theming-safeguard-runbook.md)
+- Argo CD server placement and HA policy validation: [tutorials/argocd/argocd-server-placement-validation-runbook.md](argocd-server-placement-validation-runbook.md)
 
 ArgoCD was added using helm and the following yaml file [values.yaml](tutorials/argocd/values.yaml). The configuration is working but I didnt trim the fat before running:
 

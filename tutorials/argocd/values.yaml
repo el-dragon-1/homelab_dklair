@@ -1102,7 +1102,31 @@ repoServer:
   volumeMounts: []
   volumes: []
 server:
-  affinity: {}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - node1
+            - node2
+            - node3
+            - orangepi5
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - argocd-server
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+            - argocd
+        topologyKey: kubernetes.io/hostname
   automountServiceAccountToken: true
   autoscaling:
     behavior: {}
@@ -1285,7 +1309,9 @@ server:
   name: server
   networkPolicy:
     create: false
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/arch: arm64
+    kubernetes.io/os: linux
   pdb:
     annotations: {}
     enabled: false
@@ -1335,7 +1361,10 @@ server:
     labels: {}
     name: argocd-server
   terminationGracePeriodSeconds: 30
-  tolerations: []
+  tolerations:
+  - key: homelab.io/control-infra
+    operator: Exists
+    effect: NoSchedule
   topologySpreadConstraints: []
   volumeMounts: []
   volumes: []

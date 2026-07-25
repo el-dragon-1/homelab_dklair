@@ -1,5 +1,10 @@
 # Homelab DKLair Agent Instructions
 
+## Instruction Location
+
+- The auto-loaded instruction entrypoint remains `.github/copilot-instructions.md` for compatibility.
+- High-level guidance is also maintained in `.github/instructions/copilot-instructions.md` for centralized review.
+
 ## Working Principle
 
 Start from the nearest owning file and the smallest relevant document set. Do not widen scope until the local change is understood.
@@ -32,3 +37,10 @@ Start from the nearest owning file and the smallest relevant document set. Do no
 - Use the narrowest useful validation command for the touched files.
 - If behavior changes, prefer a focused test, lint, or manifest check over a broad repo-wide run.
 - Report any assumptions or unresolved gaps explicitly.
+
+## Application Context Files
+
+- For application troubleshooting, read `values/<application>/context.md` early in the workflow.
+- Reuse validated fixes from that file before widening scope.
+- After a productive session, update only the corresponding `values/<application>/context.md`.
+- Do not place one application's incident notes in another application's context file.
