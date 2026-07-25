@@ -39,9 +39,9 @@ Cloudflare DNS & Routes
    ↓
 Bananapi R3 Gateway (OpenWRT) - 192.168.4.1
    ├─ Bananapi R3 AP (OpenWRT, 5GHz mesh backhaul)
-  ├─ Cudy M3000 hades (OpenWRT AP)
-  ├─ Cudy M3000 gemini (OpenWRT AP)
-  ├─ Cudy M3000 orchid (OpenWRT mesh AP)
+   ├─ Cudy M3000 hades (OpenWRT AP)
+   ├─ Cudy M3000 gemini (OpenWRT AP)
+   ├─ Cudy M3000 orchid (OpenWRT mesh AP)
    └─ Netgear GS108PE PoE Switch
        ├─ Control Plane (3x RPi4)
        ├─ eldragon GPU Node
@@ -112,20 +112,45 @@ This repository is managed as infrastructure-as-code using Argo CD. All cluster 
 ### Repository Structure
 ```
 homelab_dklair/
-├── apps/                          # Application manifests organized by platform
-│   └── argocd/                   # Argo CD Application resources
-│       ├── open-webui-application.yaml
-│       ├── postgresql-application.yaml
-│       ├── redis-cluster-application.yaml
-│       └── ...
-├── values/                         # Helm values files for each application
+├── .github/
+│   ├── copilot-instructions.md                # Repo guidance entrypoint
+│   └── instructions/                           # File-scoped Copilot instructions
+├── .vscode/
+│   └── mcp.json                                # VS Code MCP configuration
+├── apps/                                       # Kubernetes manifests
+│   ├── argocd/                                 # Argo CD Application resources
+│   ├── baserow/                                # App-specific manifests
+│   ├── cert-manager/
+│   ├── external-secrets-config/
+│   ├── nextcloud/
+│   └── openwrt-ops/
+├── openwrt/
+│   ├── baseline/                               # Evidence snapshot (read-only reference)
+│   ├── desired/                                # Enforced desired OpenWRT state
+│   └── README.md
+├── scripts/
+│   ├── check-openwebui-gpu-post-update.sh
+│   ├── check-openwebui-runtime-health.sh
+│   ├── provision-authentik-db-from-secrets.sh
+│   └── provision-baserow-db-from-secrets.sh
+├── tutorials/
+│   ├── argocd/
+│   ├── cloudflare/
+│   ├── longhorn/
+│   ├── nextcloud/
+│   ├── openwrt/
+│   └── readme-images/
+├── values/                                     # Helm values and app context files
+│   ├── argocd/
+│   ├── authentik/
+│   ├── cloudnativepg/
 │   ├── open-webui/
 │   ├── postgresql/
-│   ├── redis-cluster/
 │   └── ...
-├── application-template.yaml       # Template for new applications
-├── HARDWARE.md                     # Detailed hardware specifications
-└── tutorials/                      # Deployment guides and documentation
+├── application-template.yaml                   # Template for new Argo CD applications
+├── root-application.yaml                       # Root app-of-apps definition
+├── HARDWARE.md                                 # Hardware and OpenWRT device inventory
+└── README.md
 ```
 
 ### Per-App Copilot Context
