@@ -133,6 +133,17 @@ npx repomix ~/homelab_dklair # Generate single markdown file for upload
 
 This consolidates the repo into a single file suitable for LLM prompts. All content is public and can be uploaded.
 
+### Per-App Copilot Context
+
+Each application directory under `values/<app>/` may include a `context.md` companion file.
+
+Use that file to preserve the distilled outcome of meaningful Copilot build and troubleshooting chats for the app:
+- current deployment shape and important repo anchors
+- recurring failures, misleading symptoms, and working fixes
+- validated decisions worth carrying forward into future sessions
+
+Keep these files concise and update them with durable conclusions, not raw chat transcripts.
+
 ### Longhorn Runbook Trigger Points
 
 Run `tutorials/longhorn/all-node-health-checks.md` after any of the following:
