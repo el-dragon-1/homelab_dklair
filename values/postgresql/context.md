@@ -40,6 +40,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Working Fixes
 - If bootstrap behavior regresses after chart edits, verify that initialization is still declared under `cluster.initdb`; moving it under `bootstrap.initdb` is a known schema mistake.
 - Use the app-specific provisioning helpers to reconcile database roles and grants after Secret or ownership drift instead of patching privileges ad hoc.
+- For new PostgreSQL-backed applications, run [../../scripts/onboard-app-postgres-from-vault.sh](../../scripts/onboard-app-postgres-from-vault.sh) to guide Vault update, ExternalSecret sync, DB provisioning, commit/push, and root sync.
 
 ## Dependencies And Secrets
 - Depends on Longhorn for persistent storage.
@@ -50,6 +51,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - [../../apps/argocd/postgresql.yaml](../../apps/argocd/postgresql.yaml)
 - [values.yaml](values.yaml)
 - [../../scripts/provision-authentik-db-from-secrets.sh](../../scripts/provision-authentik-db-from-secrets.sh)
+- [../../scripts/onboard-app-postgres-from-vault.sh](../../scripts/onboard-app-postgres-from-vault.sh)
 
 ## Open Questions
 - If this cluster expands beyond one instance, record the operational checks that replace the current single-instance assumptions.

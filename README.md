@@ -187,7 +187,32 @@ Before adding or updating an app, review the upstream Helm chart first and confi
 - If the image requires AMD64, keep the workload to a single replica and pin it to the appropriate AMD64 node or node pool.
 - Keep app-specific overrides in [values/<app-name>/values.yaml](values/) and preserve the repo's two-source Argo CD pattern.
 - For database-backed apps, prefer the shared PostgreSQL instance unless there is a clear isolation or performance requirement.
-- If a database is needed, create or update the Vault secret path first, sync the ExternalSecret, run the app-specific provisioning script, and only then deploy the Argo CD application.
+- If a database is needed, run [scripts/onboard-app-postgres-from-vault.sh](scripts/onboard-app-postgres-from-vault.sh) after chart review to guide Vault secret updates, ExternalSecret sync, PostgreSQL role/database provisioning, commit/push, and root application sync in the expected order.
+
+Non-interactive example:
+
+```bash
+APP_NAME=paperless \
+APP_NAMESPACE=paperless \
+APP_DB=paperless \
+APP_SECRET=paperless-db \
+APP_USER_KEY=DATABASE_USER \
+APP_PASSWORD_KEY=DATABASE_PASSWORD \
+VAULT_PATH=homelab/paperless/postgresql \
+VAULT_USER_FIELD=username \
+VAULT_PASSWORD_FIELD=password \
+VAULT_DB_FIELD=database \
+VAULT_DB_USER=paperless \
+VAULT_DB_PASSWORD='REPLACE_ME' \
+EXTERNAL_SECRETS_APP=external-secrets-config \
+ROOT_APP=root \
+PG_NAMESPACE=postgresql \
+PG_HOST=postgresql-rw.postgresql.svc.cluster.local \
+APP_SYNC_TIMEOUT=300 \
+./scripts/onboard-app-postgres-from-vault.sh
+```
+
+Set `VAULT_DB_PASSWORD` from a secure source in CI and avoid hardcoding secrets in shell history.
 
 The goal is to catch chart-level deployment requirements before the app is synced, rather than discovering them after rollout.
 
