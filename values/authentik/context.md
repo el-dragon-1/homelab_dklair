@@ -10,6 +10,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Repo Anchors
 - Values file: [values.yaml](values.yaml)
 - Argo CD application: [../../apps/argocd/authentik-application.yaml](../../apps/argocd/authentik-application.yaml)
+- App auth runbook: [../../tutorials/argocd/authentik-application-authentication.md](../../tutorials/argocd/authentik-application-authentication.md)
 - Provisioning helper: [../../scripts/provision-authentik-db-from-secrets.sh](../../scripts/provision-authentik-db-from-secrets.sh)
 - Status: Managed through Argo CD with the sibling values file and a database-provisioning helper.
 
@@ -18,6 +19,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Runs one server replica and one worker replica.
 - Exposes `authentik.dklair.io` through Traefik with TLS secret `authentik-tls`, ClusterIssuer `letsencrypt-prod`, and middleware `authentik-authentik-https-headers@kubernetescrd`.
 - Uses the shared PostgreSQL cluster at `postgresql-rw.postgresql.svc.cluster.local:5432` with DB credentials sourced from Secret `authentik-credentials`.
+- Explicitly disables the chart-managed PostgreSQL subchart (`postgresql.enabled=false`) so only the shared PostgreSQL instance is used.
 - Reads `AUTHENTIK_SECRET_KEY`, bootstrap email, and bootstrap password from the same Secret `authentik-credentials`.
 - Mounts ConfigMap `authentik-user-settings` as `/data/user_settings.py`.
 - Sets `AUTHENTIK_LISTEN__TRUSTED_PROXY_CIDRS` to the cluster pod and service CIDRs `10.42.0.0/16,10.43.0.0/16`.

@@ -67,3 +67,6 @@ server:
 
 worker:
   replicas: 1
+
+postgresql:
+  enabled: false
