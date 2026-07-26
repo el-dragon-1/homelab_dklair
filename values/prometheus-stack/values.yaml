@@ -15,6 +15,7 @@ alertmanager:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+      traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik-forward-auth@kubernetescrd
     hosts:
       - alertmanager.dklair.io
     paths:
@@ -95,6 +96,7 @@ grafana:
     annotations:
       cert-manager.io/cluster-issuer: letsencrypt-prod
       traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+      traefik.ingress.kubernetes.io/router.middlewares: authentik-authentik-forward-auth@kubernetescrd
     hosts:
       - grafana.dklair.io
     tls:
