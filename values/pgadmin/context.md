@@ -30,6 +30,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Working Fixes
 - Keep short, validated repair steps worth reusing.
+- If Authentik returns a broken 404 page for pgAdmin, verify `authentik-forward-auth` targets the active outpost service URL instead of `authentik-server`; keep the provider mode as forward auth single.
 
 ## Dependencies And Secrets
 - Note the shared PostgreSQL dependency, Secret/config requirements, ingress, and storage expectations.
