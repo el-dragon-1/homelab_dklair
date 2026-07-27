@@ -154,7 +154,7 @@ config redirect
 	option name 'pivpn-wireguard'
 	option src 'wan'
 	option src_dport '51820'
-	option dest_ip '192.168.4.84'
+	option dest_ip '192.168.4.101'
 
 config redirect
 	option dest 'lan'
