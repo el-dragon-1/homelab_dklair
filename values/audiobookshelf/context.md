@@ -24,6 +24,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, misleading symptoms, and early warning signs.
 
 - Large browser uploads can fail with `413 Payload Too Large` at Cloudflare before requests reach Traefik/Audiobookshelf.
+- Intermittent failures can still occur when clients have both Pi-hole and a public resolver configured; some requests resolve `audiobookshelf.dklair.io` via public DNS and route back through Cloudflare.
 
 ## Troubleshooting History
 - Date: 2026-07-26
@@ -40,6 +41,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 	- `dd if=/dev/zero bs=1m count=105 2>/dev/null | curl -sS -o /tmp/abs_large_post.out -w "%{http_code}\n" -X POST https://audiobookshelf.dklair.io/ --data-binary @-`
 - If code is `413` and response body mentions Cloudflare, route large uploads through a non-proxied host path.
 - Operator note: Prefer LAN/VPN upload paths for large files rather than exposing a public DNS-only upload hostname.
+- For clients that must use split DNS reliably, use Pi-hole as the only client-side DNS server and keep public resolvers as Pi-hole upstreams.
 
 ## Dependencies And Secrets
 - Note the external services, storage, DNS, ingress, and Kubernetes Secrets this app depends on.
