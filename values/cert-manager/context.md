@@ -32,8 +32,13 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Working Fixes
 - Keep short, validated repair steps worth reusing.
 
+- For wildcard DNS-01 certificates, use ClusterIssuer `letsencrypt-prod-dns01` and ensure Kubernetes Secret `cloudflare-dns01-api-token` exists in namespace `cert-manager`.
+- The token is sourced via ExternalSecret `cloudflare-dns01-api-token` from Vault key `homelab/cert-manager/cloudflare-dns01-api-token` property `api_token`.
+
 ## Dependencies And Secrets
 - Note DNS provider credentials, ClusterIssuer prerequisites, and any ingress-controller interactions.
+
+- DNS-01 depends on Cloudflare API token access with Zone DNS edit permissions for `dklair.io`.
 
 ## Important Files
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.

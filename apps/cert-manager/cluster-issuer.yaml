@@ -12,3 +12,22 @@ spec:
       - http01:
           ingress:
             ingressClassName: my-traefik
+
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod-dns01
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: seraphs-respect.48@icloud.com
+    privateKeySecretRef:
+      name: letsencrypt-prod-dns01-account-key
+    solvers:
+      - dns01:
+          cloudflare:
+            email: seraphs-respect.48@icloud.com
+            apiTokenSecretRef:
+              name: cloudflare-dns01-api-token
+              key: api-token
