@@ -47,5 +47,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Important Files
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.
 
+- [../../tutorials/audiobookshelf/lab-vpn-upload-pattern.md](../../tutorials/audiobookshelf/lab-vpn-upload-pattern.md)
+
 ## Open Questions
 - Track unresolved risks, TODOs, or follow-up checks.
