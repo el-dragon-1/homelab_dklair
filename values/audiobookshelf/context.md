@@ -15,6 +15,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Current Deployment Shape
 - Namespace: `audiobookshelf`
 - Ingress host: `audiobookshelf.dklair.io` via Traefik ingress class `my-traefik`
+- Dedicated upload host: `abs-upload.dklair.io` via ingress `audiobookshelf-upload`, protected by Traefik middleware `audiobookshelf-upload-allowlist`
 - Storage: Longhorn-backed PVCs for `/config` (10Gi), `/metadata` (20Gi), and `/audiobooks` (100Gi)
 
 ## Known Good State
@@ -45,6 +46,9 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Dependencies And Secrets
 - Note the external services, storage, DNS, ingress, and Kubernetes Secrets this app depends on.
+
+- Upload host TLS secret: `audiobookshelf-upload-tls` (cert-manager DNS-01)
+- Upload host allowlist middleware: `audiobookshelf-upload-allowlist`
 
 ## Important Files
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.

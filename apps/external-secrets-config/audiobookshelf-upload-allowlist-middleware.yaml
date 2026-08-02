@@ -1,0 +1,14 @@
+apiVersion: traefik.io/v1alpha1
+kind: Middleware
+metadata:
+  name: audiobookshelf-upload-allowlist
+  namespace: audiobookshelf
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  ipWhiteList:
+    sourceRange:
+      - 192.168.4.0/24
+      - 10.0.0.0/24
+      - 10.42.0.0/16
+      - 10.43.0.0/16
