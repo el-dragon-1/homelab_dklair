@@ -1,0 +1,26 @@
+# Traefik values for adopting the existing default/my-traefik Helm release into Argo CD.
+ingressClass:
+  enabled: true
+  isDefaultClass: true
+
+providers:
+  kubernetesCRD:
+    enabled: true
+    allowCrossNamespace: true
+    allowEmptyServices: true
+  kubernetesIngress:
+    enabled: true
+    allowEmptyServices: true
+    publishedService:
+      enabled: true
+
+service:
+  type: LoadBalancer
+  annotations:
+    kube-vip.io/loadbalancerIPs: 192.168.4.100
+  spec:
+    loadBalancerIP: 192.168.4.100
+
+env:
+  - name: TRAEFIK_ACCESSLOG
+    value: "true"

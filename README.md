@@ -72,7 +72,7 @@ KubeVIP provides both control plane HA and load balancing for the cluster:
 K3S is a minimal Kubernetes distribution that includes:
 - **containerd**: Container runtime (replaces Docker daemon)
 - **Flannel**: Default CNI for pod networking
-- **Traefik**: Built-in ingress controller
+- **Traefik**: Built-in addon is disabled; ingress is provided by a separately managed Traefik deployment
 - **CoreDNS**: Service DNS discovery
 
 ### Deployment Model
