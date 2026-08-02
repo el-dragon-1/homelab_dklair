@@ -13,26 +13,35 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Status: Managed through Argo CD with the sibling values file.
 
 ## Current Deployment Shape
-- Summarize the namespace, ingress hosts, storage, and media-library assumptions after the next validated review.
+- Namespace: calibre
+- Host: calibre.dklair.io via Traefik ingress class my-traefik
+- Storage: longhorn PVCs mounted at /config and /books
+- Runtime image: ghcr.io/linuxserver/calibre-web:version-0.6.26
 
 ## Known Good State
 - Describe the last healthy rollout and the checks that proved it.
 
 ## Recurring Problems
-- Capture repeated failures, permission issues, and storage-related symptoms.
+- Login appears to accept credentials but user is returned to login page or cannot enter site.
 
 ## Troubleshooting History
-- Date:
-- Issue:
-- Root cause:
-- Fix:
-- Validation:
+- Date: 2026-08-02
+- Issue: Login accepted credentials but user did not enter the site.
+- Root cause: Historical app traceback showed sqlite OperationalError querying missing column shelf.kobo_sync while rendering sidebar during login flow. This can present as a post-login loop or failed page render.
+- Fix: Restarted deployment after confirming schema now includes shelf.kobo_sync and sessions are being written to user_session. Verified rollout success and clean startup logs.
+- Validation: kubectl checks confirmed healthy pod, ingress, and PVC mounts; session records persisted in /config/app.db with future expiry timestamps.
 
 ## Working Fixes
-- Keep short, validated repair steps worth reusing.
+- If login loop is reported, first inspect /config/calibre-web.log for schema exceptions around login (especially shelf.kobo_sync errors).
+- Verify DB schema and sessions:
+	- sqlite3 /config/app.db "pragma table_info(shelf);"
+	- sqlite3 /config/app.db "select id,user_id,expiry from user_session order by id desc limit 10;"
+- If schema appears corrected but behavior persists, perform a controlled rollout restart of deployment calibre-calibre-web and re-test with a fresh browser session.
 
 ## Dependencies And Secrets
-- Note the external services, storage, DNS, ingress, and Kubernetes Secrets this app depends on.
+- DNS and edge: Cloudflare in front of calibre.dklair.io
+- Ingress/TLS: Traefik ingress class my-traefik with cert-manager issuer letsencrypt-prod
+- Persistent data: longhorn-backed /config and /books PVCs
 
 ## Important Files
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.
