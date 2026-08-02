@@ -8,6 +8,25 @@ env:
   PUID: "1001"
   PGID: "1001"
 
+initContainers:
+  calibre-login-fix:
+    image: ghcr.io/linuxserver/calibre-web:version-0.6.26
+    imagePullPolicy: IfNotPresent
+    command:
+      - /bin/sh
+      - -c
+    args:
+      - |
+        set -eu
+        if [ ! -f /config/app.db ]; then
+          echo "app.db missing, skipping Calibre login fix"
+          exit 0
+        fi
+        sqlite3 /config/app.db "UPDATE settings SET config_session=0, config_external_port=443, config_trustedhosts='calibre.dklair.io' WHERE id=1;"
+    volumeMounts:
+      - name: config
+        mountPath: /config
+
 service:
   main:
     ports:

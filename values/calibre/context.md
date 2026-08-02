@@ -27,9 +27,9 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Troubleshooting History
 - Date: 2026-08-02
 - Issue: Login accepted credentials but user did not enter the site.
-- Root cause: Historical app traceback showed sqlite OperationalError querying missing column shelf.kobo_sync while rendering sidebar during login flow. This can present as a post-login loop or failed page render.
-- Fix: Restarted deployment after confirming schema now includes shelf.kobo_sync and sessions are being written to user_session. Verified rollout success and clean startup logs.
-- Validation: kubectl checks confirmed healthy pod, ingress, and PVC mounts; session records persisted in /config/app.db with future expiry timestamps.
+- Root cause: Active loop was caused by strong session protection (`config_session=1`) behind reverse proxies. Calibre accepted credentials and wrote authenticated `user_session` rows, but request identity checks could invalidate the session on subsequent proxied requests.
+- Fix: Set `config_session=0` (Basic session protection), retained `config_external_port=443` and trusted host `calibre.dklair.io`, then restarted deployment. Added a GitOps-side initContainer in [values.yaml](values.yaml) to enforce these DB settings on every pod start.
+- Validation: Session rows continued to be created for user_id 1, rollout completed successfully, and setting persisted after restart.
 
 ## Working Fixes
 - If login loop is reported, first inspect /config/calibre-web.log for schema exceptions around login (especially shelf.kobo_sync errors).
@@ -37,6 +37,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 	- sqlite3 /config/app.db "pragma table_info(shelf);"
 	- sqlite3 /config/app.db "select id,user_id,expiry from user_session order by id desc limit 10;"
 - If schema appears corrected but behavior persists, perform a controlled rollout restart of deployment calibre-calibre-web and re-test with a fresh browser session.
+- For Cloudflare/Traefik deployments, prefer Basic session protection (`config_session=0`). Strong mode can clear sessions if request identity changes through proxies.
+- GitOps durability: [values.yaml](values.yaml) includes initContainer `calibre-login-fix` that patches `/config/app.db` settings (`config_session=0`, `config_external_port=443`, `config_trustedhosts=calibre.dklair.io`) before the main container starts.
 
 ## Dependencies And Secrets
 - DNS and edge: Cloudflare in front of calibre.dklair.io
