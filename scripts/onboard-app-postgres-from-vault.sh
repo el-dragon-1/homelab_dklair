@@ -111,6 +111,14 @@ wait_for_secret() {
   return 1
 }
 
+ensure_namespace() {
+  local ns="$1"
+
+  info "Ensuring namespace ${ns} exists"
+  kubectl create namespace "$ns" --dry-run=client -o yaml | kubectl apply -f - >/dev/null
+  pass "Namespace ${ns} is present"
+}
+
 sync_argocd_app() {
   local app_name="$1"
   local timeout_seconds="$2"
@@ -131,7 +139,15 @@ maybe_sync_argocd_app() {
   fi
 
   if has_cmd argocd; then
-    sync_argocd_app "$app_name" "$timeout_seconds"
+    if ! sync_argocd_app "$app_name" "$timeout_seconds"; then
+      warn "Argo CD sync for ${app_name} failed (auth/session or connectivity issue)"
+      warn "Fix CLI auth (for example: argocd login argocd.dklair.io --grpc-web --insecure) and retry sync"
+      if confirm "Continue workflow without syncing ${app_name}?" "no"; then
+        warn "Continuing without Argo CD sync for ${app_name}"
+        return 0
+      fi
+      fail "Aborted because Argo CD sync for ${app_name} failed"
+    fi
     return 0
   fi
 
@@ -303,6 +319,7 @@ fi
 
 echo ""
 echo "Step 3/7: Sync External Secrets"
+ensure_namespace "$APP_NAMESPACE"
 if confirm "Sync Argo CD app ${EXTERNAL_SECRETS_APP}?" "yes"; then
   maybe_sync_argocd_app "$EXTERNAL_SECRETS_APP" "$APP_SYNC_TIMEOUT"
 else
