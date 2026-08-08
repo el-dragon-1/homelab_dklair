@@ -78,6 +78,24 @@ prompt_secret() {
   printf -v "$var_name" '%s' "$entered"
 }
 
+is_urlsafe_db_password() {
+  local candidate="$1"
+  [[ "$candidate" =~ ^[A-Za-z0-9._~-]+$ ]]
+}
+
+validate_db_password() {
+  local candidate="$1"
+  local source="$2"
+
+  if [[ "${REQUIRE_URLSAFE_DB_PASSWORD}" != "true" ]]; then
+    return 0
+  fi
+
+  if ! is_urlsafe_db_password "$candidate"; then
+    fail "Database password from ${source} contains characters that break URI-based DB settings for this app. Use only [A-Za-z0-9._~-]."
+  fi
+}
+
 secret_exists() {
   local ns="$1"
   local name="$2"
@@ -254,6 +272,7 @@ APP_DB="${APP_DB:-}"
 APP_USER_KEY="${APP_USER_KEY:-username}"
 APP_PASSWORD_KEY="${APP_PASSWORD_KEY:-password}"
 APP_DB_KEY="${APP_DB_KEY:-}"
+REQUIRE_URLSAFE_DB_PASSWORD="${REQUIRE_URLSAFE_DB_PASSWORD:-false}"
 
 VAULT_PATH="${VAULT_PATH:-}"
 VAULT_USER_FIELD="${VAULT_USER_FIELD:-username}"
@@ -307,6 +326,7 @@ if confirm "Write or update Vault credentials now?" "yes"; then
   need_cmd vault
   prompt_secret VAULT_DB_USER "Vault DB username"
   prompt_secret VAULT_DB_PASSWORD "Vault DB password"
+  validate_db_password "$VAULT_DB_PASSWORD" "Vault input"
   info "Writing credentials to Vault path ${VAULT_PATH}"
   vault kv put "$VAULT_PATH" \
     "$VAULT_USER_FIELD=$VAULT_DB_USER" \
@@ -336,6 +356,7 @@ APP_USER="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_USER_KEY" || tr
 APP_PASSWORD="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_PASSWORD_KEY" || true)"
 [[ -n "$APP_USER" ]] || fail "Could not read key ${APP_USER_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
 [[ -n "$APP_PASSWORD" ]] || fail "Could not read key ${APP_PASSWORD_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
+validate_db_password "$APP_PASSWORD" "${APP_NAMESPACE}/${APP_SECRET}:${APP_PASSWORD_KEY}"
 if [[ -n "$APP_DB_KEY" ]]; then
   SECRET_DB_NAME="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_DB_KEY" || true)"
   [[ -n "$SECRET_DB_NAME" ]] || fail "Could not read key ${APP_DB_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
