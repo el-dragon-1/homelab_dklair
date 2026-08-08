@@ -30,6 +30,7 @@ cluster:
     parameters:
       max_connections: "100"
       shared_buffers: "128MB"
+      wal_level: logical
 
   # Resource limits
   resources:

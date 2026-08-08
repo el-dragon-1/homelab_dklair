@@ -1,0 +1,48 @@
+# Wger values
+# - Reuses the shared PostgreSQL cluster instead of the chart-managed Postgres
+# - Keeps the chart-managed Redis dependency for celery and PowerSync
+# - Exposes the app through the cluster Traefik ingress
+
+app:
+  timezone: America/New_York
+
+  global:
+    replicas: 1
+    proxyCount: 2
+
+  persistence:
+    storageClass: longhorn
+    sizeMedia: 20Gi
+    sizeStatic: 4Gi
+    sizeCeleryBeat: 1Gi
+
+  django:
+    existingDatabase:
+      enabled: true
+      engine: django.db.backends.postgresql
+      host: postgresql-rw.postgresql.svc.cluster.local
+      port: 5432
+      dbname: wger
+      existingSecret:
+        name: wger-db
+        dbnameKey: USERDB_NAME
+
+ingress:
+  enabled: true
+  ingressClassName: my-traefik
+  url: wger.dklair.io
+  tls: true
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+
+postgres:
+  enabled: false
+
+redis:
+  enabled: true
+  auth:
+    enabled: false
+  storage:
+    className: longhorn
+    requestedSize: 2Gi

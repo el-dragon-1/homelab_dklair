@@ -25,6 +25,10 @@ need_cmd() {
   command -v "$1" >/dev/null 2>&1 || fail "Missing required command: $1"
 }
 
+has_cmd() {
+  command -v "$1" >/dev/null 2>&1
+}
+
 confirm() {
   local prompt="$1"
   local default_yes="${2:-yes}"
@@ -115,6 +119,24 @@ sync_argocd_app() {
   argocd app sync "$app_name" --grpc-web --insecure
   argocd app wait "$app_name" --grpc-web --insecure --sync --health --timeout "$timeout_seconds"
   pass "Argo CD app ${app_name} synced and healthy"
+}
+
+maybe_sync_argocd_app() {
+  local app_name="$1"
+  local timeout_seconds="$2"
+
+  if [[ "${SKIP_ARGOCD_SYNC}" == "true" ]]; then
+    warn "Skipping Argo CD sync for ${app_name} because SKIP_ARGOCD_SYNC=true"
+    return 0
+  fi
+
+  if has_cmd argocd; then
+    sync_argocd_app "$app_name" "$timeout_seconds"
+    return 0
+  fi
+
+  warn "argocd CLI not found; cannot sync ${app_name} from this script"
+  warn "Continue only if automated sync is already reconciling this app, or sync it manually before the next dependent step"
 }
 
 run_db_provisioning() {
@@ -215,6 +237,7 @@ APP_SECRET="${APP_SECRET:-}"
 APP_DB="${APP_DB:-}"
 APP_USER_KEY="${APP_USER_KEY:-username}"
 APP_PASSWORD_KEY="${APP_PASSWORD_KEY:-password}"
+APP_DB_KEY="${APP_DB_KEY:-}"
 
 VAULT_PATH="${VAULT_PATH:-}"
 VAULT_USER_FIELD="${VAULT_USER_FIELD:-username}"
@@ -226,6 +249,7 @@ VAULT_DB_PASSWORD="${VAULT_DB_PASSWORD:-}"
 EXTERNAL_SECRETS_APP="${EXTERNAL_SECRETS_APP:-external-secrets-config}"
 ROOT_APP="${ROOT_APP:-root}"
 APP_SYNC_TIMEOUT="${APP_SYNC_TIMEOUT:-300}"
+SKIP_ARGOCD_SYNC="${SKIP_ARGOCD_SYNC:-false}"
 
 need_cmd kubectl
 need_cmd base64
@@ -256,6 +280,9 @@ echo "  - namespace: ${APP_NAMESPACE}"
 echo "  - db: ${APP_DB}"
 echo "  - k8s secret: ${APP_NAMESPACE}/${APP_SECRET}"
 echo "  - secret keys: ${APP_USER_KEY}, ${APP_PASSWORD_KEY}"
+if [[ -n "$APP_DB_KEY" ]]; then
+  echo "  - db name key: ${APP_DB_KEY}"
+fi
 echo "  - vault path: ${VAULT_PATH}"
 
 echo ""
@@ -277,8 +304,7 @@ fi
 echo ""
 echo "Step 3/7: Sync External Secrets"
 if confirm "Sync Argo CD app ${EXTERNAL_SECRETS_APP}?" "yes"; then
-  need_cmd argocd
-  sync_argocd_app "$EXTERNAL_SECRETS_APP" "$APP_SYNC_TIMEOUT"
+  maybe_sync_argocd_app "$EXTERNAL_SECRETS_APP" "$APP_SYNC_TIMEOUT"
 else
   warn "Skipped External Secrets sync"
 fi
@@ -293,6 +319,13 @@ APP_USER="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_USER_KEY" || tr
 APP_PASSWORD="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_PASSWORD_KEY" || true)"
 [[ -n "$APP_USER" ]] || fail "Could not read key ${APP_USER_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
 [[ -n "$APP_PASSWORD" ]] || fail "Could not read key ${APP_PASSWORD_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
+if [[ -n "$APP_DB_KEY" ]]; then
+  SECRET_DB_NAME="$(read_secret_key "$APP_NAMESPACE" "$APP_SECRET" "$APP_DB_KEY" || true)"
+  [[ -n "$SECRET_DB_NAME" ]] || fail "Could not read key ${APP_DB_KEY} from ${APP_NAMESPACE}/${APP_SECRET}"
+  if [[ "$SECRET_DB_NAME" != "$APP_DB" ]]; then
+    fail "Secret database name ${SECRET_DB_NAME} does not match expected APP_DB ${APP_DB}"
+  fi
+fi
 pass "App secret keys resolved"
 
 echo ""
@@ -345,8 +378,7 @@ fi
 echo ""
 echo "Step 7/7: Sync root application"
 if confirm "Sync Argo CD app ${ROOT_APP}?" "yes"; then
-  need_cmd argocd
-  sync_argocd_app "$ROOT_APP" "$APP_SYNC_TIMEOUT"
+  maybe_sync_argocd_app "$ROOT_APP" "$APP_SYNC_TIMEOUT"
 else
   warn "Skipped root app sync"
 fi
@@ -354,3 +386,4 @@ fi
 echo ""
 pass "Workflow completed"
 echo "Next: verify ${APP_NAME} app sync/health and run any app-specific smoke tests."
+echo "Note: this workflow provisions the PostgreSQL role, database, and grants. Application tables are created later by the app's own migrations or startup jobs."

@@ -19,7 +19,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Runs a single database instance with a `10Gi` Longhorn-backed volume.
 - Bootstraps via `cluster.initdb` with database `admin`, owner `admin`, and bootstrap credentials from Secret `postgresql-admin`.
 - The values file explicitly notes that `initdb` must remain under `cluster.initdb`, not `bootstrap.initdb`.
-- Sets PostgreSQL parameters `max_connections=100` and `shared_buffers=128MB`.
+- Sets PostgreSQL parameters `max_connections=100`, `shared_buffers=128MB`, and `wal_level=logical`.
 - Resource requests are `100m` CPU and `256Mi` memory; limits are `500m` CPU and `512Mi` memory.
 
 ## Known Good State
@@ -41,6 +41,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - If bootstrap behavior regresses after chart edits, verify that initialization is still declared under `cluster.initdb`; moving it under `bootstrap.initdb` is a known schema mistake.
 - Use the app-specific provisioning helpers to reconcile database roles and grants after Secret or ownership drift instead of patching privileges ad hoc.
 - For new PostgreSQL-backed applications, run [../../scripts/onboard-app-postgres-from-vault.sh](../../scripts/onboard-app-postgres-from-vault.sh) to guide Vault update, ExternalSecret sync, DB provisioning, commit/push, and root sync.
+- Keep `wal_level=logical` enabled while Wger uses the shared cluster for its PowerSync-backed deployment.
 
 ## Dependencies And Secrets
 - Depends on Longhorn for persistent storage.
