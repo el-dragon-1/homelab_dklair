@@ -55,12 +55,19 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Fix: added `spec.ignoreDifferences` on the Wger `Application` for `/spec/template/metadata/annotations/rollme` on `apps/Deployment` resources.
 - Validation: after applying the ignore rule, resource-level OutOfSync entries for Wger deployments cleared.
 
+- Date: 2026-08-08
+- Issue: `wger.dklair.io` rendered mostly unstyled HTML and missing JS.
+- Root cause: static assets were missing from the shared `wger-static` PVC (`/wger/static`), so nginx returned 404 for `/static/*`; Cloudflare then cached those 404 responses.
+- Fix: ran `python3 manage.py collectstatic --noinput` in `wger-app` to repopulate static assets, then set `app.environment` `DJANGO_COLLECTSTATIC_ON_STARTUP=True` in [values.yaml](values.yaml) for durable startup behavior.
+- Validation: `/home/wger/static` and `/wger/static` contained populated assets including `bootstrap-compiled.css`; origin static requests served from nginx once cache is bypassed/purged.
+
 ## Working Fixes
 - If Wger pods start but PowerSync fails, verify the shared PostgreSQL cluster still exposes `wal_level=logical`.
 - Keep the DB secret keys aligned with the chart defaults: `USERDB_USER`, `USERDB_PASSWORD`, and `USERDB_NAME`.
 - For first install and resets, ensure a `GymConfig` row exists (`pk=1`) before relying on readiness probes against `/`.
 - If `setup-powersync-storage` fails with role privileges, bootstrap the role/schema as a DB admin and then recheck PowerSync logs.
 - Treat `rollme` annotation drift as chart-generated noise; keep the ignore-differences rule in [../../apps/argocd/wger-application.yaml](../../apps/argocd/wger-application.yaml).
+- If users report broken styling while pods are healthy, test `/static/bootstrap-compiled.css`; if it is 404, run `collectstatic` in `wger-app` and purge Cloudflare cache for `/static/*`.
 
 ## Dependencies And Secrets
 - Review [vault-secrets.md](vault-secrets.md) for the Vault path and Secret mapping details.
