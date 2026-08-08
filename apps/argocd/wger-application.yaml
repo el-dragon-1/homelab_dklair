@@ -22,6 +22,12 @@ spec:
     - repoURL: https://github.com/el-dragon-1/homelab_dklair.git
       targetRevision: HEAD
       ref: values
+  ignoreDifferences:
+    - group: apps
+      kind: Deployment
+      namespace: wger
+      jsonPointers:
+        - /spec/template/metadata/annotations/rollme
   project: default
   syncPolicy:
     automated:
