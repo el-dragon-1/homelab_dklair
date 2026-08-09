@@ -67,6 +67,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Fix: loaded `wger/core/fixtures/languages.json`, created the missing `UserProfile` with `UserProfile.objects.get_or_create(user=u)`, and then re-applied superuser/staff flags plus a temporary password for `dpolizzi`.
 - Validation: `kubectl logs -n wger deploy/wger-app --since=30m` stopped showing `User has no userprofile` tracebacks after the profile repair; Django shell authentication for `dpolizzi` succeeded.
 
+- Date: 2026-08-09
+- Issue: exercise search returned no results and routine builder could not find any exercises.
+- Root cause: the exercise catalog tables were empty (`Exercise`, `ExerciseCategory`, `Muscle`, `Equipment`, `Translation` all had zero rows). The bundled Wger exercise fixtures also depended on missing `core_license` seed data.
+- Fix: loaded `wger/core/fixtures/licenses.json`, then loaded Wger's bundled exercise fixtures: `categories.json`, `muscles.json`, `equipment.json`, `exercise-base-data.json`, and `translations.json`.
+- Validation: counts reached `Exercise=872`, `ExerciseCategory=8`, `Muscle=16`, `Equipment=11`, `Translation=2035`; sample search names like `Burpe Push-up` and `Incline Push up` became queryable.
+
 ## Working Fixes
 - If Wger pods start but PowerSync fails, verify the shared PostgreSQL cluster still exposes `wal_level=logical`.
 - Keep the DB secret keys aligned with the chart defaults: `USERDB_USER`, `USERDB_PASSWORD`, and `USERDB_NAME`.
@@ -75,6 +81,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Treat `rollme` annotation drift as chart-generated noise; keep the ignore-differences rule in [../../apps/argocd/wger-application.yaml](../../apps/argocd/wger-application.yaml).
 - If users report broken styling while pods are healthy, test `/static/bootstrap-compiled.css`; if it is 404, run `collectstatic` in `wger-app` and purge Cloudflare cache for `/static/*`.
 - If manual user creation fails with a foreign key error on `notification_language_id`, load `wger/core/fixtures/languages.json` before retrying or repairing the user/profile rows.
+- If the exercise picker is empty on a fresh bootstrap, load `wger/core/fixtures/licenses.json` first, then the exercise fixtures under `wger/exercises/fixtures/`.
 
 ## Dependencies And Secrets
 - Review [vault-secrets.md](vault-secrets.md) for the Vault path and Secret mapping details.
