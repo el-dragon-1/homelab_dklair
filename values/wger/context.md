@@ -43,6 +43,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Fix: created the record with `GymConfig.objects.get_or_create(pk=1, defaults={"default_gym": None})` via `manage.py shell`.
 - Validation: `wger-app` readiness turned `1/1` and the `/` probe stopped returning 500.
 
+- Date: 2026-08-09
+- Issue: `setup-powersync-storage` failed during app startup with `permission denied to alter role`.
+- Root cause: the Wger DB user `wger` lacked `CREATEROLE` and admin rights on `powersync_storage`, but the bootstrap command tries to update the role password when it already exists.
+- Fix: granted `CREATEROLE` to `wger` and `GRANT powersync_storage TO wger WITH ADMIN OPTION`, then reran `python3 manage.py setup-powersync-storage` successfully.
+- Validation: the command completed with `PowerSync storage ready: role 'powersync_storage', schema 'powersync' in 'wger'.`
+
 - Date: 2026-08-08
 - Issue: `wger-powersync` crash looped with PostgreSQL auth failure for `powersync_storage`.
 - Root cause: storage role/schema bootstrap was incomplete; `powersync_storage` role did not exist.
@@ -72,6 +78,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Root cause: the exercise catalog tables were empty (`Exercise`, `ExerciseCategory`, `Muscle`, `Equipment`, `Translation` all had zero rows). The bundled Wger exercise fixtures also depended on missing `core_license` seed data.
 - Fix: loaded `wger/core/fixtures/licenses.json`, then loaded Wger's bundled exercise fixtures: `categories.json`, `muscles.json`, `equipment.json`, `exercise-base-data.json`, and `translations.json`.
 - Validation: counts reached `Exercise=872`, `ExerciseCategory=8`, `Muscle=16`, `Equipment=11`, `Translation=2035`; sample search names like `Burpe Push-up` and `Incline Push up` became queryable.
+
+- Date: 2026-08-09
+- Issue: `wger-powersync` crash-looped with `password authentication failed for user "powersync_storage"`.
+- Root cause: the PostgreSQL role password drifted from the live `wger/powersync` secret value.
+- Fix: reset `powersync_storage` in the shared PostgreSQL cluster to the live secret password from `wger/powersync` and restarted the `wger-powersync` deployment.
+- Validation: `kubectl rollout status deploy/wger-powersync -n wger` completed successfully and the pod became `1/1 Running`.
 
 ## Working Fixes
 - If Wger pods start but PowerSync fails, verify the shared PostgreSQL cluster still exposes `wal_level=logical`.
