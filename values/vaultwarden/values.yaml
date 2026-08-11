@@ -14,10 +14,14 @@ ingress:
 
 storage:
   data:
+    name: vaultwarden-data
     size: 10Gi
     class: longhorn
+    accessMode: ReadWriteOnce
   attachments:
+    name: vaultwarden-attachments
     size: 20Gi
     class: longhorn
+    accessMode: ReadWriteOnce
 
 signupsAllowed: "false"

@@ -26,14 +26,20 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Track repeat failure patterns and misleading symptoms.
 
 ## Troubleshooting History
-- Date:
-- Issue:
-- Root cause:
-- Fix:
-- Validation:
+- Date: 2026-08-10
+- Issue: Argo CD sync failed and app reported `Resource not found in cluster: apps/v1/StatefulSet:vaultwarden`.
+- Root cause: The chart rendered an invalid StatefulSet because `storage.data.name`, `storage.attachments.name`, and both `accessMode` fields were empty in values, so the StatefulSet create call was rejected by Kubernetes.
+- Fix: Set explicit PVC names and access modes in [values.yaml](values.yaml):
+	- `storage.data.name: vaultwarden-data`
+	- `storage.data.accessMode: ReadWriteOnce`
+	- `storage.attachments.name: vaultwarden-attachments`
+	- `storage.attachments.accessMode: ReadWriteOnce`
+- Validation: `helm template` now renders named volume mounts and valid `accessModes` entries, and Argo application manifest passes kubectl client dry-run.
 
 ## Working Fixes
-- Add high-signal checks and commands once validated.
+- If Argo reports missing StatefulSet for Vaultwarden, check `status.conditions[].message` on the Argo Application first; this commonly indicates the StatefulSet was rejected by the API server rather than truly missing.
+- Validate chart rendering locally before sync:
+	- `helm template vaultwarden vaultwarden --repo https://guerzon.github.io/vaultwarden --version 0.46.0 -f values/vaultwarden/values.yaml`
 
 ## Dependencies And Secrets
 - Add Vault/ExternalSecret references for admin token and optional SMTP credentials when configured.
