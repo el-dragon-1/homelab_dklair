@@ -85,6 +85,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Fix: reset `powersync_storage` in the shared PostgreSQL cluster to the live secret password from `wger/powersync` and restarted the `wger-powersync` deployment.
 - Validation: `kubectl rollout status deploy/wger-powersync -n wger` completed successfully and the pod became `1/1 Running`.
 
+- Date: 2026-08-11
+- Issue: Argo app showed `Synced Progressing` while all Wger pods and deployments were healthy.
+- Root cause: transient/stale Argo health evaluation after earlier readiness probe timeout events; no live resource remained `OutOfSync` or `Degraded`.
+- Fix: forced an Argo refresh (`argocd.argoproj.io/refresh=hard`) and rechecked resource-level sync/health status.
+- Validation: `kubectl get application -n argocd wger -o jsonpath='{.status.sync.status}{" "}{.status.health.status}'` returned `Synced Healthy`.
+
 ## Working Fixes
 - If Wger pods start but PowerSync fails, verify the shared PostgreSQL cluster still exposes `wal_level=logical`.
 - Keep the DB secret keys aligned with the chart defaults: `USERDB_USER`, `USERDB_PASSWORD`, and `USERDB_NAME`.
