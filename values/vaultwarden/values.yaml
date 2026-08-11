@@ -1,0 +1,23 @@
+replicas: 1
+
+domain: https://vaultwarden.dklair.io
+
+ingress:
+  enabled: true
+  class: my-traefik
+  additionalAnnotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  hostname: vaultwarden.dklair.io
+  tls: true
+  tlsSecret: vaultwarden-tls
+
+storage:
+  data:
+    size: 10Gi
+    class: longhorn
+  attachments:
+    size: 20Gi
+    class: longhorn
+
+signupsAllowed: "false"
