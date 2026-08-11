@@ -25,3 +25,7 @@ storage:
     accessMode: ReadWriteOnce
 
 signupsAllowed: "false"
+
+adminToken:
+  existingSecret: vaultwarden-admin
+  existingSecretKey: ADMIN_TOKEN

@@ -42,10 +42,14 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 	- `helm template vaultwarden vaultwarden --repo https://guerzon.github.io/vaultwarden --version 0.46.0 -f values/vaultwarden/values.yaml`
 
 ## Dependencies And Secrets
-- Add Vault/ExternalSecret references for admin token and optional SMTP credentials when configured.
+- Admin token source: [../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml](../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml).
+- Vault path: `homelab/vaultwarden/admin` with property `token`.
+- Synced Kubernetes secret: `vaultwarden-admin` in namespace `vaultwarden` with key `ADMIN_TOKEN`.
+- Helm values reference this via `adminToken.existingSecret` and `adminToken.existingSecretKey`.
 
 ## Important Files
 - [../../apps/argocd/vaultwarden-application.yaml](../../apps/argocd/vaultwarden-application.yaml)
+- [../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml](../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml)
 - [values.yaml](values.yaml)
 
 ## Open Questions
