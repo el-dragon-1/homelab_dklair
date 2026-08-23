@@ -108,7 +108,7 @@ redis:
 persistence:
   enabled: true
   storageClass: longhorn
-  size: 20Gi
+  size: 60Gi
 
 cronjob:
   enabled: true
