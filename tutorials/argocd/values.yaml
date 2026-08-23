@@ -936,7 +936,10 @@ redis-ha:
     config:
       save: '""'
     masterGroupName: argocd
-  tolerations: []
+  tolerations:
+    - key: homelab.io/control-infra
+      operator: Exists
+      effect: NoSchedule
   topologySpreadConstraints:
     enabled: false
     maxSkew: ""
