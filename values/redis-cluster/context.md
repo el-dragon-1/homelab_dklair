@@ -8,12 +8,13 @@ Use this file to preserve the durable outcome of Copilot chats about planning, b
 - Keep entries short and capture conclusions, not raw chat history.
 
 ## Repo Anchors
-- Values file: none yet in this directory.
-- Argo CD application: none currently under [../../apps/argocd/](../../apps/argocd)
-- Status: Placeholder values directory. No `values.yaml` or matching Argo CD application manifest is present in the repo today.
+- Values file: none — never wired into GitOps.
+- Argo CD application: none — never existed under [../../apps/argocd/](../../apps/argocd)
+- Status: Removed 2026-08-22. The `redis` namespace no longer exists.
 
 ## Current Deployment Shape
-- Record the intended chart source, namespace, storage model, and application consumers once this app is wired into GitOps.
+- N/A. A standalone Bitnami `redis-cluster` chart (helm release `redis-cluster` in namespace `redis`) was manually installed 2026-04-19 outside GitOps and had zero consumers in the cluster (no Service/ConfigMap/Secret/workload referenced `redis-cluster.redis.svc`). Removed via `helm uninstall redis-cluster -n redis`, followed by deleting its leftover PVCs and the `redis` namespace.
+- Apps needing redis each run their own dedicated instance instead: `baserow-redis-master` (baserow), `nextcloud-redis-master` (nextcloud), `wger-redis` (wger). Argo CD's own cache uses a separate `argocd-redis-ha-server` bundled by the Argo CD chart.
 
 ## Known Good State
 - Add the expected healthy state once an implementation exists.
