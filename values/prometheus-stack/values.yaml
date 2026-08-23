@@ -34,6 +34,11 @@ alertmanager:
       group_wait: 10s
       group_interval: 10s
       repeat_interval: 12h
+      routes:
+        # Dead man's switch: always firing by design, silence instead of notifying.
+        - receiver: "null"
+          matchers:
+            - alertname = Watchdog
     receivers:
       - name: telegram-receiver
         telegram_configs:
@@ -114,7 +119,9 @@ kubeControllerManager:
   enabled: false
 
 kubeProxy:
-  enabled: true
+  # k3s doesn't expose kube-proxy metrics the way this scrape target expects,
+  # so KubeProxyDown fires permanently as a false positive. Disable monitoring instead.
+  enabled: false
 
 nodeExporter:
   enabled: true
