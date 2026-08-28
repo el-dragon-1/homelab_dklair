@@ -50,10 +50,11 @@ serviceWeb:
 
 extraEnvVars:
   FTLCONF_dns_listeningMode: all
+  FTLCONF_dns_upstreams: 192.168.4.1
   TZ: UTC
 
-DNS1: 1.1.1.1
-DNS2: 1.0.0.1
+DNS1: 192.168.4.1
+DNS2: 192.168.4.1
 
 virtualHost: pihole.dklair.io
 
