@@ -15,7 +15,7 @@ controllers:
           pullPolicy: IfNotPresent
         env:
           FORCE_HTTPS_REDIRECT: "false"
-          PUBLIC_REGISTRATION_ENABLED: "true"
+          PUBLIC_REGISTRATION_ENABLED: "false"
           POSTGRES_HOST: postgresql-rw.postgresql.svc.cluster.local
           POSTGRES_PORT: "5432"
           POSTGRES_DATABASE: aliasvault
