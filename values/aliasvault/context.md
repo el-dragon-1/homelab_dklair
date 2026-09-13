@@ -24,3 +24,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Troubleshooting History
 - Initial onboarding completed using `bjw-s/app-template` chart pattern.
+- Date: 2026-09-13
+- Issue: Web registration failed with "an error occurred. Please try again."
+- Root cause: Container environment specified `POSTGRES_USER: aliasvault`, but the provisioned role and Vault secret username was `aliasvault-admin`, causing database auth failure in internal API/TaskRunner services.
+- Fix: Updated `values.yaml` to set `POSTGRES_USER: aliasvault-admin`.
+- Validation: Database authentication succeeded and Aliasvault API/TaskRunner initialized migrations.

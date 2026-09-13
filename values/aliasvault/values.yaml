@@ -19,7 +19,7 @@ controllers:
           POSTGRES_HOST: postgresql-rw.postgresql.svc.cluster.local
           POSTGRES_PORT: "5432"
           POSTGRES_DATABASE: aliasvault
-          POSTGRES_USER: aliasvault
+          POSTGRES_USER: aliasvault-admin
           POSTGRES_PASSWORD_FILE: /secrets/postgres_password
           SECRETS_PATH: /secrets
           IP_LOGGING_ENABLED: "true"
