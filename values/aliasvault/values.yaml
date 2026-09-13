@@ -1,0 +1,117 @@
+# Aliasvault values using bjw-s/app-template
+# - Uses shared PostgreSQL cluster via External Secrets (aliasvault-db)
+# - Exposes web app & API via Traefik ingress with cert-manager TLS
+# - Uses Longhorn-backed persistent volumes for /database, /logs, and /certificates
+
+controllers:
+  aliasvault:
+    replicas: 1
+    strategy: Recreate
+    containers:
+      app:
+        image:
+          repository: ghcr.io/aliasvault/aliasvault
+          tag: 0.30.5
+          pullPolicy: IfNotPresent
+        env:
+          FORCE_HTTPS_REDIRECT: "false"
+          PUBLIC_REGISTRATION_ENABLED: "true"
+          POSTGRES_HOST: postgresql-rw.postgresql.svc.cluster.local
+          POSTGRES_PORT: "5432"
+          POSTGRES_DATABASE: aliasvault
+          POSTGRES_USER: aliasvault
+          POSTGRES_PASSWORD_FILE: /secrets/postgres_password
+          SECRETS_PATH: /secrets
+          IP_LOGGING_ENABLED: "true"
+          MAX_UPLOAD_SIZE_MB: "100"
+        probes:
+          liveness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: 80
+              initialDelaySeconds: 20
+              periodSeconds: 15
+              timeoutSeconds: 5
+              failureThreshold: 3
+          readiness:
+            enabled: true
+            custom: true
+            spec:
+              httpGet:
+                path: /
+                port: 80
+              initialDelaySeconds: 10
+              periodSeconds: 10
+              timeoutSeconds: 5
+              failureThreshold: 3
+        resources:
+          requests:
+            cpu: 100m
+            memory: 256Mi
+          limits:
+            memory: 1024Mi
+
+service:
+  app:
+    controller: aliasvault
+    ports:
+      http:
+        port: 80
+
+ingress:
+  app:
+    enabled: true
+    className: my-traefik
+    annotations:
+      cert-manager.io/cluster-issuer: letsencrypt-prod
+      traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+    hosts:
+      - host: aliasvault.dklair.io
+        paths:
+          - path: /
+            service:
+              identifier: app
+              port: http
+    tls:
+      - secretName: aliasvault-tls
+        hosts:
+          - aliasvault.dklair.io
+
+persistence:
+  database:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 5Gi
+    globalMounts:
+      - path: /database
+
+  logs:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 2Gi
+    globalMounts:
+      - path: /logs
+
+  certificates:
+    enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /certificates
+
+  secrets:
+    enabled: true
+    type: secret
+    name: aliasvault-db
+    globalMounts:
+      - path: /secrets
+        readOnly: true
