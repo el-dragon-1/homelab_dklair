@@ -110,8 +110,17 @@ persistence:
 
   secrets:
     enabled: true
+    type: persistentVolumeClaim
+    storageClass: longhorn
+    accessMode: ReadWriteOnce
+    size: 1Gi
+    globalMounts:
+      - path: /secrets
+
+  db-password:
+    enabled: true
     type: secret
     name: aliasvault-db
     globalMounts:
-      - path: /secrets
-        readOnly: true
+      - path: /secrets/postgres_password
+        subPath: postgres_password
