@@ -393,6 +393,30 @@ annotations:
 - Wave 2-3: Storage (Longhorn, PostgreSQL)
 - Wave 4+: Applications (Open WebUI, etc.)
 
+### Keeper.sh
+
+Keeper.sh is deployed from the local chart at `charts/keeper` using the
+`keeper-services` image. The chart runs Keeper's web, API, cron, and worker
+services in one pod, uses the shared CloudNativePG PostgreSQL cluster, and
+provisions a small persistent Redis instance with Longhorn.
+
+Before syncing `keeper`, create these Vault paths:
+
+- `homelab/keeper/postgresql`: `username`, `password`, and `database`
+- `homelab/keeper/application`: `better_auth_secret` and `encryption_key`
+
+The PostgreSQL role and database must exist before the Keeper application is
+synced. Use the shared PostgreSQL onboarding script with `APP_NAME=keeper`,
+`APP_NAMESPACE=keeper`, `APP_DB=keeper`, `APP_SECRET=keeper-secrets`,
+`APP_USER_KEY=DATABASE_USER`, `APP_PASSWORD_KEY=DATABASE_PASSWORD`,
+`APP_DB_KEY=DATABASE_NAME`, and `VAULT_PATH=homelab/keeper/postgresql`.
+The ExternalSecret is managed by the `external-secrets-config` application at
+`apps/external-secrets-config/keeper-secrets-externalsecret.yaml`.
+
+The Argo CD application is defined at
+`apps/argocd/keeper-application.yaml`; its default hostname is
+`keeper.dklair.io`.
+
 ### Accessing Deployed Applications
 
 All applications are exposed through Traefik ingress at your configured domain:

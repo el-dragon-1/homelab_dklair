@@ -1,0 +1,35 @@
+replicaCount: 1
+
+image:
+  repository: ghcr.io/ridafkih/keeper-services
+  tag: "2.24"
+  pullPolicy: IfNotPresent
+
+env:
+  BETTER_AUTH_URL: https://keeper.dklair.io
+  TRUSTED_ORIGINS: https://keeper.dklair.io
+  WORKER_JOB_QUEUE_ENABLED: "true"
+  API_PORT: "3001"
+  PORT: "3000"
+
+existingSecret: keeper-secrets
+
+database:
+  host: postgresql-rw.postgresql.svc.cluster.local
+  port: 5432
+  name: keeper
+
+redis:
+  enabled: true
+  storage:
+    size: 2Gi
+    storageClass: longhorn
+
+ingress:
+  enabled: true
+  className: my-traefik
+  host: keeper.dklair.io
+  tlsSecretName: keeper-tls
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
