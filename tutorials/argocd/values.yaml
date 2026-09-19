@@ -979,7 +979,31 @@ redisSecretInit:
     name: ""
   tolerations: []
 repoServer:
-  affinity: {}
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+        - matchExpressions:
+          - key: kubernetes.io/hostname
+            operator: In
+            values:
+            - node1
+            - node2
+            - node3
+            - orangepi5
+    podAntiAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - argocd-repo-server
+          - key: app.kubernetes.io/instance
+            operator: In
+            values:
+            - argocd
+        topologyKey: kubernetes.io/hostname
   automountServiceAccountToken: true
   autoscaling:
     behavior: {}
@@ -1035,11 +1059,11 @@ repoServer:
   lifecycle: {}
   livenessProbe:
     enabled: true
-    failureThreshold: 3
-    initialDelaySeconds: 10
+    failureThreshold: 6
+    initialDelaySeconds: 20
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 10
   metrics:
     enabled: false
     service:
@@ -1065,7 +1089,9 @@ repoServer:
   name: repo-server
   networkPolicy:
     create: false
-  nodeSelector: {}
+  nodeSelector:
+    kubernetes.io/arch: arm64
+    kubernetes.io/os: linux
   pdb:
     annotations: {}
     enabled: false
@@ -1078,13 +1104,19 @@ repoServer:
   rbac: []
   readinessProbe:
     enabled: true
-    failureThreshold: 3
-    initialDelaySeconds: 10
+    failureThreshold: 6
+    initialDelaySeconds: 20
     periodSeconds: 10
     successThreshold: 1
-    timeoutSeconds: 1
+    timeoutSeconds: 10
   replicas: 2
-  resources: {}
+  resources:
+    limits:
+      cpu: 1000m
+      memory: 1536Mi
+    requests:
+      cpu: 250m
+      memory: 512Mi
   runtimeClassName: ""
   service:
     annotations: {}
@@ -1099,7 +1131,10 @@ repoServer:
     labels: {}
     name: ""
   terminationGracePeriodSeconds: 30
-  tolerations: []
+  tolerations:
+  - key: homelab.io/control-infra
+    operator: Exists
+    effect: NoSchedule
   topologySpreadConstraints: []
   useEphemeralHelmWorkingDir: true
   volumeMounts: []

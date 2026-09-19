@@ -7,6 +7,12 @@ Use this file to preserve durable outcomes from Argo CD troubleshooting and oper
 - Root application: [../../root-application.yaml](../../root-application.yaml)
 
 ## Troubleshooting History
+- Date: 2026-09-19
+- Issue: `argocd-repo-server` entered CrashLoopBackOff with repeated liveness probe failures and exit code 137.
+- Root cause: Repo server ran as BestEffort with default 1s probe timeouts while handling concurrent manifest generation; health checks timed out and kubelet repeatedly restarted the container.
+- Fix: Increased repo-server probe tolerances in [tutorials/argocd/values.yaml](../../tutorials/argocd/values.yaml), added explicit CPU/memory requests and limits, and aligned scheduling policy with cluster arm64/control-infra placement expectations.
+- Validation: Deployment reached `2/2` available replicas and repo-server health gRPC checks returned successfully after rollout.
+
 - Date: 2026-07-25
 - Issue: Argo CD web UI intermittently failed with JavaScript bundle 404 errors.
 - Root cause: Different argocd-server pods served different main.<hash>.js references, and mixed backend routing caused HTML from one pod to reference a bundle not present on another pod.
