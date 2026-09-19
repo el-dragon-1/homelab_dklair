@@ -1,4 +1,4 @@
-# Homelab - Kubernetes Cluster with GitOps
+# Kubernetes Cluster Home Lab
 
 A production-ready Kubernetes homelab built on K3S with 3 control plane nodes and 2 worker nodes, managed entirely through GitOps using Argo CD.
 
@@ -100,7 +100,7 @@ Inter-node Communication & External Network
 - **Backend Storage**: NVMe/SSD on each node
 - **GitOps Management**: Argo CD app at `apps/argocd/longhorn-application.yaml` with values in `values/longhorn/values.yaml`
 - **Operations Runbook**: `tutorials/longhorn/all-node-health-checks.md`
-- **Use Cases**: 
+- **Use Cases**:
   - Persistent volumes for databases (PostgreSQL via CloudNativePG)
   - Redis cluster data persistence
   - Application state storage
