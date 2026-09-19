@@ -20,6 +20,12 @@ Use this file to preserve durable outcomes from Traefik deployment and troublesh
 - IngressClass `my-traefik` exists and is marked as default.
 
 ## Troubleshooting History
+- Date: 2026-09-19
+- Issue: Public services behind Traefik intermittently returned HTTP 502, including Argo CD.
+- Root cause: Traefik single replica was running on unstable node `orangepi5` and entered CrashLoopBackOff; CoreDNS instability on the same node amplified backend lookup failures.
+- Fix: Increased Traefik to two replicas in [values.yaml](values.yaml), restricted placement to stable nodes (`node1`, `node2`, `eldragon`) with node affinity, and added tolerations for control-plane infrastructure taints to expand safe scheduling options.
+- Validation: Traefik deployment reported `2/2` available and repeated checks to `https://argocd.dklair.io` returned HTTP 200.
+
 - Date: 2026-08-02
 - Issue: Cluster used a separate Helm-managed Traefik release while GitOps and Argo CD had no Traefik Application manifest.
 - Root cause: Traefik release was provisioned outside repo-managed Argo CD application definitions.

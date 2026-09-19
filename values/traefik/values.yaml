@@ -3,6 +3,9 @@ ingressClass:
   enabled: true
   isDefaultClass: true
 
+deployment:
+  replicas: 2
+
 providers:
   kubernetesCRD:
     enabled: true
@@ -24,3 +27,23 @@ service:
 env:
   - name: TRAEFIK_ACCESSLOG
     value: "true"
+
+affinity:
+  nodeAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      nodeSelectorTerms:
+        - matchExpressions:
+            - key: kubernetes.io/hostname
+              operator: In
+              values:
+                - node1
+                - node2
+                - eldragon
+
+tolerations:
+  - key: homelab.io/control-infra
+    operator: Exists
+    effect: NoSchedule
+  - key: node-role.kubernetes.io/control-plane
+    operator: Exists
+    effect: NoSchedule
