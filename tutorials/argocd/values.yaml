@@ -934,6 +934,7 @@ redis-ha:
     storageClass: longhorn
   redis:
     config:
+      min-replicas-to-write: 0
       save: '""'
     masterGroupName: argocd
   tolerations:

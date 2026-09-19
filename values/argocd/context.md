@@ -13,6 +13,12 @@ Use this file to preserve durable outcomes from Argo CD troubleshooting and oper
 - Fix: Increased repo-server probe tolerances in [tutorials/argocd/values.yaml](../../tutorials/argocd/values.yaml), added explicit CPU/memory requests and limits, and aligned scheduling policy with cluster arm64/control-infra placement expectations.
 - Validation: Deployment reached `2/2` available replicas and repo-server health gRPC checks returned successfully after rollout.
 
+- Date: 2026-09-19
+- Issue: Root app and repo-server intermittently failed with `ComparisonError` and `NOREPLICAS Not enough good replicas to write` while Redis HA was recovering from PVC re-attachment events.
+- Root cause: Argo CD's Redis cache backend blocked writes when the master had zero healthy replicas (`min-replicas-to-write 1`) during transient replica/storage/node churn.
+- Fix: Applied a live Redis override and persisted the durable chart value `redis-ha.redis.config.min-replicas-to-write: 0` in [tutorials/argocd/values.yaml](../../tutorials/argocd/values.yaml) so manifest generation and git-reference cache writes remain available during temporary replica loss.
+- Validation: Root app returned to `Healthy/Synced`, repo-server service endpoints repopulated, and comparison requests resumed.
+
 - Date: 2026-07-25
 - Issue: Argo CD web UI intermittently failed with JavaScript bundle 404 errors.
 - Root cause: Different argocd-server pods served different main.<hash>.js references, and mixed backend routing caused HTML from one pod to reference a bundle not present on another pod.
