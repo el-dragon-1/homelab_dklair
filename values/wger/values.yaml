@@ -49,3 +49,7 @@ redis:
   storage:
     className: longhorn
     requestedSize: 2Gi
+
+powersync:
+  image:
+    tag: "1.26.1"
