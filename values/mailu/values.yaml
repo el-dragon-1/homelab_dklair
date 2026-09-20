@@ -30,6 +30,8 @@ externalDatabase:
   type: postgresql
   host: postgresql-rw.postgresql.svc.cluster.local
   port: 5432
+  username: dpolizzi
+  database: mailu
   existingSecret: mailu-db
   existingSecretDatabaseKey: database
   existingSecretUsernameKey: username
@@ -39,7 +41,7 @@ global:
   database:
     roundcube:
       database: mailu
-      username: mailu
+      username: dpolizzi
       existingSecret: mailu-db
       existingSecretPasswordKey: password
 
