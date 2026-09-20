@@ -31,13 +31,14 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Recurring Problems
 - Capture repeated failures, misleading symptoms, and bootstrap traps.
+- App can remain `Synced` but `Progressing` when `authentik-server` is crash-looping on PostgreSQL auth; Argo health points at the Deployment, not the Secret drift directly.
 
 ## Troubleshooting History
-- Date:
-- Issue:
-- Root cause:
-- Fix:
-- Validation:
+- Date: 2026-09-19
+- Issue: Argo CD app `authentik` stuck in `Progressing` while sync stayed `Synced`.
+- Root cause: Secret `authentik-credentials` password no longer matched the PostgreSQL role password for user `dpolizzi`, causing `authentik-server` CrashLoopBackOff and failed startup probe.
+- Fix: Ran `./scripts/provision-authentik-db-from-secrets.sh` to reconcile role password/ownership/grants from the live Secret, then synced the Argo app.
+- Validation: `argocd app get authentik` returned `Health Status: Healthy`; all Authentik pods reached `Running` with `1/1` ready.
 
 ## Working Fixes
 - Before the first sync or after credential drift, run [../../scripts/provision-authentik-db-from-secrets.sh](../../scripts/provision-authentik-db-from-secrets.sh) so the role, database, and schema grants match the Vault-synced Secret.
