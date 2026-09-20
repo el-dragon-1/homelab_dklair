@@ -11,6 +11,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Values file: [values.yaml](values.yaml)
 - Argo CD application: [../../apps/argocd/mailu-application.yaml](../../apps/argocd/mailu-application.yaml)
 - ExternalSecret: [../../apps/external-secrets-config/mailu-db-externalsecret.yaml](../../apps/external-secrets-config/mailu-db-externalsecret.yaml)
+- ExternalSecret: [../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml](../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml)
+- ExternalSecret: [../../apps/external-secrets-config/mailu-admin-externalsecret.yaml](../../apps/external-secrets-config/mailu-admin-externalsecret.yaml)
 - Companion doc: [vault-secrets.md](vault-secrets.md)
 
 ## Current Deployment Shape
@@ -48,12 +50,15 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Secret `mailu-core-secrets` with key `secret-key`.
 - Secret `mailu-admin` with key `password` for initial admin account bootstrap.
 - Secret `mailu-db` synced from Vault path `homelab/mailu/postgresql` with keys `username`, `password`, and `database`.
+- Vault path `homelab/mailu/app` backs `mailu-core-secrets` (`secret-key`) and `mailu-admin` (`admin-password` -> `password`).
 - Cert-manager cluster issuer and TLS secret configured through ingress values.
 - Public deliverability still depends on routable SMTP port 25 and correct PTR/rDNS.
 
 ## Important Files
 - [../../apps/argocd/mailu-application.yaml](../../apps/argocd/mailu-application.yaml)
 - [../../apps/external-secrets-config/mailu-db-externalsecret.yaml](../../apps/external-secrets-config/mailu-db-externalsecret.yaml)
+- [../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml](../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml)
+- [../../apps/external-secrets-config/mailu-admin-externalsecret.yaml](../../apps/external-secrets-config/mailu-admin-externalsecret.yaml)
 - [values.yaml](values.yaml)
 - [vault-secrets.md](vault-secrets.md)
 

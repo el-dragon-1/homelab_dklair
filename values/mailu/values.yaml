@@ -6,11 +6,11 @@
 # - For internet delivery, ensure port 25 reachability and correct PTR/rDNS.
 
 hostnames:
-  - mail.example.com
-  - autodiscover.example.com
-  - autoconfig.example.com
+  - mail.polizzi.co
+  - autodiscover.polizzi.co
+  - autoconfig.polizzi.co
 
-domain: example.com
+domain: polizzi.co
 timezone: America/New_York
 
 # Mailu reads the app secret from key `secret-key` in this secret.
@@ -19,7 +19,7 @@ existingSecret: mailu-core-secrets
 initialAccount:
   enabled: true
   username: admin
-  domain: example.com
+  domain: polizzi.co
   existingSecret: mailu-admin
   existingSecretPasswordKey: password
   mode: ifmissing
