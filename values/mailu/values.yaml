@@ -1,0 +1,90 @@
+# Mailu values
+#
+# IMPORTANT:
+# - Replace example hostnames and domain before syncing this app.
+# - Keep secrets out of git. Use existing Kubernetes Secrets.
+# - For internet delivery, ensure port 25 reachability and correct PTR/rDNS.
+
+hostnames:
+  - mail.example.com
+  - autodiscover.example.com
+  - autoconfig.example.com
+
+domain: example.com
+timezone: America/New_York
+
+# Mailu reads the app secret from key `secret-key` in this secret.
+existingSecret: mailu-core-secrets
+
+initialAccount:
+  enabled: true
+  username: admin
+  domain: example.com
+  existingSecret: mailu-admin
+  existingSecretPasswordKey: password
+  mode: ifmissing
+
+# Shared PostgreSQL configuration for Mailu core and webmail metadata.
+externalDatabase:
+  enabled: true
+  type: postgresql
+  host: postgresql-rw.postgresql.svc.cluster.local
+  port: 5432
+  existingSecret: mailu-db
+  existingSecretDatabaseKey: database
+  existingSecretUsernameKey: username
+  existingSecretPasswordKey: password
+
+global:
+  database:
+    roundcube:
+      database: mailu
+      username: mailu
+      existingSecret: mailu-db
+      existingSecretPasswordKey: password
+
+# Keep bundled databases disabled. Start with internal Redis and single PVC.
+mariadb:
+  enabled: false
+
+postgresql:
+  enabled: false
+
+persistence:
+  single_pvc: true
+  storageClass: longhorn
+  size: 10Gi
+  accessModes:
+    - ReadWriteOnce
+
+ingress:
+  enabled: true
+  ingressClassName: my-traefik
+  annotations:
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    traefik.ingress.kubernetes.io/router.entrypoints: web,websecure
+  tls: true
+  existingSecret: mailu-certificates
+
+# Expose SMTP/IMAP family ports with a dedicated LoadBalancer service.
+# Use your chosen LAN VIP on loadBalancerIP if you want a fixed local target.
+front:
+  hostPort:
+    enabled: false
+  externalService:
+    enabled: true
+    type: LoadBalancer
+    externalTrafficPolicy: Local
+    loadBalancerIP: ""
+    ports:
+      smtp: true
+      smtps: true
+      submission: true
+      imaps: true
+      pop3: false
+      pop3s: false
+      imap: false
+      manageSieve: false
+
+# Update if your pod CIDR differs from K3S default.
+subnet: 10.42.0.0/16

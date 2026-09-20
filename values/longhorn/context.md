@@ -20,6 +20,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - The global values intentionally leave `nodeSelector` empty so Longhorn components remain schedulable across the cluster.
 - Both the chart-wide toleration and `defaultSettings.taintToleration` allow Longhorn workloads to run on nodes tainted with `homelab.io/control-infra=true:NoSchedule`.
 - `systemManagedComponentsNodeSelector` is explicitly blank so system-managed Longhorn components are not narrowed to a subset of nodes.
+- The UI is exposed at `longhorn.dklair.io` through Traefik ingress with TLS secret `longhorn-tls` and middleware `authentik-authentik-forward-auth@kubernetescrd`.
+- Keep `defaultSettings.managerUrl` unset unless the Longhorn UI is reachable without auth, because internal Longhorn components follow that URL and can fail if it points at an auth-protected ingress.
 
 ## Known Good State
 - Argo CD reports the `longhorn` application as `Synced` and `Healthy`.
