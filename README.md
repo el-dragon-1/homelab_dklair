@@ -403,7 +403,12 @@ provisions a small persistent Redis instance with Longhorn.
 Before syncing `keeper`, create these Vault paths:
 
 - `homelab/keeper/postgresql`: `username`, `password`, and `database`
-- `homelab/keeper/application`: `better_auth_secret` and `encryption_key`
+- `homelab/keeper/application`: `better_auth_secret`, `encryption_key`, `google_client_id`, and `google_client_secret`
+
+For Google connect on self-hosted Keeper, create a Google OAuth client with
+redirect URI `https://keeper.dklair.io/api/sources/callback/google` and store
+the client credentials in `homelab/keeper/application` under
+`google_client_id` and `google_client_secret`.
 
 The PostgreSQL role and database must exist before the Keeper application is
 synced. Use the shared PostgreSQL onboarding script with `APP_NAME=keeper`,
