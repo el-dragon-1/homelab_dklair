@@ -72,6 +72,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - In this repo those values should come from Vault path `homelab/keeper/application` properties `google_client_id` and `google_client_secret` via `apps/external-secrets-config/keeper-secrets-externalsecret.yaml`.
 - Google OAuth callback for this deployment is `https://keeper.dklair.io/api/sources/callback/google`.
 
+## Google Refresh Failure
+- Validated 2026-09-20: `POST /api/accounts/<id>/refresh` is failing with `CalendarListError: Failed to list calendars: 403`.
+- The refresh path fetches Google Calendar list data with `calendar.events` and `calendar.calendarlist.readonly` scopes.
+- A 403 here usually means the Google account has not granted the required calendar scopes, or the Google Calendar API is not enabled in the Google Cloud project.
+- If the OAuth client scopes or API settings changed after the account was first connected, revoke Keeper's access in Google, reconnect the account, and then refresh again.
+
 ## Dependencies And Secrets
 - Depends on Traefik middleware `authentik-authentik-forward-auth@kubernetescrd` in namespace `authentik`.
 - Depends on Authentik outpost publishing the Keeper hostname with path `/outpost.goauthentik.io`.
