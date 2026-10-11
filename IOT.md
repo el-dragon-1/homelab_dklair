@@ -946,6 +946,44 @@ firewall change during read-only troubleshooting.
 
 ## Next Decisions and Inventory Gaps
 
+### 2026-10-11 18:02-18:06 CDT: Network Validation and 5 GHz Pilot
+
+Owner clarified Apple/IoT functionality was already broken before this work;
+Home/Siri/Thread acceptance is deferred until networking, discovery and
+device placement are complete. Preserve infrastructure and intended isolation
+as per-batch gates rather than requiring pre-existing Apple failures to recover.
+
+LAN IPv6 TCP 22 to node2 `fd47:eab4:aa15::f5d` and eldragon
+`fd47:eab4:aa15::4d2` succeeded. With Ethernet unplugged, routes to both
+used gateway link-local via Wi-Fi `en0`; both connections were refused.
+After Ethernet reconnection both LAN baselines succeeded again. IoT ULA
+ping and Pi-hole DNS remained functional. This validates those new-flow
+IPv6 paths, not comprehensive isolation. Node3's attempted IPv6 baseline
+timed out on LAN and was excluded. No packet-level rejection correlation
+was collected. A same-Mac LAN-address-to-Wi-Fi-address ping was local to
+the host and is not evidence of LAN-to-IoT forwarding; that positive
+cross-host IPv6 direction remains unverified.
+
+A two-packet capture at 18:05 CDT observed basement Apple TV and Kitchen
+HomePod advertise only gateway-derived `fd47:eab4:aa15:c::/64`, no old
+Hades prefix in either sampled RA. Client routes may retain earlier
+advertisements until expiration; this sample is not long-term certification.
+Capture completed automatically, no router changes were made for these tests.
+
+Owner approved the same `OpenWrt` SSID and existing Vault-managed password
+for both bands. Desired Gemini adds only a 5 GHz IoT BSS on radio1/VLAN 10,
+WPA2-CCMP, DTIM 1, client isolation off, reusing the existing key template.
+Radio settings and existing IoT/LAN/guest BSSs remain unchanged. Hades
+expansion is deferred until the Gemini pilot passes actual 5 GHz association.
+Gemini CronJob is staged suspended; publication/application are pending.
+
+After sync/no active Gemini Job, run one normal manual reconcile without
+network/firewall override and keep Ethernet recovery. Verify live BSS band,
+VLAN and client station association, not merely SSID visibility. Recheck
+DHCP/Pi-hole DNS/ULA/Internet/isolation and existing BSS continuity.
+Rollback removes only `iot_5g` through GitOps and reconciles wireless;
+restore scheduling separately after acceptance. No new Vault secret is needed.
+
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
 - [ ] Identify all HomePods/Apple TVs and eligible hub roles; identify Main Bedroom.

@@ -81,6 +81,25 @@ Use these overrides only for staged maintenance windows when remote recovery is 
 
 ## SSID Segmentation Notes
 
+### Gemini Dual-Band IoT Pilot
+
+Desired Gemini adds `iot_5g` on radio1, mapped to the existing IoT VLAN,
+with SSID `OpenWrt`, WPA2-CCMP, and the existing Vault-managed
+`openwrt_ssid_key` template. No new secret is required. Client isolation
+is off, matching shared automation requirements. Existing 2.4 GHz IoT,
+LAN/guest SSIDs, radio channel/width and Hades wireless remain unchanged.
+
+Gemini scheduling is staged suspended for publication and controlled apply.
+After sync and checking no active Gemini Job, run one normal manual reconcile;
+no network/firewall runtime override is required for this wireless-only batch.
+Keep Ethernet management. Verify the new live BSS is actually on 5 GHz
+and VLAN 10, and verify the test client is associated with that BSS using
+AP station evidence: the shared SSID alone does not establish its band.
+Check IoT DHCP, Pi-hole TCP/UDP DNS, ULA, Internet and blocked admin/Vault
+paths, while retaining 2.4 GHz and LAN/guest service. Only then extend to Hades.
+Rollback removes the new BSS through GitOps and wireless reconcile; restore
+scheduling separately after acceptance. Publication/live validation are pending.
+
 ### IoT DNS Exception
 
 Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to
