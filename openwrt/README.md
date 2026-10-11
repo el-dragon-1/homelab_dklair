@@ -309,6 +309,17 @@ Rollback restores the AP prefix/server settings via GitOps and the same
 network runtime override, then renews clients. Resume AP scheduling separately
 only after acceptance. Do not broaden to Hades in this batch.
 
+2026-10-11 acceptance: revision
+`3c4c7e63c396383b3414b2618e6889aaeab03b9f`, manual Job
+`ap-ipv6-cleanup-20261011-1746`, succeeded with network runtime override.
+AP ULA allocation/leases/delegated routes are removed and RA/DHCPv6 disabled.
+AP/downstream SSH management, all five K3S nodes, Vault, LAN IPv6 Internet,
+and tested IoT ULA/DNS/Internet/isolation paths remained functional.
+The renewed Mac has no AP-derived addresses/routes. Node2/node3 host-level
+stale IPv6 state and other client dependencies remain unverified.
+Desired AP schedule restoration is prepared; live scheduling remains
+suspended until publication/sync. Hades is unchanged.
+
 ### Gateway IoT Local IPv6
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired

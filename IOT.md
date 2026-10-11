@@ -780,6 +780,35 @@ withdrawal. Rollback restores only AP prefix/server settings through GitOps
 with the same network override and renewed clients. Restore scheduling in
 a separate publication after acceptance; Hades migration remains separate.
 
+### 2026-10-11 17:46-17:48 CDT: Intermediate AP Acceptance
+
+Revision `3c4c7e63c396383b3414b2618e6889aaeab03b9f` synced and AP
+suspension was verified before manual Job `ap-ipv6-cleanup-20261011-1746`
+with network runtime override. It completed with no failures/unreachable
+hosts. Live RA/DHCPv6 are disabled; AP LAN has only link-local IPv6,
+no ULA assignment, empty DHCPv6 leases, and no delegated-prefix routes.
+The unreachable stored ULA aggregate remains. AP SSH and downstream
+Gemini/Orchid SSH management worked.
+
+All five K3S nodes remained Ready before, immediately after, and following
+client tests. Vault remained initialized/unsealed/active with zero pod
+restarts. LAN IPv6 HTTPS returned 200 and Pi-hole DNS returned NOERROR.
+After Ethernet reconnection, the Mac had no AP-derived `fd08:2419:f30`
+addresses/routes. Node2/node3 retained cluster readiness, but their host-level
+stale IPv6 address/delegation lifetimes were not inspected; do not equate
+readiness with verification of every IPv6 dependency. No RA capture or
+all-client IPv6 certification was performed.
+
+IoT-only `.105` retained Pi-hole-only DHCP DNS and gateway ULA connectivity:
+ping passed, UDP/TCP DNS returned NOERROR (31/16 ms), IPv4 HTTPS returned
+200, tested IPv4 gateway SSH and IPv6 gateway HTTPS were refused, and Vault
+timed out after 3 seconds. Pi-hole/Vault IPv4 routes used Wi-Fi `en0`.
+
+Argo CD is Synced/Succeeded, intentionally Suspended. Desired AP schedule
+restoration (`suspend: false`) is prepared; live AP remains suspended until
+publication/sync. No manual reconcile is needed just to resume scheduling.
+Hades' Apple-related prefix migration and full IPv6 isolation remain pending.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |
