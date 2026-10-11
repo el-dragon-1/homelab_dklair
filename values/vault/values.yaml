@@ -40,3 +40,6 @@ server:
 ui:
   enabled: true
   serviceType: LoadBalancer
+  loadBalancerIP: 192.168.4.103
+  annotations:
+    kube-vip.io/loadbalancerIPs: 192.168.4.103

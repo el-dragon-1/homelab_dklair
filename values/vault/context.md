@@ -37,11 +37,19 @@ DHCP protection must precede the Service migration.
    interfaces/firewall/DHCP/Wi-Fi; expect possible brief interruptions. Inspect
    generated dnsmasq configuration for the reservation and recheck leases/ARP
    for conflicts. Do not proceed if `.103` is already assigned to a client.
+   Completed 2026-10-11 at approximately 14:23: OpenWRT Argo CD sync succeeded at
+   `5b883014fd215a8e1096f4919419e6bdbc45bc69`; manual gateway Job
+   `vault-vip-reservation-20261011-1423` completed. Live UCI and generated dnsmasq
+   configuration contain `dhcp-host=reserved-vault-vip,192.168.4.103`.
+   No `.103` lease or ARP responder was found after application. Vault remained
+   initialized/unsealed at `.102`, and Pi-hole DNS still resolved `apple.com`.
 3. Only after reservation verification, prepare `ui.loadBalancerIP: 192.168.4.103`
    and `ui.annotations.kube-vip.io/loadbalancerIPs: 192.168.4.103` in Vault values.
    Both fields must agree so the existing `.102` annotation does not override intent.
    Render chart 0.32.0; ensure only the UI Service address/annotation changes, not
    StatefulSet, PVC, listener, or internal Services.
+   Both `.103` fields are now prepared locally; publication and live migration
+   remain pending the owner's separate commit/push.
 4. Commit/push the separate Vault change, refresh/sync Argo CD, and verify the
    requested/annotation/advertised IP is `.103`, with the existing Vault pod still
    ready and unsealed. Automatic sync is enabled, so publication itself may apply it.

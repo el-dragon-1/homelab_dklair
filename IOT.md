@@ -240,7 +240,10 @@ Do not broadly allow IoT -> LAN or guess a universal HomeKit/Matter port list.
 for Vault. First apply/verify its gateway DHCP reservation, then publish and validate
 the Vault Service change; Pi-hole remains `.102`. See the
 [two-phase migration and rollback plan](values/vault/context.md).
-Vault values/live Service remain unchanged until reservation verification.
+The gateway reservation is now applied and verified (2026-10-11, approximately
+14:23). Vault's `.103` requested IP and annotation are prepared locally for a
+separate commit/push; its live Service still uses `.102`. Do not mark separation
+complete until the published Vault change is synced and validated.
 
 All Kubernetes operations for this repository must use **K3S**. Select it with
 `kubectl config use-context K3S`, verify `kubectl config current-context`, and use
