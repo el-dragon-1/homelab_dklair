@@ -1016,8 +1016,32 @@ LAN Vault returned HTTP 200, all five K3S nodes were Ready, and the
 Mac remained authenticated on the 5 GHz BSS. This completes the tested
 Gemini pilot paths, not comprehensive isolation or Apple functional
 acceptance. Desired Gemini scheduling is restored to `suspend: false`;
-publication and Argo sync-only restoration remain pending. No additional
-manual router Job is needed for this restoration; Hades remains unchanged.
+Revision `496b4f0b14b0dbdde51acaf09d812fdf08ef6fef` restored live scheduling
+with Argo Synced/Healthy. Unsuspension triggered automatic catch-up Job
+`openwrt-gemini-reconcile-29862681`, which succeeded without failure.
+No manual Job was launched for restoration. All five schedules were
+enabled and no Jobs active afterward.
+
+### 2026-10-11: Hades 5 GHz IoT Rollout Preparation
+
+Owner approved proceeding to Hades after Gemini acceptance. Desired
+Hades adds only `iot_5g` on radio1, matching Gemini: SSID `OpenWrt`,
+existing Vault-managed password template, WPA2-CCMP, network `iot`
+(VLAN 10), DTIM 1 and client isolation off. Existing 2.4 GHz IoT,
+LAN/guest BSSs and radio settings are preserved. Read-only live checks
+confirmed Hades channel 149/80 MHz and capacity for a third 5 GHz BSS,
+with wired management routed via en9.
+
+Only Hades CronJob is staged suspended; publication/live application
+remain pending. Sync suspension, check no active Hades Job, then run
+one normal manual reconcile without network/firewall runtime overrides.
+Acceptance requires actual Hades 5 GHz client association (Gemini's
+same SSID is not evidence), live VLAN 10 binding, IoT-only DHCP,
+Pi-hole UDP/TCP DNS, ULA, IPv4 Internet and administration/Vault
+isolation checks, plus management/infrastructure and existing BSS
+checks. Restore scheduling separately after acceptance. Rollback removes
+only Hades `iot_5g` through GitOps/wireless reconcile. Apple functional
+acceptance remains deferred until discovery and device placement are done.
 
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.

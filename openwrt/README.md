@@ -121,7 +121,29 @@ existing 2.4 GHz BSS; Apple functional acceptance is still deferred.
 
 Desired Gemini scheduling is restored to `suspend: false` after pilot
 acceptance. Publish and sync this restoration only; no further manual
-router Job is needed. Live scheduling remains suspended until that sync.
+router Job is needed. Revision `496b4f0b14b0dbdde51acaf09d812fdf08ef6fef` restored live scheduling;
+Argo was Synced/Healthy. Unsuspension automatically started catch-up Job
+`openwrt-gemini-reconcile-29862681`, which completed without failure.
+All five schedules were enabled with no active Jobs afterward.
+
+### Hades Dual-Band IoT Rollout
+
+After Gemini pilot acceptance, desired Hades adds the same `iot_5g`
+BSS on radio1: SSID `OpenWrt`, network `iot`/VLAN 10, WPA2-CCMP,
+existing Vault-managed `openwrt_ssid_key`, DTIM 1, client isolation off.
+Existing 2.4 GHz IoT, LAN/guest BSSs, radio channels/widths and other
+devices are unchanged. Hades supports the additional AP interface.
+
+Only Hades scheduling is staged suspended for controlled application.
+Publication and live application are pending. After sync and verifying
+no active Hades Job, run one normal manual reconcile, without network
+or firewall runtime overrides. Preserve wired management. Verify live
+5 GHz BSS and VLAN 10 membership, then actual client association on
+Hades (not Gemini) and IoT-only DHCP, Pi-hole UDP/TCP DNS, ULA,
+IPv4 Internet and blocked gateway administration/Vault paths.
+Check existing BSSs and infrastructure before restoring scheduling
+in a separate publication. Rollback removes only Hades `iot_5g` and
+reconciles wireless through the same workflow.
 
 ### IoT DNS Exception
 
