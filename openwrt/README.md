@@ -81,6 +81,24 @@ Use these overrides only for staged maintenance windows when remote recovery is 
 
 ## SSID Segmentation Notes
 
+### Gemini Mesh VLAN Transport
+
+Gemini's wired uplink passes through AP, which backhauls to gateway over 802.11s;
+Hades connects through gateway. The gateway mesh interface `phy1-mesh0` must carry
+LAN VLAN 1 untagged/PVID and IoT/guest VLANs 10/20 tagged. Its interface name is
+explicitly pinned in desired wireless configuration to match the bridge port rules.
+AP currently bridges Ethernet and mesh without VLAN filtering, transporting tags
+transparently; no AP management-address or subnet-ownership change is needed for
+this gateway admission fix.
+
+Apply the gateway change in a controlled window while retaining wired management.
+Verify live `br-lan` VLAN membership after wireless reload and again after a later
+reconcile. From Gemini, verify a client gets a gateway-issued `10.1.1.x` lease,
+then test guest VLAN 20 and confirm cross-zone isolation. Do not replace missing
+VLAN transport with AP DHCP servers or untagged IoT on the LAN.
+If tagged traffic still fails, trace the AP Ethernet/mesh path before widening the
+change. Rollback the gateway network/wireless changes together through Git.
+
 Current intent:
 
 - `smz_homex` maps to `lan` and is allowed to reach IoT/guest devices.

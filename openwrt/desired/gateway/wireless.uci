@@ -17,6 +17,7 @@ config wifi-device 'radio1'
 
 config wifi-iface 'default_radio1'
 	option device 'radio1'
+	option ifname 'phy1-mesh0'
 	option network 'lan'
 	option mode 'mesh'
 	option encryption 'sae'

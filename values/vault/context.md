@@ -14,12 +14,28 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Current Deployment Shape
 - K3S namespace `vault`, chart 0.32.0, one standalone Raft-backed pod with a 10Gi Longhorn volume. TLS is disabled in the current listener; this migration does not change transport or storage.
-- Internal consumers use `http://vault.vault.svc.cluster.local:8200`. The `vault-ui` LoadBalancer currently shares `192.168.4.102` with Pi-hole (Vault TCP 8200; DNS TCP/UDP 53).
+- Internal consumers use `http://vault.vault.svc.cluster.local:8200`. The `vault-ui` LoadBalancer now uses dedicated `192.168.4.103:8200`; Pi-hole remains `192.168.4.102:53`.
 
 ## Known Good State
 - 2026-10-11 before migration: `vault-0` and StatefulSet were 1/1 ready, pod had zero restarts, and the public health endpoint reported initialized/unsealed. `vault-backend` ClusterSecretStore was Ready and all 26 ExternalSecrets had no non-Ready condition.
+- 2026-10-11 approximately 15:06: Vault revision `743aaa33cc1c92397f6a4b6d8a852a384dd51119` was Synced/Healthy; requested, annotated, and advertised UI VIP all matched `.103`. Three consecutive health requests succeeded (initialized, unsealed, active); Vault pod was unchanged with zero restarts. `.102:8200` no longer accepted connections. Pi-hole UDP/TCP queries returned NOERROR (5/16 ms). A forced `aliasvault-db` ExternalSecret refresh succeeded at `20:06:14Z` without reading secret values.
 
-## Dedicated VIP Migration (Pending)
+## Dedicated VIP Migration
+
+Address separation and immediate health checks completed. Owner confirmed successful
+Vault login at 15:20 local time on 2026-10-11; longer-term stability remains to be
+validated. Argo CD initially applied `.103` request/annotation,
+but kube-vip v1.0.0 retained `.102` status and logged cancellation/waiting for the
+old load balancer. With owner approval, only the active node2 kube-vip pod was
+restarted; `.103` advertisement then converged without restarting Vault.
+
+Post-restart checks: Kubernetes API ready; kube-vip DaemonSet ready; all LoadBalancer
+addresses matched intended assignments; Traefik HTTP responded. Alpine `.104` had
+no backend endpoints and did not accept HTTP. Mail `.105` had a ready endpoint but
+workstation TCP probes to 25/587/993 timed out; no before-restart connectivity baseline
+establishes causation. WireGuard had a ready UDP endpoint but no client handshake test.
+These checks do not certify all service VIPs as functionally healthy; mail reachability
+needs separate investigation. No unrelated service changes were made.
 
 Owner approved `192.168.4.103` and preparation through Git before live sync.
 Read-only checks found no Service allocation, gateway lease/reservation/hosts entry,
@@ -48,8 +64,8 @@ DHCP protection must precede the Service migration.
    Both fields must agree so the existing `.102` annotation does not override intent.
    Render chart 0.32.0; ensure only the UI Service address/annotation changes, not
    StatefulSet, PVC, listener, or internal Services.
-   Both `.103` fields are now prepared locally; publication and live migration
-   remain pending the owner's separate commit/push.
+   Both `.103` fields were published in `743aaa33cc1c92397f6a4b6d8a852a384dd51119`;
+   rendering confirmed only the UI Service annotation/request fields changed.
 4. Commit/push the separate Vault change, refresh/sync Argo CD, and verify the
    requested/annotation/advertised IP is `.103`, with the existing Vault pod still
    ready and unsealed. Automatic sync is enabled, so publication itself may apply it.

@@ -236,14 +236,35 @@ Do not broadly allow IoT -> LAN or guess a universal HomeKit/Matter port list.
 
 ## Ordered Rollout: GitOps Versus Manual Work
 
-**IoT access work is paused pending Vault VIP separation.** Owner approved `.103`
-for Vault. First apply/verify its gateway DHCP reservation, then publish and validate
-the Vault Service change; Pi-hole remains `.102`. See the
+**New prerequisite: repair Gemini's IoT/guest mesh transport before DNS access.**
+Owner confirmed `Gemini -> AP -> mesh -> gateway` and `Hades -> gateway`.
+At approximately 15:47 on 2026-10-11, laptop MAC `aa:40:37:53:2c:09` completed
+WPA2 authentication on Gemini but retained `169.254.239.194` with DHCP "no server."
+Gemini runtime correctly places its IoT radio in VLAN 10; gateway runtime mesh port
+was only in VLAN 1. Gateway DHCP captures during a retry showed no arriving requests.
+AP uses a non-filtering Ethernet/mesh bridge. Together these identify missing
+gateway mesh VLAN admission as a concrete transport defect, not a wrong-password
+diagnosis. Exact end-to-end restoration remains subject to client validation.
+
+Desired gateway network configuration now explicitly includes `phy1-mesh0` in its
+bridge: VLAN 1 untagged/PVID, VLANs 10/20 tagged. Desired wireless pins that existing
+interface name. AP/Gemini configurations, credentials, firewall policy, and DHCP
+ownership are unchanged. Publish and apply gateway only in a controlled window,
+then verify runtime VLAN membership, Gemini client DHCP, and guest transport.
+Retest after wireless reload/reconcile to prove persistence. Do not proceed to the
+DNS-only milestone until client VLAN transport works and isolation is preserved.
+See [mesh transport notes](openwrt/README.md#gemini-mesh-vlan-transport).
+
+**Vault VIP separation and owner login are confirmed; long-term observation remains.**
+Vault now uses `.103`, protected by its gateway DHCP reservation; Pi-hole remains
+`.102`. See the
 [two-phase migration and rollback plan](values/vault/context.md).
-The gateway reservation is now applied and verified (2026-10-11, approximately
-14:23). Vault's `.103` requested IP and annotation are prepared locally for a
-separate commit/push; its live Service still uses `.102`. Do not mark separation
-complete until the published Vault change is synced and validated.
+On 2026-10-11 approximately 15:06, all Vault VIP fields matched `.103`, repeated
+health checks and a fresh ExternalSecret refresh passed, and Pi-hole TCP/UDP DNS
+remained functional. kube-vip required an owner-approved active-pod restart to
+complete advertisement. Mail VIP workstation reachability remains an unresolved
+post-restart check; this is not proof of a migration-caused regression.
+Owner confirmed successful Vault login at 15:20 local time on 2026-10-11.
 
 All Kubernetes operations for this repository must use **K3S**. Select it with
 `kubectl config use-context K3S`, verify `kubectl config current-context`, and use

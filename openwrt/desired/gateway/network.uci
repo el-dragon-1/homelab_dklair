@@ -18,6 +18,7 @@ config device
 	list ports 'lan3'
 	list ports 'lan4'
 	list ports 'sfp2'
+	list ports 'phy1-mesh0'
 
 config bridge-vlan
 	option device 'br-lan'
@@ -27,6 +28,7 @@ config bridge-vlan
 	list ports 'lan3:u*'
 	list ports 'lan4:u*'
 	list ports 'sfp2:u*'
+	list ports 'phy1-mesh0:u*'
 
 config bridge-vlan
 	option device 'br-lan'
@@ -36,6 +38,7 @@ config bridge-vlan
 	list ports 'lan3:t'
 	list ports 'lan4:t'
 	list ports 'sfp2:t'
+	list ports 'phy1-mesh0:t'
 
 config bridge-vlan
 	option device 'br-lan'
@@ -45,6 +48,7 @@ config bridge-vlan
 	list ports 'lan3:t'
 	list ports 'lan4:t'
 	list ports 'sfp2:t'
+	list ports 'phy1-mesh0:t'
 
 config interface 'lan'
 	option device 'br-lan.1'
@@ -89,4 +93,3 @@ config interface 'smz_guest'
 	option proto 'static'
 	option ipaddr '10.2.2.1'
 	option netmask '255.255.255.0'
-
