@@ -152,6 +152,17 @@ Rollback: remove only the administration rule through Git, publish, and run
 a manual gateway reconcile while suspended. Keep the Pi-hole exception and
 IPv6 ownership unchanged; restore the schedule separately after validation.
 
+2026-10-11 17:03-17:05 CDT: applied revision
+`4e51d9b25d539bd42cc6b5f6e55267f613fc1fd3` with manual gateway Job
+`iot-admin-gateway-20261011-1703`. Firewall check passed, LAN SSH/HTTPS
+remained accessible, and new IoT IPv4/IPv6-link-local TCP 22/80/443 connections
+failed while IPv6 ping/neighbor reachability passed. IoT-only DHCP, system
+resolver configuration, explicit UDP/TCP DNS, and blocked Vault probes passed.
+One UDP DNS response was stale (TTL zero / EDNS code 3); TCP returned fresh
+answers, and a subsequent UDP recheck also returned fresh answers.
+Desired schedule restoration (`suspend: false`) is now prepared;
+live gateway scheduling remains suspended until publication and Argo CD sync.
+
 2026-10-11 read-only audit, approximately 16:57-16:59 CDT:
 
 - Gateway has a delegated WAN `/64`, assigned to LAN; IoT has only a

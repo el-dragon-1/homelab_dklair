@@ -503,6 +503,31 @@ Restore `suspend: false` through GitOps only after recording successful tests.
 If validation fails, remove only the new firewall rule through GitOps and
 run a manual reconcile while suspended; restore scheduling separately.
 
+Applied revision `4e51d9b25d539bd42cc6b5f6e55267f613fc1fd3` through
+Argo CD and manual gateway Job `iot-admin-gateway-20261011-1703` at
+approximately 17:03 CDT. Job completed without failures; `fw4 check` passed.
+Argo CD reports Synced/Succeeded and health Suspended due to the intentionally
+suspended CronJob. Live input rule rejects TCP 22/80/443 without an IP-family
+restriction. Wired LAN SSH/HTTPS succeeded. New IoT IPv4 connections to all
+three ports were refused; IPv6 link-local connections timed out. IPv6 ping
+succeeded and the gateway neighbor table showed the client REACHABLE;
+the combined administration-rule counter increased to 16 packets.
+
+After owner unplugged Ethernet and renewed Wi-Fi DHCP at approximately
+17:05 CDT, client `.105` retained only Pi-hole DNS and routed Pi-hole/Vault
+via `en0`. Ordinary system lookup succeeded (no fresh-query capture in this
+batch). Explicit DNS returned NOERROR and A answers over UDP/TCP (12/38 ms);
+UDP had TTL zero and EDNS stale-answer code 3, whereas TCP returned a fresh
+198-second TTL. Thus transport passed, but one UDP answer was stale.
+UDP recheck at 17:05:22 returned fresh NOERROR answers (TTL 173, 17 ms).
+Vault remained blocked with a 3-second timeout. IPv6 ping again passed
+without packet loss. LAN Vault health was initialized/unsealed/active before
+unplugging Ethernet. Full IPv6 isolation and Matter/Thread remain untested.
+
+After these scoped acceptance checks, desired gateway `suspend: false` is
+prepared for publication; live scheduling remains suspended until synced.
+Do not run another manual router reconcile solely to restore the schedule.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |
