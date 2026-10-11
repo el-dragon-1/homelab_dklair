@@ -633,6 +633,34 @@ publish/sync it separately. Live gateway scheduling remains suspended.
 Next implementation remains AP IPv6 ownership cleanup with attention to
 active delegated-prefix clients and LAN recovery; it has not been prepared.
 
+### Prepared Batch: Gemini IPv6 Ownership Pilot
+
+Gemini is the first AP pilot; Hades' confirmed Apple-related delegation is
+left untouched. Live Gemini inspection found address leases (including the
+test Mac) and routes for delegated `fd10:1d51:bae0` subprefixes. This is an
+active-service migration, not merely removing unused settings.
+
+Desired Gemini removes LAN `ip6assign=60` and disables LAN RA/DHCPv6.
+IPv4 DHCP ignore, management `.4`, IPv4 routing/DNS, VLANs, Wi-Fi, and
+gateway/other AP configurations remain unchanged. Global ULA seed is retained
+for rollback. Gemini's CronJob is staged suspended; nothing is applied yet.
+
+After publication/sync, verify suspension/no active Gemini Jobs. Run a
+manual reconcile with `openwrt_apply_remote_network_runtime=true`, since
+normal AP safety defaults skip `ifup lan`. Keep firewall runtime override
+disabled and preserve wired management. Verify actual ULA/prefix-route removal,
+disabled RA/DHCPv6, management reachability, and lack of new Gemini-originated
+advertisements using bounded observation plus runtime/config evidence.
+Renew/reconnect a LAN client, accounting for lingering RA/DHCPv6 addresses,
+and test LAN IPv6 Internet, DNS, and IoT ULA/DNS/isolation. Old delegated
+routes must be inspected explicitly; short capture silence or a successful
+IPv4 ping alone cannot certify IPv6 cleanup. Hades/border-router migration
+and all-AP ownership certification remain pending.
+
+Rollback is to restore Gemini's prior prefix/server options through GitOps
+and apply with the same network runtime override, then renew clients.
+Restore Gemini scheduling in a separate publication after validation.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

@@ -205,6 +205,34 @@ Preserve these active allocations until a staged prefix-ownership migration
 is designed; immediate AP RA/DHCPv6 removal is not a safe cleanup.
 See the [IPv6 follow-up](../IOT.md) for the evidence and proposed direction.
 
+### Gemini IPv6 Ownership Pilot
+
+Desired Gemini LAN no longer allocates its own ULA prefix (`ip6assign`
+removed), and LAN RA/DHCPv6 are explicitly disabled. IPv4 DHCP remains
+ignored; management `192.168.4.4`, gateway, DNS, VLANs, wireless, and other
+AP/gateway settings are unchanged. The stored global ULA seed is retained
+for rollback, but does not allocate a prefix without `ip6assign`.
+
+Gemini's CronJob is staged suspended for the pilot. Publish/sync, verify
+suspension and no active Gemini Job, then run one controlled reconcile with
+`openwrt_apply_remote_network_runtime=true`. Normal AP reconciliation skips
+network runtime apply, so it alone cannot verify prefix removal. Firewall
+runtime override is not required. Retain Ethernet gateway/AP management.
+Verify live Gemini has no ULA assignment or delegated-prefix routes and
+RA/DHCPv6 are disabled; use a bounded observation to check for unexpected
+advertisements. Absence in a short capture alone is not proof.
+
+Reconnect/renew a LAN client and test gateway IPv6 Internet, IPv4 DNS, Gemini
+management, and IoT ULA/DNS/isolation. Existing client addresses and routes
+may linger until their advertised lifetimes expire; reconnect is not a
+guaranteed purge. Do not mark migration complete while stale Gemini-derived
+state remains unaccounted for. Other APs, especially Hades' Apple-related
+delegation, remain unchanged. Publication/application and validation are pending.
+
+Rollback: restore Gemini's prior `ip6assign=60` and RA/DHCPv6 server options
+through GitOps, run a manual reconcile with the same network runtime override,
+and renew clients. Restore Gemini scheduling separately after acceptance.
+
 ### Staged IoT Local IPv6
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
