@@ -98,7 +98,30 @@ AP station evidence: the shared SSID alone does not establish its band.
 Check IoT DHCP, Pi-hole TCP/UDP DNS, ULA, Internet and blocked admin/Vault
 paths, while retaining 2.4 GHz and LAN/guest service. Only then extend to Hades.
 Rollback removes the new BSS through GitOps and wireless reconcile; restore
-scheduling separately after acceptance. Publication/live validation are pending.
+scheduling separately after acceptance.
+
+Revision `18e7bee461fc2bd5fe7cf56ead9c68f3a6874094` was synced and applied
+by Job `gemini-iot-5g-20261011-1808`, with no failed attempt or runtime
+network/firewall override. Live `phy1-ap2` is enabled on channel 149,
+5745 MHz/80 MHz, BSSID `de:0d:ab:29:ed:ab`. Netifd confirms its untagged
+PVID membership in bridge VLAN 10 alongside the existing 2.4 GHz IoT BSS,
+with tagged Ethernet uplink. Existing LAN/guest BSSs remain enabled;
+client continuity on those BSSs is not yet certified. Wired Gemini
+management, LAN Vault HTTP 200 and all five K3S nodes Ready passed.
+After owner Wi-Fi reconnect, the test Mac was authenticated, authorized
+and associated on `phy1-ap2` at 5745 MHz. With Ethernet unplugged,
+Pi-hole/Vault/Internet routes used en0 via `10.1.1.1`. Pi-hole UDP/TCP
+DNS returned NOERROR with answers; system resolver was Pi-hole-only and
+ordinary hostname resolution succeeded. Gateway IoT ULA ping and IPv4
+HTTPS HTTP 200 passed; gateway TCP 22/80/443 was refused and Vault
+TCP 8200 timed out. After Ethernet reconnection, wired management and
+LAN Vault HTTP 200 passed, all five nodes stayed Ready, and the Mac
+remained on the 5 GHz BSS. Kitchen HomePod remained associated on the
+existing 2.4 GHz BSS; Apple functional acceptance is still deferred.
+
+Desired Gemini scheduling is restored to `suspend: false` after pilot
+acceptance. Publish and sync this restoration only; no further manual
+router Job is needed. Live scheduling remains suspended until that sync.
 
 ### IoT DNS Exception
 

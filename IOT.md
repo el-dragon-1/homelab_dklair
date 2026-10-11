@@ -975,7 +975,7 @@ for both bands. Desired Gemini adds only a 5 GHz IoT BSS on radio1/VLAN 10,
 WPA2-CCMP, DTIM 1, client isolation off, reusing the existing key template.
 Radio settings and existing IoT/LAN/guest BSSs remain unchanged. Hades
 expansion is deferred until the Gemini pilot passes actual 5 GHz association.
-Gemini CronJob is staged suspended; publication/application are pending.
+Gemini CronJob was suspended before controlled application.
 
 After sync/no active Gemini Job, run one normal manual reconcile without
 network/firewall override and keep Ethernet recovery. Verify live BSS band,
@@ -983,6 +983,41 @@ VLAN and client station association, not merely SSID visibility. Recheck
 DHCP/Pi-hole DNS/ULA/Internet/isolation and existing BSS continuity.
 Rollback removes only `iot_5g` through GitOps and reconciles wireless;
 restore scheduling separately after acceptance. No new Vault secret is needed.
+
+Revision `18e7bee461fc2bd5fe7cf56ead9c68f3a6874094` was published, Argo
+synced successfully, and Job `gemini-iot-5g-20261011-1808` completed with
+no failed attempt. Remote network/firewall runtime actions were skipped
+as intended; DHCP and Wi-Fi refresh completed. Live `phy1-ap2` is enabled
+on 5745 MHz/channel 149/80 MHz, BSSID `de:0d:ab:29:ed:ab`.
+Netifd bridge VLAN state confirms VLAN 10 untagged/PVID membership for
+both IoT BSSs and tagged transport on eth1. Existing 2.4 GHz IoT and
+5 GHz LAN/guest BSSs remain enabled; client continuity on LAN/guest was
+not tested. Wired Gemini management, LAN Vault HTTP 200, and all five
+K3S nodes Ready passed after apply.
+
+The Mac was still authenticated/associated on `phy0-ap0` (2.4 GHz);
+the new 5 GHz BSS had no clients. Its existing IoT lease remained
+`10.1.1.105` with Pi-hole-only DHCP DNS and gateway-derived ULA, but
+these were not new-BSS acceptance evidence.
+
+After owner Wi-Fi reconnect, hostapd confirmed the Mac authenticated,
+authorized and associated on `phy1-ap2` at 5745 MHz. Kitchen HomePod
+remained associated with the existing 2.4 GHz BSS. At 18:23 CDT, with
+Ethernet unplugged, routes to Pi-hole, Vault and Internet used en0 via
+`10.1.1.1`. Pi-hole UDP/TCP DNS returned NOERROR with A answers.
+System resolver remained Pi-hole-only and ordinary hostname resolution
+succeeded (no packet capture was used to distinguish cache from a new
+system DNS exchange). IoT gateway ULA ping passed; IPv4 Internet HTTPS
+returned HTTP 200. Gateway TCP 22/80/443 connections were refused,
+and Vault `.103:8200` timed out as expected.
+
+After owner Ethernet reconnection, Gemini management routed via en9,
+LAN Vault returned HTTP 200, all five K3S nodes were Ready, and the
+Mac remained authenticated on the 5 GHz BSS. This completes the tested
+Gemini pilot paths, not comprehensive isolation or Apple functional
+acceptance. Desired Gemini scheduling is restored to `suspend: false`;
+publication and Argo sync-only restoration remain pending. No additional
+manual router Job is needed for this restoration; Hades remains unchanged.
 
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
