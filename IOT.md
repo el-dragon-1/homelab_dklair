@@ -754,6 +754,32 @@ live Orchid remains suspended. Restore via Argo CD sync only. Intermediate
 AP and Hades cleanup, full IPv6 isolation, and Apple/Thread validation remain
 separate pending work.
 
+### Prepared Batch: Intermediate AP IPv6 Ownership Cleanup
+
+Orchid schedule restoration revision
+`5c3b5cbc4ab53d39c5983eb3dd19e16b7b0ddc54` is Synced/Healthy/Succeeded.
+The next cleanup targets intermediate AP `.2`; Hades remains unchanged.
+Live AP leases include node2/node3 and the Mac, with node3 delegated
+`fd08:2419:f30:4::/62`; owner explicitly approved this scope with
+infrastructure checks. IPv4 and gateway IPv6 must remain functional.
+
+Desired AP removes LAN `ip6assign=60`, disables RA/DHCPv6, and suspends
+its CronJob for controlled application. IPv4 DHCP ignore, management/gateway,
+DNS forwarding, bridge/mesh, Wi-Fi, and global ULA seed remain unchanged.
+Publication/application and acceptance tests are pending.
+
+Before applying, record K3S node health and addresses, DNS/Vault health and
+LAN IPv6 Internet, checking for AP-ULA dependencies. After sync, confirm AP
+suspension/no active AP Jobs and use one manual reconcile with network
+runtime override enabled, firewall override disabled. Preserve wired gateway
+recovery: the intermediate bridge refresh can interrupt downstream traffic.
+Verify AP/downstream management, removed allocation/leases/delegated routes,
+disabled services, infrastructure health, and LAN/IoT client tests.
+Inspect lingering node/client IPv6 state rather than assuming immediate
+withdrawal. Rollback restores only AP prefix/server settings through GitOps
+with the same network override and renewed clients. Restore scheduling in
+a separate publication after acceptance; Hades migration remains separate.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

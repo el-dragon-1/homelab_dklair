@@ -284,7 +284,32 @@ No packet observation or all-client validation was performed in this batch.
 Desired Orchid schedule restoration is prepared, but live scheduling remains
 suspended until publication/sync; no extra manual reconcile is needed.
 
-### IoT Local IPv6 Configuration
+### Intermediate AP IPv6 Ownership Cleanup
+
+Desired AP removes LAN `ip6assign=60` and disables LAN RA/DHCPv6.
+IPv4 management `192.168.4.2`, default gateway, DNS forwarding, bridge/mesh,
+wireless, and other devices remain unchanged. Global ULA seed is retained.
+Pre-change AP leases include node2/node3 and the test Mac; node3 has an
+AP-derived delegated `/62`. Owner explicitly approved this infrastructure
+scope with before/after checks; it is not limited to noncritical IoT clients.
+
+AP CronJob is staged suspended. Publication/application are pending.
+Before apply, record K3S node health/addressing, DNS/Vault health, and LAN
+IPv6 Internet; confirm no unexpected dependency on `fd08:2419:f30::/48`.
+Sync suspension, verify no active AP Job, and apply one manual reconcile
+with `openwrt_apply_remote_network_runtime=true`, firewall override disabled.
+The intermediate bridge refresh may interrupt downstream/mesh connectivity;
+retain wired gateway recovery and verify AP/downstream management afterward.
+
+Check removal of ULA allocation/leases/delegated routes and disabled RA/DHCPv6.
+Repeat infrastructure and client checks; account for lingering node/client
+addresses/routes before certifying migration. An unreachable ULA aggregate
+may remain without assigning addresses. Hades' delegation is unchanged.
+Rollback restores the AP prefix/server settings via GitOps and the same
+network runtime override, then renews clients. Resume AP scheduling separately
+only after acceptance. Do not broaden to Hades in this batch.
+
+### Gateway IoT Local IPv6
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
 gateway IoT now requests a local ULA `/64` with hexadecimal hint `10`
