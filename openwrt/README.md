@@ -249,7 +249,30 @@ passed. Former clients beyond this Mac remain unverified. Desired Gemini
 schedule restoration is prepared; live scheduling remains suspended until
 publication/sync. Do not create another manual Job just to resume scheduling.
 
-### Staged IoT Local IPv6
+### Orchid IPv6 Ownership Cleanup
+
+Following the Gemini pilot, desired Orchid removes LAN `ip6assign=60`
+and explicitly disables LAN RA/DHCPv6. Management `192.168.4.5`, IPv4
+DHCP ignore, mesh/bridge transport, wireless, and other devices are unchanged.
+The global ULA seed remains for rollback. Pre-change inspection found an
+empty DHCPv6 lease file but active `fd9c:94b:faa4` delegated-prefix routes;
+do not equate an empty lease file with no runtime dependencies.
+
+Orchid scheduling is staged suspended. Publication/application are pending.
+After sync and verification of suspension/no active Orchid Jobs, run one
+manual reconcile with `openwrt_apply_remote_network_runtime=true`, retaining
+Ethernet recovery and leaving firewall runtime override disabled. Verify
+management, absence of ULA assignment/delegated routes and disabled RA/DHCPv6,
+then LAN IPv6 Internet/DNS and IoT ULA/DNS/isolation. Account for lingering
+client addresses/routes; bounded capture silence alone is not certification.
+Other AP cleanup and Apple/Thread functional validation remain separate.
+
+Rollback: restore Orchid's prior LAN prefix and RA/DHCPv6 server options
+through GitOps, reconcile with the same network override, and renew clients.
+Restore scheduling separately after acceptance, without an extra manual
+reconcile solely for scheduling.
+
+### IoT Local IPv6 Configuration
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
 gateway IoT now requests a local ULA `/64` with hexadecimal hint `10`

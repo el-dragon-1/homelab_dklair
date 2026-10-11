@@ -697,6 +697,33 @@ live Gemini remains suspended. Restore it through publication/Argo CD sync
 only, without another manual reconcile. Other AP cleanup remains separate;
 Hades' Apple-related delegation and comprehensive IPv6 isolation are unresolved.
 
+### Prepared Batch: Orchid IPv6 Ownership Cleanup
+
+Gemini schedule restoration revision
+`95a1a3ed6c1ba1bfaf76ba37f2c69edf4da89e45` is Synced/Healthy/Succeeded.
+Orchid is the next AP; intermediate AP and Hades remain unchanged.
+Read-only inspection found an empty Orchid DHCPv6 lease file but live
+`fd9c:94b:faa4` delegated-prefix routes. Ethernet reaches management `.5`.
+
+Desired Orchid removes LAN `ip6assign=60` and disables LAN RA/DHCPv6.
+Global ULA seed, IPv4 DHCP ignore, management, mesh/bridge, Wi-Fi, and
+WAN6 configuration remain unchanged. Orchid CronJob is staged suspended;
+publication/application and acceptance tests are pending.
+
+After publication/sync, verify Orchid suspension/no active Jobs, then run
+one manual reconcile with `openwrt_apply_remote_network_runtime=true`.
+Keep firewall runtime override disabled and retain Ethernet recovery.
+Verify no ULA assignment or active delegated-prefix routes, disabled
+RA/DHCPv6, and management reachability. Inspect client stale-prefix lifetimes,
+and validate LAN IPv6 Internet/DNS and IoT ULA/DNS/admin/Vault isolation.
+An unreachable global ULA aggregate may remain without allocating a prefix.
+Short RA capture silence alone is insufficient; correlate runtime/config
+evidence. Other former clients and Matter/Thread need separate validation.
+
+Rollback restores only Orchid's prior prefix/server options through GitOps
+with the same network runtime override and renewed clients. Restore Orchid
+scheduling separately after acceptance; no extra manual reconcile for that.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

@@ -20,7 +20,6 @@ config interface 'lan'
 	option proto 'static'
 	option ipaddr '192.168.4.5'
 	option netmask '255.255.255.0'
-	option ip6assign '60'
 	option multipath 'off'
 
 config interface 'wan'
@@ -32,4 +31,3 @@ config interface 'wan'
 config interface 'wan6'
 	option device 'eth0'
 	option proto 'dhcpv6'
-
