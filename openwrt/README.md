@@ -88,7 +88,13 @@ Pi-hole `192.168.4.102`, destination port 53, before the broad IoT-to-LAN DROP r
 This does not allow Pi-hole administration, Vault `.103:8200`, or guest DNS access.
 After the IoT-only DNS and blocked Vault tests passed, desired gateway DHCP
 option 6 for IoT was changed to advertise only Pi-hole `192.168.4.102`.
-Publication/application and renewed-client ordinary DNS validation are pending.
+Revision `75d04b012c0095e96c458cf896e85019e65a5fb5` was applied on
+2026-10-11 by gateway Job `iot-dhcp-gateway-20261011-1625`. Live dnsmasq and
+a renewed IoT-only client lease advertise only `.102`. The test Mac's manual
+`1.1.1.1` Wi-Fi override was cleared with owner approval; its effective system
+resolver became `.102`. An ordinary lookup succeeded with client-to-Pi-hole
+DNS request/reply metadata observed. Explicit UDP/TCP DNS passed, and Vault
+remained blocked. Other clients still need lease renewal and validation.
 Guest DNS remains unchanged. This removes the advertised public fallback; it
 does not enforce a ban on manually configured public DNS or encrypted DNS.
 
@@ -97,7 +103,7 @@ was applied by gateway reconcile. Live TCP/UDP exceptions precede the LAN drop,
 and `fw4 check` passed. With Ethernet unplugged, laptop `10.1.1.105` routed
 via IoT Wi-Fi: Pi-hole UDP/TCP queries returned NOERROR and Vault `.103:8200`
 timed out. DNS allow counters increased. This validates the scoped IPv4 path,
-not complete VLAN isolation; the DHCP resolver change is staged separately.
+not complete VLAN isolation; the DHCP resolver change was validated separately.
 
 ### Gemini Mesh VLAN Transport
 
@@ -121,6 +127,61 @@ change. Rollback the gateway network/wireless changes together through Git.
 membership included tagged VLANs 10/20, and a Gemini Wi-Fi client obtained
 `10.1.1.105` from gateway `10.1.1.1`. Wi-Fi-bound gateway reachability passed.
 Guest-client and subsequent scheduled-reconcile checks remain pending.
+
+### IPv6 and Gateway Access Audit
+
+Gateway administration restriction prepared after the audit: the input-only
+`Reject IoT gateway administration` rule rejects new IoT TCP connections to
+ports 22/80/443 over IPv4 and IPv6, on any gateway-local address. It has no
+destination zone, so it does not affect forwarded services. LAN management,
+Pi-hole forwarding, DHCP, ICMPv6, and other gateway services are unchanged.
+This is a port-specific restriction, not default-deny IoT input; established
+connections may survive until closed. Guest and AP administration are outside
+this batch.
+
+Desired gateway CronJob is suspended for controlled application/testing.
+Publication and application are pending. Argo CD sync applies suspension,
+not router UCI: verify suspension and no active gateway Jobs before creating
+one manual gateway reconcile. Keep wired LAN recovery access, then test new
+IoT IPv4/IPv6-link-local administration connections fail while LAN management,
+DHCP renewal, Pi-hole TCP/UDP/system DNS, and required IPv6 neighbor discovery
+still work. Record results before restoring `suspend: false` through GitOps.
+Other AP schedules remain enabled.
+
+Rollback: remove only the administration rule through Git, publish, and run
+a manual gateway reconcile while suspended. Keep the Pi-hole exception and
+IPv6 ownership unchanged; restore the schedule separately after validation.
+
+2026-10-11 read-only audit, approximately 16:57-16:59 CDT:
+
+- Gateway has a delegated WAN `/64`, assigned to LAN; IoT has only a
+  link-local gateway address, with no gateway-owned prefix or RA/DHCPv6
+  server configured. Do not reuse the LAN `/64` on another VLAN.
+- All four APs retain LAN `ip6assign` allocations from their own ULA prefixes
+  and RA/DHCPv6 server settings despite IPv4 DHCP `ignore=1`. Gemini logs
+  report zero RA default-router lifetime. These settings do not establish
+  gateway-only IPv6 ownership.
+- Passive IoT capture observed Kitchen HomePod and another unidentified
+  router advertising the same on-link ULA and a route under Hades' ULA.
+  Both RAs had default-router lifetime zero. Preserve and investigate these
+  likely border-router paths before changing prefix delegation or IPv6.
+- IoT gateway SSH and HTTPS TCP ports are reachable over IPv4; SSH is also
+  reachable at the gateway's IPv6 link-local address. HTTP returned 403,
+  which is an application response, not firewall isolation.
+- Broad IoT/guest LAN DROP rules are IPv4-only, but inspected IPv6 forwarding
+  falls through to the default reject for LAN destinations: intra-zone
+  ACCEPT does not authorize forwarding to LAN. Actual IPv6 client-to-LAN
+  negative tests remain pending.
+- All reconcile schedules remain enabled. Gemini's scheduled Job at :51
+  confirms DHCP service restarts and Wi-Fi reload even with conservative
+  AP network/firewall runtime settings. Establish a managed maintenance
+  window before further changes.
+
+No configuration or schedule was changed for the audit. The passive capture
+was stopped explicitly. Harden gateway administration in a separate staged
+change, retaining trusted-LAN access, DHCP, and required ICMPv6. Then resolve
+IPv6 ownership, available upstream prefix size, DNS advertisements, and
+Matter/Thread requirements before enabling gateway IoT RA or removing AP RA.
 
 Current intent:
 

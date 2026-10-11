@@ -92,7 +92,7 @@ Physical switch port assignments and wired accessory placement still need confir
 | Network | DHCP pool / lease duration | Advertised DNS |
 |---|---|---|
 | LAN | `.50` through `.249` / 12 hours | `192.168.4.102` (Pi-hole) |
-| IoT | `.100` through `.249` / 12 hours | `192.168.4.102`, `1.1.1.1` |
+| IoT | `.100` through `.249` / 12 hours | `192.168.4.102` (Pi-hole only; verified 2026-10-11) |
 | Guest | `.100` through `.249` / 2 hours | `192.168.4.102`, `1.1.1.1` |
 
 Gateway is the intended IPv4 DHCP/L3 owner. Hades/Gemini have `dhcp.lan.ignore=1`,
@@ -399,17 +399,109 @@ and DHCP DNS advertisements are unchanged.
 
 Following that successful test, desired IoT DHCP option 6 was changed to
 `6,192.168.4.102`, removing the advertised `1.1.1.1` fallback. This change is
-prepared but not yet published/applied; the earlier DHCP table records the
-observed configuration before this milestone. Guest DHCP is unchanged.
-After publication and controlled gateway reconciliation, renew the IoT-only
-client lease, verify its received DNS list contains only `.102`, and run an
-ordinary system-resolver lookup with Pi-hole query/counter correlation. Repeat
-explicit UDP/TCP DNS and the blocked Vault probe. Clients may retain the old
+applied at approximately 16:25 CDT through revision
+`75d04b012c0095e96c458cf896e85019e65a5fb5` and gateway Job
+`iot-dhcp-gateway-20261011-1625` (no failures; Argo CD Synced/Healthy/Succeeded).
+Live UCI and generated dnsmasq configuration advertise only `.102` for IoT;
+guest retains `.102,1.1.1.1`. After the owner unplugged Ethernet and renewed
+Wi-Fi DHCP, client `10.1.1.105` received only `.102`, with gateway/server
+`10.1.1.1` and routes to Pi-hole/Vault through `en0`. Explicit UDP/TCP
+`example.com` queries returned NOERROR (16 ms each); Vault timed out as intended.
+
+The Mac had a manual Wi-Fi DNS override of `1.1.1.1`, despite correct DHCP.
+With owner approval, `networksetup -setdnsservers Wi-Fi Empty` cleared it;
+`scutil --dns` then showed `.102` as the effective resolver. An ordinary macOS
+lookup of `www.icann.org` returned addresses. A bounded two-packet metadata
+capture on gateway `br-lan.10` observed a UDP DNS request from this client to
+Pi-hole and its reply during the lookup; DNS allow counters also increased.
+The capture ended automatically, and no raw packet file was saved. This
+validates the renewed client's DHCP and ordinary resolver path, not all devices
+or long-term stability. Local override rollback is to restore Wi-Fi DNS
+`1.1.1.1` if explicitly desired. Other clients may retain the old
 DNS list until renewal (IoT leases are 12 hours); cached answers alone do not
 prove use of Pi-hole. Removing an advertised fallback is not enforcement
 against manually configured public DNS or encrypted DNS. If Pi-hole is
 unavailable, DHCP-managed IoT clients will have no advertised alternate resolver.
 Rollback is to restore the prior IoT option 6 through GitOps and renew clients.
+
+16:54 CDT recheck: client remained `10.1.1.105`, with both Pi-hole and Vault
+routes through `en0` via `10.1.1.1`. DHCP and the effective system resolver
+still list only `.102`; no manual Wi-Fi DNS override is set. Ordinary lookups
+succeeded; a targeted two-packet capture confirmed the `www.rfc-editor.org`
+AAAA request and matching reply between the client and Pi-hole over IPv4.
+Explicit `apple.com` UDP/TCP queries returned NOERROR with an A answer
+(14/20 ms). Vault `.103:8200` again timed out after approximately 3 seconds.
+Both bounded captures ended; no configuration was changed for this recheck.
+These results do not establish IPv6 isolation or long-term stability.
+
+### 2026-10-11 16:57-16:59 CDT: IPv6 and Gateway Access Audit
+
+Read-only inspection covered gateway and all four APs; no router configuration,
+service, or reconcile schedule was changed.
+
+- **Gateway administration is reachable from IoT.** Routes to `10.1.1.1`
+  used Wi-Fi `en0` even while Ethernet was connected. TCP 22 and 443
+  connections succeeded; HTTP returned 403 (application-level response).
+  TCP 22 also succeeded at gateway link-local
+  `fe80::b45a:2dff:fef8:a2b0%en0`. IoT/guest input policies accept traffic
+  except the IPv4 LAN-subnet destination drop. Administration is not
+  isolated by the tested policy.
+- **Gateway-owned IoT IPv6 is absent.** WAN6 currently delegates only
+  `2600:1700:2930:4baf::/64`, assigned to LAN. IoT has no assigned prefix,
+  and no RA/DHCPv6 server settings. Client Wi-Fi nevertheless has ULA
+  `fd49:3d20:650f:4a6d::/64`, not a gateway-assigned prefix. A single
+  delegated `/64` cannot supply distinct conventional SLAAC `/64`s to
+  LAN and IoT; upstream larger-prefix availability remains unknown.
+- **AP IPv6 ownership needs deliberate cleanup.** AP, Hades, Gemini, and
+  Orchid have independent LAN ULA allocations plus configured RA/DHCPv6
+  servers despite IPv4 `ignore=1`. Gemini logs report no default route and
+  RA lifetime zero. Client LAN routes include AP ULA prefixes, but this
+  audit did not capture each AP's LAN advertisements.
+- **Existing border-router advertisements must be preserved until understood.**
+  A passive IoT capture observed Kitchen HomePod MAC `a4:cf:99:ab:5e:91`
+  and unidentified router MAC `1c:b3:c9:03:1c:9a` advertising on-link
+  `fd49:3d20:650f:4a6d::/64` and route `fd6f:ffb:7de6:4::/64`
+  (under Hades' ULA). Both RAs had default-router lifetime zero. This is
+  consistent with border-router/Thread paths, not proof of Internet IPv6
+  access or completed Matter validation. The capture was stopped by
+  signaling its exact process; no raw packet file was saved.
+- **IPv4-only drops do not by themselves prove an IPv6 bypass.** Inspection
+  of nftables shows IoT forwarding accepts WAN and same-zone destinations;
+  LAN-bound IPv6 falls through to default rejection. Required negative
+  client IPv6 tests remain pending. Gateway input exposure is separately
+  confirmed above.
+- **Maintenance schedules remain active.** All five CronJobs are enabled.
+  Gemini's :51 Job completed with DHCP restarts and Wi-Fi reload; AP
+  conservative settings skip network/firewall runtime apply, not those
+  restarts. No active Jobs were present at the initial audit check; Orchid
+  subsequently completed its :58 scheduled Job.
+
+Recommended next batch: establish controlled maintenance, then restrict IoT
+gateway administration with trusted-LAN recovery, DHCP, and necessary ICMPv6
+preserved. Separately design gateway/AP IPv6 ownership and prefix delegation
+around observed border-router paths before any RA changes, 5 GHz expansion,
+or discovery deployment. Gateway input restrictions require owner-approved
+apply and positive/negative IPv4/IPv6 tests.
+
+Owner approved a port-specific restriction rather than default-deny gateway
+input. Desired firewall now has input-only `Reject IoT gateway administration`:
+source `iot_zone`, TCP destination ports 22/80/443, IPv4 and IPv6, target REJECT.
+No destination zone/address is specified: it covers gateway-local addresses,
+not forwarded services. Other gateway input, DHCP, ICMPv6, Pi-hole forwarding,
+LAN management, AP/guest policy, and IPv6 ownership remain unchanged.
+Existing established connections may survive; acceptance tests must open
+new connections. This is not a complete gateway service allowlist.
+
+Desired gateway CronJob is now `suspend: true` for controlled maintenance;
+other AP schedules are unchanged. Neither edit is applied live yet. Publish,
+sync Argo CD, verify gateway suspension/no active gateway Jobs, and create
+one manual gateway reconcile while retaining Ethernet LAN management.
+Verify LAN SSH/HTTPS remains reachable and new IoT TCP 22/80/443 connections
+fail over IPv4 and IPv6 link-local. Renew DHCP and recheck effective Pi-hole
+DNS, explicit UDP/TCP queries, Vault blocking, and IPv6 neighbor discovery.
+Restore `suspend: false` through GitOps only after recording successful tests.
+If validation fails, remove only the new firewall rule through GitOps and
+run a manual reconcile while suspended; restore scheduling separately.
 
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|

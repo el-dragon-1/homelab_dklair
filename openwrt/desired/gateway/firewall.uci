@@ -137,6 +137,14 @@ config forwarding
 	option src 'iot_zone'
 	option dest 'wan'
 
+config rule
+	option name 'Reject IoT gateway administration'
+	option src 'iot_zone'
+	option proto 'tcp'
+	option dest_port '22 80 443'
+	option family 'any'
+	option target 'REJECT'
+
 config zone
 	option name 'guest'
 	option input 'ACCEPT'
