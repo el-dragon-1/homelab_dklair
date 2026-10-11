@@ -272,6 +272,18 @@ through GitOps, reconcile with the same network override, and renew clients.
 Restore scheduling separately after acceptance, without an extra manual
 reconcile solely for scheduling.
 
+2026-10-11 Orchid acceptance: revision
+`08fc220cc4a0118e5450b6493e63e210992800cd`, Job
+`orchid-ipv6-cleanup-20261011-1738`, applied with network override.
+First attempt lost SSH after network refresh; automatic retry succeeded.
+RA/DHCPv6, active ULA assignment and delegated routes are removed; link-local
+and IPv4 management remain. A stale-prefix RA send failed during refresh;
+after client reconnection, the test Mac had no Orchid-derived addresses/routes.
+LAN IPv6 Internet and IoT ULA/DNS/Internet/tested isolation passed.
+No packet observation or all-client validation was performed in this batch.
+Desired Orchid schedule restoration is prepared, but live scheduling remains
+suspended until publication/sync; no extra manual reconcile is needed.
+
 ### IoT Local IPv6 Configuration
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired

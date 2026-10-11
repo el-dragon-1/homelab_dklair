@@ -724,6 +724,36 @@ Rollback restores only Orchid's prior prefix/server options through GitOps
 with the same network runtime override and renewed clients. Restore Orchid
 scheduling separately after acceptance; no extra manual reconcile for that.
 
+### 2026-10-11 17:38-17:41 CDT: Orchid Cleanup Acceptance
+
+Revision `08fc220cc4a0118e5450b6493e63e210992800cd` synced; Orchid
+suspension and no active Orchid Job were verified before manual Job
+`orchid-ipv6-cleanup-20261011-1738`, with the network runtime override.
+First attempt lost SSH after `ifup lan`, before DHCP service refresh.
+The Job's automatic retry completed with `unreachable=0`, `failed=0`;
+both attempt logs were inspected. This was not an interruption-free apply.
+
+Live Orchid RA/DHCPv6 are disabled, LAN retains IPv4/link-local management
+only, prefix assignment is empty, leases are empty, and delegated routes
+are removed. The stored ULA's unreachable aggregate remains. Orchid logged
+a failed stale-prefix RA send during interface refresh; successful prefix
+withdrawal was not assumed from that log. No RA capture was performed for
+this batch; removal is supported by runtime/config and renewed-client state.
+
+After owner reconnected Ethernet, the test Mac no longer had Orchid
+`fd9c:94b:faa4` addresses or routes. LAN IPv6 HTTPS returned 200 and Orchid
+SSH worked. Former clients beyond this Mac remain unverified.
+IoT-only `.105` retained Pi-hole-only DHCP DNS and gateway ULA; IPv6 ping
+passed, explicit UDP/TCP DNS returned NOERROR (10/26 ms), and IPv4 HTTPS
+returned 200. Tested IPv4 SSH/IPv6 HTTPS gateway connections were refused;
+Vault timed out after 3 seconds. Pi-hole/Vault routes used `en0`.
+
+Argo CD is Synced/Succeeded and intentionally Suspended. Desired Orchid
+schedule restoration (`suspend: false`) is prepared for publication;
+live Orchid remains suspended. Restore via Argo CD sync only. Intermediate
+AP and Hades cleanup, full IPv6 isolation, and Apple/Thread validation remain
+separate pending work.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |
