@@ -251,9 +251,13 @@ The earlier 13:22 authentication failure is resolved. Read-only verification fou
 - Gateway runs every half hour; AP at :07/:37, Hades :14/:44, Gemini :21/:51,
   and Orchid :28/:58. These are live schedules, not just repository intent.
 - Pi-hole uses chart 2.36.0 with this repository's values at `HEAD`. Local desired
-  values specify `192.168.4.200`, unlike the live `.102` Service. Synced status does
-  not explain that discrepancy; inspect rendered manifests and Service address
-  assignment before changing or syncing Pi-hole. Preserve the working `.102` path.
+  values previously specified `192.168.4.200`, unlike the advertised `.102` Service.
+  At approximately 13:58, after the owner pushed the `.102` change, a requested
+  Argo CD sync succeeded at revision `e6f4d4606dd771fb06a1bd60564dd80ed7322dfd`.
+  Pi-hole is Synced/Healthy; Service request, kube-vip annotation, and advertised
+  address now all equal `.102`. Explicit workstation UDP/TCP DNS tests passed.
+  See [Pi-hole validation history](values/pihole/context.md). Vault shares `.102`
+  on TCP 8200; DNS-only exceptions remain essential.
 
 Argo CD deploys Kubernetes resources, including the OpenWRT automation. Router
 reconcile Jobs separately clone `main` and apply desired UCI state over SSH.
@@ -264,7 +268,7 @@ The current playbook only manages `system`, `network`, `dhcp`, `firewall`, and
 | Order | GitOps / desired configuration work | Manual work and validation gate |
 |---|---|---|
 | 1. Prepare maintenance and recovery | Declaratively suspend relevant reconcile CronJobs through Argo CD; inspect recurring runtime refresh behavior before resuming schedules | K3S access is verified. Map Hue switch port, VLAN uplinks, management path, all Apple hubs, and Hue integration method. Recheck active Jobs at the maintenance window; suspension does not stop active Jobs. Preserve trusted-LAN access and record rollback state |
-| 2. Confirm durable DNS endpoint | Inspect Pi-hole rendered manifests, live Service address assignment, and values revision to explain desired `.200` versus live `.102`; do not deploy an address migration as part of the DNS exception | Use confirmed live `192.168.4.102` for the initial path, provided it will remain assigned. Resolve any impending address change before applying firewall/DHCP changes |
+| 2. Confirm durable DNS endpoint (address alignment complete) | Pi-hole desired request, kube-vip annotation, and advertised address now match `192.168.4.102` after a successful sync | Workstation UDP/TCP DNS passed; preserve `.102` and account for Vault sharing this VIP. DHCP pool overlap remains a separate allocation review |
 | 3. Prove scoped DNS access | Add IoT-to-`192.168.4.102` TCP/UDP destination port 53 exception before broad LAN DROP rules once step 2 confirms address continuity. Keep general IoT-to-LAN blocks. Guest DNS is a separately approved exception | Run UDP/TCP DNS tests from a real IoT client; confirm Pi-hole receives queries and administration/unrelated LAN services stay blocked |
 | 4. Align DHCP DNS | Retain the confirmed Pi-hole address in desired IoT DHCP configuration; remove public secondary DNS if consistent Pi-hole use is approved. Keep Pi-hole service changes out of this batch unless separately validated | Renew a test client's lease and verify actual resolver use. Keep a working DNS path throughout; DHCP advertisement alone does not enforce resolver use |
 | 5. Establish IPv6 and gateway isolation | Define gateway-owned IoT IPv6 addressing/RA and routing; review AP DHCPv6/RA settings; preserve required ICMPv6. Verify equivalent IPv4/IPv6 isolation and limit IoT access to router administration | Test IPv6 routes, DNS, and negative isolation checks. Matter/Thread paths require specific validation; an mDNS reflector does not route link-local addresses |
@@ -323,6 +327,7 @@ Add one result row per device/profile, retaining failures and linking any correc
 | 2026-10-11 Hue bridge | LAN | HTTP/API + Hue Bonjour passed; Hue app works per owner; Apple Home fails per owner | H incomplete; integration method unknown |
 | 2026-10-11 Living Room Apple TV | LAN | Ping + AirPlay advertisement/model passed | A incomplete; hub failover not tested |
 | 2026-10-11 Pi-hole | LAN service | `apple.com` lookup from gateway passed | D incomplete from actual client VLANs |
+| 2026-10-11 Pi-hole after address alignment | LAN service `.102` | Synced/Healthy, ready pod/endpoint; workstation UDP/TCP queries for `apple.com` and `example.com` all returned NOERROR | Address alignment validated; IoT/guest D profile and long-term stability remain pending |
 | 2026-10-11 remaining inventory | Networks listed above | Lease/config/service evidence only unless noted | All assigned profiles pending; not certified functional |
 
 ## Troubleshooting History
@@ -390,7 +395,7 @@ firewall change during read-only troubleshooting.
 - [ ] Review trust tradeoffs and approve staged implementation of the selected all-automation-on-IoT layout before changing placement.
 - [ ] Test DNS from actual IoT/guest clients and audit IPv6/RA behavior.
 - [x] Verify K3S authentication, live Pi-hole address (`192.168.4.102`), and enabled reconcile schedules.
-- [ ] Explain Pi-hole desired `.200` versus live `.102` and confirm address continuity.
+- [x] Align Pi-hole desired/live requested address, kube-vip annotation, and advertised address to `.102`; verify workstation TCP/UDP DNS after sync.
 - [ ] Correlate gateway disturbances with reconcile Job logs before changing automation.
 - [ ] Execute each device's acceptance profile in an approved test session.
 - [ ] Promote a layout to validated stable only after all required tests and observation pass.
