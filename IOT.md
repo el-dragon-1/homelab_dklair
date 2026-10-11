@@ -661,6 +661,42 @@ Rollback is to restore Gemini's prior prefix/server options through GitOps
 and apply with the same network runtime override, then renew clients.
 Restore Gemini scheduling in a separate publication after validation.
 
+### 2026-10-11 17:29-17:33 CDT: Gemini Pilot Acceptance
+
+Revision `d1f5c31cf3519e2457cc3603225ee521bbda34a2` synced through
+Argo CD; Gemini schedule suspension was verified before manual Job
+`gemini-ipv6-pilot-20261011-1730`. The generated Job added Ansible extra-var
+`openwrt_apply_remote_network_runtime=true`; logs confirmed the network
+refresh executed and firewall runtime refresh remained skipped. Job completed
+without failures. Argo CD is Synced/Succeeded, intentionally Suspended.
+
+- Gemini management `.4` remained reachable via SSH. LAN has only a
+  link-local IPv6 address and no prefix assignment. Live DHCPv6/RA are
+  disabled, the lease file is empty, and delegated-prefix routes are gone.
+  An unreachable route for the stored global ULA `/48` remains; it is not
+  an active allocation or advertisement.
+- The first gateway LAN RA capture was interrupted when the scheduled
+  17:30 gateway reconcile recreated the interface. A replacement bounded
+  observation captured no Gemini-originated RAs and was explicitly stopped.
+  Capture silence is supporting evidence only; runtime/configuration
+  checks above establish service/allocation removal.
+- Initially, macOS retained Gemini SLAAC/DHCPv6 addresses and `/48` route
+  even after Ethernet reconnection/renewal. After the subsequent Ethernet
+  reconnection at approximately 17:33, no `fd10:1d51:bae0` addresses or
+  routes remained on the test Mac. This validates this client, not every
+  former DHCPv6 or delegated-prefix client.
+- LAN IPv6 HTTPS returned 200 before and after reconnection; LAN Pi-hole
+  DNS returned NOERROR. IoT-only client `.105` retained gateway-issued
+  IPv4 DHCP, Pi-hole-only DNS, and its gateway ULA SLAAC address.
+  ULA ping passed, UDP/TCP DNS returned NOERROR (8/31 ms), IPv4 HTTPS
+  returned 200, and tested IPv4 SSH/IPv6 HTTPS gateway ports were refused.
+  Vault timed out after 3 seconds; routes used Wi-Fi `en0`.
+
+Gemini schedule restoration (`suspend: false`) is prepared but not synced;
+live Gemini remains suspended. Restore it through publication/Argo CD sync
+only, without another manual reconcile. Other AP cleanup remains separate;
+Hades' Apple-related delegation and comprehensive IPv6 isolation are unresolved.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

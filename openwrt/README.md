@@ -233,6 +233,22 @@ Rollback: restore Gemini's prior `ip6assign=60` and RA/DHCPv6 server options
 through GitOps, run a manual reconcile with the same network runtime override,
 and renew clients. Restore Gemini scheduling separately after acceptance.
 
+2026-10-11 pilot applied at approximately 17:29 CDT from revision
+`d1f5c31cf3519e2457cc3603225ee521bbda34a2`, manual Job
+`gemini-ipv6-pilot-20261011-1730`, with the network runtime override.
+Gemini retains IPv4/link-local management but no ULA assignment, active
+DHCPv6 leases, or delegated-prefix routes. The stored ULA's unreachable
+aggregate route remains. RA/DHCPv6 are disabled. A first observation was
+interrupted by scheduled gateway interface refresh; replacement observation
+found no Gemini RAs and was stopped explicitly.
+
+The test Mac initially retained old Gemini addresses/routes, but these were
+absent after a later Ethernet reconnection. LAN IPv6 Internet remained
+functional; IoT DHCP/ULA/DNS/Internet and tested administration/Vault blocks
+passed. Former clients beyond this Mac remain unverified. Desired Gemini
+schedule restoration is prepared; live scheduling remains suspended until
+publication/sync. Do not create another manual Job just to resume scheduling.
+
 ### Staged IoT Local IPv6
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
