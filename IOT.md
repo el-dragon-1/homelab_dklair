@@ -809,6 +809,40 @@ restoration (`suspend: false`) is prepared; live AP remains suspended until
 publication/sync. No manual reconcile is needed just to resume scheduling.
 Hades' Apple-related prefix migration and full IPv6 isolation remain pending.
 
+### Prepared Batch: Hades IPv6 Ownership Cleanup
+
+Intermediate AP schedule restoration revision
+`bc8ad41db80820288ca18d86d7450c55bcdb8894` is Synced/Healthy/Succeeded.
+Hades is the final AP cleanup. At 17:51 CDT its DHCPv6 lease file was empty,
+but active delegated routes under `fd6f:ffb:7de6::/48` remained. Their
+next-hop/subprefix mapping differs from the earlier snapshot: do not assume
+the previously observed `Living-Room` delegation still occupies `:4::/62`.
+Earlier Apple border-router advertisements used subprefixes from this pool.
+
+Desired Hades removes LAN `ip6assign=60`, explicitly disables LAN RA/DHCPv6,
+and suspends its CronJob. Management `.3`, gateway, IPv4 DHCP ignore, DNS,
+VLANs/Wi-Fi, global ULA seed, and gateway/other AP settings remain unchanged.
+Owner previously accepted IoT disruption; this batch can also invalidate
+remaining Hades-derived LAN addresses and Apple delegated-prefix routes.
+Publication/application and functional acceptance are pending.
+
+Before apply, record current LAN/client and Apple border-router routes,
+K3S node health, Vault/DNS, and LAN IPv6 Internet. Sync suspension, verify
+no active Hades Jobs, then run one manual reconcile with network runtime
+override enabled and firewall override disabled, retaining wired recovery.
+Verify management and removal of live ULA assignment/leases/delegated routes.
+Reconnect LAN/IoT clients and inspect stale Hades addresses/routes explicitly.
+Observe Apple RAs after migration: gateway IoT SLAAC does not itself replace
+Thread prefix delegation or certify Matter. Do not reset/re-pair accessories
+or remove remaining client routes manually as a shortcut.
+
+Validate LAN IPv6 Internet, K3S/Vault/DNS, IoT DHCP/ULA/Internet/isolation,
+and owner Home/Siri/Thread behavior where available. Document any remaining
+Apple advertisements/deprecated prefixes rather than calling all IPv6
+ownership stable. Rollback restores only Hades prefix/server settings via
+GitOps with the same network runtime override and client renewal. Restore
+scheduling separately after acceptance; no extra manual Job for scheduling.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

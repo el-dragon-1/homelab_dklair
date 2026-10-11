@@ -320,7 +320,29 @@ stale IPv6 state and other client dependencies remain unverified.
 Desired AP schedule restoration is prepared; live scheduling remains
 suspended until publication/sync. Hades is unchanged.
 
-### Gateway IoT Local IPv6
+### Hades IPv6 Ownership Cleanup
+
+Desired Hades removes LAN `ip6assign=60` and disables RA/DHCPv6, preserving
+IPv4 management `192.168.4.3`, VLAN/Wi-Fi transport and gateway settings.
+Hades scheduling is staged suspended. At 17:51 CDT its lease file was empty
+but delegated ULA routes remained with changed next-hop mappings. Earlier
+Apple RAs advertised subprefixes from this pool; this is an active prefix
+migration, not proof that the pool is unused.
+
+Publish/sync suspension, check active Jobs and current border-router routes,
+and apply one manual reconcile with the network runtime override enabled.
+Keep wired recovery and firewall override disabled. Verify prefix/route
+removal, management, K3S/Vault/DNS, LAN IPv6 Internet, and IoT ULA/DNS/isolation.
+Reconnect clients and account for stale prefixes; observe Apple RAs and
+test Home/Siri/Thread where available. Gateway SLAAC is not replacement
+Thread prefix delegation. Do not reset accessories or assume old delegated
+prefix identifiers remain unchanged.
+
+Rollback restores Hades' prior prefix/server settings through GitOps with
+the same network override and renewed clients. Restore scheduling separately
+after scoped acceptance. Publication/application and validation are pending.
+
+### Gateway IoT IPv6 Settings
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
 gateway IoT now requests a local ULA `/64` with hexadecimal hint `10`
