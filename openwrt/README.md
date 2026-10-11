@@ -5,6 +5,15 @@ This directory holds sanitized OpenWRT configuration snapshots and the desired s
 For the household device inventory, trust tiers, network placement proposals, and
 functional validation/troubleshooting record, see [IoT network layout](../IOT.md).
 
+### Vault VIP Reservation
+
+The desired gateway DHCP configuration reserves `192.168.4.103` using the
+non-client hostname `reserved-vault-vip` before Vault is moved to that address.
+This is a hostname-only dnsmasq reservation, not a device/MAC binding: a kube-vip
+address can move between nodes. Do not configure a client with that hostname.
+Apply and verify the reservation before publishing the Vault Service address change.
+See the [Vault migration plan](../values/vault/context.md) for sequencing and rollback.
+
 ## Layout
 
 - `baseline/`: sanitized snapshot of current router configuration

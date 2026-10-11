@@ -95,3 +95,6 @@ config host
 	option ip '192.168.4.177'
 	list mac 'dc:a6:32:c3:21:35'
 
+config host 'vault_vip'
+	option name 'reserved-vault-vip'
+	option ip '192.168.4.103'

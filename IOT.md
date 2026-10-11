@@ -236,6 +236,12 @@ Do not broadly allow IoT -> LAN or guess a universal HomeKit/Matter port list.
 
 ## Ordered Rollout: GitOps Versus Manual Work
 
+**IoT access work is paused pending Vault VIP separation.** Owner approved `.103`
+for Vault. First apply/verify its gateway DHCP reservation, then publish and validate
+the Vault Service change; Pi-hole remains `.102`. See the
+[two-phase migration and rollback plan](values/vault/context.md).
+Vault values/live Service remain unchanged until reservation verification.
+
 All Kubernetes operations for this repository must use **K3S**. Select it with
 `kubectl config use-context K3S`, verify `kubectl config current-context`, and use
 `kubectl --context K3S` explicitly for subsequent commands. Never substitute Talos
