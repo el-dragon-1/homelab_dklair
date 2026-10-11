@@ -843,6 +843,45 @@ ownership stable. Rollback restores only Hades prefix/server settings via
 GitOps with the same network runtime override and client renewal. Restore
 scheduling separately after acceptance; no extra manual Job for scheduling.
 
+### 2026-10-11 17:53-17:55 CDT: Hades Cleanup Acceptance
+
+Revision `042be17dc76744f7457d2c64266a7d80055f1801` synced after a
+hard refresh; Hades suspension/no active Hades Jobs were verified before
+manual Job `hades-ipv6-cleanup-20261011-1753` with network runtime override.
+It completed without failed/unreachable hosts. Live Hades has disabled
+RA/DHCPv6, empty leases, link-local-only LAN IPv6, and no delegated routes;
+the stored ULA unreachable aggregate remains. SSH management worked.
+
+All five K3S nodes remained Ready; Vault was initialized/unsealed/active,
+with zero pod restarts. LAN IPv6 HTTPS returned 200 and Pi-hole DNS passed.
+After Ethernet reconnection, the test Mac had no Hades-derived LAN address
+or LAN aggregate route, though Apple-advertised Hades subprefix routes still
+remained on Wi-Fi. Former clients and host-level node IPv6 state remain
+unverified.
+
+A bounded two-packet capture observed basement Apple TV and Kitchen HomePod
+RAs advertising both `fd47:eab4:aa15:c::/64` and old
+`fd6f:ffb:7de6:c::/64`, with 1800-second route lifetimes and zero default
+router lifetime. Gateway DHCPv6 now delegates `fd47:eab4:aa15:c::/62`
+to the DUID previously associated with Hades' `Living-Room` lease, with
+a corresponding LAN next-hop route. This supports a transition to
+gateway-derived delegation, not completed Thread/Matter functional recovery.
+The old route is still actively advertised in this sample, not merely proven
+to be a stale client cache. The capture ended automatically after two packets.
+
+IoT-only `.105` retained Pi-hole DHCP DNS, gateway ULA ping, UDP/TCP
+NOERROR DNS (8/16 ms), and IPv4 HTTPS 200. Tested IPv4 gateway SSH and
+IPv6 gateway HTTPS were refused; Vault timed out after 3 seconds.
+Pi-hole/Vault IPv4 routes used Wi-Fi `en0`. Home/Siri/Thread functional
+results were not supplied and remain pending.
+
+Desired Hades schedule restoration (`suspend: false`) is prepared;
+live Hades remains suspended until publication/sync. All four AP cleanup
+configurations are deployed, but full IPv6 isolation, old Apple-prefix
+withdrawal, and all-client stability are not certified. Restore scheduling
+without another manual router Job; follow up on Apple route lifetimes and
+owner functional tests separately.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

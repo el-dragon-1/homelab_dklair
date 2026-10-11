@@ -342,6 +342,21 @@ Rollback restores Hades' prior prefix/server settings through GitOps with
 the same network override and renewed clients. Restore scheduling separately
 after scoped acceptance. Publication/application and validation are pending.
 
+2026-10-11 Hades acceptance: revision
+`042be17dc76744f7457d2c64266a7d80055f1801`, manual Job
+`hades-ipv6-cleanup-20261011-1753`, succeeded with network runtime override.
+Live RA/DHCPv6, ULA assignment and delegated routes are removed; IPv4 and
+link-local management remain. K3S/Vault, LAN IPv6 Internet, and tested IoT
+ULA/DNS/Internet/isolation paths passed. The renewed Mac has no Hades-derived
+LAN addresses/routes, but Apple routers still advertise an old Hades route
+alongside gateway-derived `fd47:eab4:aa15:c::/64`.
+Gateway lease/route evidence confirms a new `/62` delegation to the DUID
+previously associated with `Living-Room`. Thread/Matter/Home functionality
+and withdrawal of the old advertisements remain unverified.
+Desired Hades scheduling restoration is prepared; live scheduling remains
+suspended until publication/sync. All AP cleanup settings are now deployed,
+not a certification of complete IPv6 isolation or all-client stability.
+
 ### Gateway IoT IPv6 Settings
 
 Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
