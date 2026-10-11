@@ -86,8 +86,18 @@ Use these overrides only for staged maintenance windows when remote recovery is 
 Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to
 Pi-hole `192.168.4.102`, destination port 53, before the broad IoT-to-LAN DROP rules.
 This does not allow Pi-hole administration, Vault `.103:8200`, or guest DNS access.
-DHCP resolver advertisements are unchanged until IoT-only UDP/TCP DNS and blocked
-Vault probes validate the exception after application.
+After the IoT-only DNS and blocked Vault tests passed, desired gateway DHCP
+option 6 for IoT was changed to advertise only Pi-hole `192.168.4.102`.
+Publication/application and renewed-client ordinary DNS validation are pending.
+Guest DNS remains unchanged. This removes the advertised public fallback; it
+does not enforce a ban on manually configured public DNS or encrypted DNS.
+
+2026-10-11 validation: revision `4019ea122271ca9bbf4a51c0e95e35d99a9ba006`
+was applied by gateway reconcile. Live TCP/UDP exceptions precede the LAN drop,
+and `fw4 check` passed. With Ethernet unplugged, laptop `10.1.1.105` routed
+via IoT Wi-Fi: Pi-hole UDP/TCP queries returned NOERROR and Vault `.103:8200`
+timed out. DNS allow counters increased. This validates the scoped IPv4 path,
+not complete VLAN isolation; the DHCP resolver change is staged separately.
 
 ### Gemini Mesh VLAN Transport
 

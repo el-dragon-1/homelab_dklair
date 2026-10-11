@@ -376,8 +376,40 @@ Vault probe from the same verified IoT-only path.
 
 Desired gateway firewall now includes `Allow IoT to Pi-hole DNS` before the broad
 IoT-to-LAN DROP rules: IPv4 source `iot_zone`, destination `lan`, address `.102`,
-TCP/UDP destination port 53 only. Publication/application and post-change tests
-are pending. Guest policy, DHCP DNS advertisements, and IPv6 are unchanged.
+TCP/UDP destination port 53 only. Revision
+`4019ea122271ca9bbf4a51c0e95e35d99a9ba006` was synced through Argo CD
+(Synced/Healthy/Succeeded), then applied by gateway Job
+`iot-dns-gateway-20261011-1614` on 2026-10-11 at approximately 16:14 CDT.
+Live nftables has separate TCP/UDP 53 accepts to `.102` before the IoT-to-LAN
+drop; `fw4 check` passed, and mesh VLANs 10/20 remain tagged. LAN workstation
+DNS returned NOERROR over UDP/TCP (2/48 ms); Vault remained initialized,
+unsealed, active, and ready with zero pod restarts. These probes used Ethernet
+`en9`, not IoT Wi-Fi.
+
+At 16:15 CDT, after the owner unplugged Ethernet, the laptop retained
+`10.1.1.105`; routes to both `.102` and `.103` used Wi-Fi `en0` via
+`10.1.1.1`. Explicit Pi-hole queries for `apple.com` returned NOERROR with
+an A answer over UDP (80 ms) and TCP (57 ms). Vault `.103:8200` timed out
+after 3 seconds, as intended. Live DNS allow counters increased from zero
+to TCP 1 / UDP 3 packets; the aggregate DROP counter increased, but does
+not specifically attribute drops to the Vault probe. The DNS-only IPv4
+exception passed this client acceptance test; comprehensive isolation,
+IPv6, guest access, and long-term stability remain unverified. Guest policy
+and DHCP DNS advertisements are unchanged.
+
+Following that successful test, desired IoT DHCP option 6 was changed to
+`6,192.168.4.102`, removing the advertised `1.1.1.1` fallback. This change is
+prepared but not yet published/applied; the earlier DHCP table records the
+observed configuration before this milestone. Guest DHCP is unchanged.
+After publication and controlled gateway reconciliation, renew the IoT-only
+client lease, verify its received DNS list contains only `.102`, and run an
+ordinary system-resolver lookup with Pi-hole query/counter correlation. Repeat
+explicit UDP/TCP DNS and the blocked Vault probe. Clients may retain the old
+DNS list until renewal (IoT leases are 12 hours); cached answers alone do not
+prove use of Pi-hole. Removing an advertised fallback is not enforcement
+against manually configured public DNS or encrypted DNS. If Pi-hole is
+unavailable, DHCP-managed IoT clients will have no advertised alternate resolver.
+Rollback is to restore the prior IoT option 6 through GitOps and renew clients.
 
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
