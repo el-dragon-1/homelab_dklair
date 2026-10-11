@@ -2,6 +2,9 @@
 
 This directory holds sanitized OpenWRT configuration snapshots and the desired state used by the GitOps workflow.
 
+For the household device inventory, trust tiers, network placement proposals, and
+functional validation/troubleshooting record, see [IoT network layout](../IOT.md).
+
 ## Layout
 
 - `baseline/`: sanitized snapshot of current router configuration

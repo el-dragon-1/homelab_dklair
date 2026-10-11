@@ -26,6 +26,7 @@ Start from the nearest owning file and the smallest relevant document set. Do no
 
 ## Repository Rules
 
+- Always select the `K3S` Kubernetes context for this repository. Verify it before cluster operations and use `kubectl --context K3S` explicitly. If K3S authentication or connectivity fails, report the blocker; never fall back to another cluster.
 - Keep Kubernetes apps in the Helm chart plus `values/<app>/values.yaml` plus `apps/argocd/<app>-application.yaml` pattern.
 - Prefer the shared PostgreSQL instance for new app databases unless isolation or performance requires a separate database.
 - Treat `openwrt/baseline` as read-only evidence and `openwrt/desired` as the enforced state.

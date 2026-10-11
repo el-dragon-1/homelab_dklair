@@ -21,6 +21,7 @@ This file is the organized home for high-level repository guidance.
 
 ## Validation
 
+- Always select the `K3S` Kubernetes context for this repository. Verify it before cluster operations and use `kubectl --context K3S` explicitly. If K3S authentication or connectivity fails, report the blocker; never fall back to another cluster.
 - Use the narrowest useful validation command for touched files.
 - Prefer focused checks over broad repository-wide runs.
 - Report assumptions and unresolved gaps explicitly.

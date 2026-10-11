@@ -6,6 +6,9 @@ A production-ready Kubernetes homelab built on K3S with 3 control plane nodes an
 
 Repo-wide agent instructions live in [.github/copilot-instructions.md](.github/copilot-instructions.md). For cluster changes, start with this README and [HARDWARE.md](HARDWARE.md). For OpenWRT changes, start with [openwrt/README.md](openwrt/README.md).
 
+Household device trust, IoT network placement, and troubleshooting are tracked in
+[IOT.md](IOT.md), including proposed layouts and per-device acceptance tests.
+
 ## Cluster Overview
 
 - **Orchestration**: Kubernetes 1.36.2+k3s1 (K3S lightweight distribution)
