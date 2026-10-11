@@ -597,6 +597,42 @@ withdrawal and client address lifetimes. AP RA/DHCPv6 ownership migration
 remains a later controlled batch, even though temporary IoT disruption is
 acceptable, because AP prefixes also affect LAN clients.
 
+### 2026-10-11 17:19-17:25 CDT: Local IoT IPv6 Acceptance
+
+Published revision `887a16d25aba525fea063499a80a9c51071731d5` was not
+initially reflected in Argo CD; a hard refresh/sync applied the gateway
+CronJob suspension before manual Job `iot-ula-gateway-20261011-1719`.
+The Job completed successfully; Argo CD is Synced/Succeeded and intentionally
+Suspended. `fw4 check` passed.
+
+- Live IoT allocation is exactly `fd47:eab4:aa15:10::/64`, gateway `::1`.
+  One gateway-originated RA was captured: on-link/SLAAC prefix, flags none,
+  router lifetime zero, no RDNSS; valid/preferred prefix lifetimes 5400/2700
+  seconds. The RA also includes a route to `fd47:eab4:aa15::/48`.
+  That route supplies ULA reachability information, not an Internet default
+  or authorization through the firewall. Capture ended after one packet.
+- After owner unplugged Ethernet/reconnected Wi-Fi, client `10.1.1.105`
+  had a SLAAC address in the new prefix and a ULA `/48` route via gateway
+  link-local on `en0`, without an `en0` IPv6 default. Existing Apple-derived
+  Hades subprefix routes remained; its prior `fd49` address was deprecated.
+- ULA gateway ping passed with zero packet loss. New TCP 22/80/443
+  connections to the IoT ULA gateway were refused; a probe to LAN gateway
+  ULA `fd47:eab4:aa15::1:22` was also refused. These are gateway-input
+  checks, not evidence of full IPv6 forwarding isolation.
+- DHCP/effective resolver remained Pi-hole-only. Explicit `apple.com`
+  UDP/TCP DNS returned NOERROR and an A answer (22/34 ms).
+  IPv4 HTTPS to `www.iana.org` returned 200. Vault `.103:8200` timed out
+  after 3 seconds; Pi-hole/Vault IPv4 routes used `en0`.
+- After Ethernet recovery, LAN retained gateway ULA `/60` and global `/64`,
+  SSH management worked, and IPv6 HTTPS returned 200. Live administration
+  rejection and DNS allow counters increased. AP configuration was not
+  changed, and Matter/Thread functional tests remain pending.
+
+Desired gateway schedule restoration (`suspend: false`) is prepared;
+publish/sync it separately. Live gateway scheduling remains suspended.
+Next implementation remains AP IPv6 ownership cleanup with attention to
+active delegated-prefix clients and LAN recovery; it has not been prepared.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

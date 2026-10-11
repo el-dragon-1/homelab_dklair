@@ -230,6 +230,23 @@ until their valid lifetimes expire; verify withdrawal rather than assuming
 instant removal. Restore scheduling separately after acceptance tests.
 Publication/application and live RA/client validation are pending.
 
+2026-10-11 acceptance: revision `887a16d25aba525fea063499a80a9c51071731d5`
+was synced and applied by manual Job `iot-ula-gateway-20261011-1719`.
+The gateway allocated `fd47:eab4:aa15:10::/64`; a captured gateway RA
+contained that on-link/SLAAC prefix, router lifetime zero, flags none, and
+no RDNSS. It also advertised a route to gateway ULA `/48` (not a default
+route or firewall permission). The IoT-only Mac received a SLAAC address
+and could ping the ULA gateway; new ULA TCP 22/80/443 connections were refused.
+Pi-hole remained the sole effective resolver, UDP/TCP DNS passed (22/34 ms),
+IPv4 HTTPS returned 200, and Vault remained blocked. Existing Apple-derived
+routes persisted; the prior on-link Apple ULA address was deprecated.
+After reconnecting Ethernet, LAN retained its ULA/global prefixes and IPv6
+HTTPS returned 200. Full client-to-LAN IPv6 isolation remains untested.
+
+Desired schedule restoration is now `suspend: false`; live gateway scheduling
+remains suspended until publication and Argo CD sync. No additional manual
+router reconcile is required solely to restore scheduling.
+
 Current intent:
 
 - `smz_homex` maps to `lan` and is allowed to reach IoT/guest devices.
