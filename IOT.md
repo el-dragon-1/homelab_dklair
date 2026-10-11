@@ -528,6 +528,75 @@ After these scoped acceptance checks, desired gateway `suspend: false` is
 prepared for publication; live scheduling remains suspended until synced.
 Do not run another manual router reconcile solely to restore the schedule.
 
+### 2026-10-11 17:09 CDT: IPv6 Ownership Follow-Up
+
+Schedule restoration revision `19f928030486cde7c50890626c71c28bcd2b640d`
+is Synced/Healthy/Succeeded; gateway reconciliation is enabled again.
+The following investigation made no router changes:
+
+- Owner identified the upstream device as **AT&T BGW320**. Gateway WAN6
+  has no explicit `reqprefix` setting. The installed netifd script maps
+  the default `auto` to `-P0`; the running odhcp6c command confirms that
+  automatic request. The actual delegated prefix remains one `/64`,
+  assigned to LAN. A route covering a larger upstream prefix is not a
+  delegation to OpenWRT. Larger-prefix support on this BGW320 remains
+  unverified; no DHCPv6 renewal or request experiment was performed.
+- Owner identified IoT lease `basement`, MAC `1c:b3:c9:03:1c:9a`,
+  address `10.1.1.233`, as an **Apple TV**. Its model and hub role remain
+  unconfirmed. Earlier passive capture identified it and Kitchen HomePod
+  as advertisers of the same IoT on-link ULA and Hades-derived route.
+- Hades' live DHCPv6 lease file contains a `Living-Room` address lease
+  and a delegated `fd6f:ffb:7de6:4::/62` with the same DUID. Its live
+  route points that delegation to a LAN link-local next hop. This is
+  evidence that Hades' DHCPv6 server is actively used, not just configured.
+  The precise physical client/DUID relationship to the inventoried Living
+  Room Apple TV still needs confirmation.
+- The tested Mac's Ethernet interface has SLAAC addresses from gateway
+  and all four AP ULA prefixes, plus an AP-derived dynamic DHCPv6 address.
+  Its Wi-Fi routes include Hades-derived subprefixes through Kitchen
+  HomePod. Removing AP IPv6 allocation/RA/DHCPv6 immediately could therefore
+  invalidate existing addresses and border-router routes.
+
+Recommended design direction: retain LAN Internet IPv6 and existing
+border-router paths while planning a distinct gateway-owned IoT ULA `/64`.
+IoT Internet access can remain IPv4 until additional global delegation is
+proven. Do not bridge LAN and IoT, reuse the LAN global `/64`, introduce
+NAT66, or assume a larger prefix will be granted. Before implementation,
+approve IPv6 DNS/RA policy and test equivalent new-flow isolation; then
+migrate prefix ownership and AP services in separate controlled batches.
+AP cleanup must account for active delegated-prefix clients and route
+lifetimes rather than merely deleting `ip6assign` or disabling odhcpd.
+
+### Prepared Batch: Gateway Local-Only IoT IPv6
+
+Owner accepts IoT interruptions and approved local-only IPv6 before routed
+IPv6 design. Desired gateway IoT adds `ip6assign=64`, hexadecimal
+`ip6hint=10`, and `ip6class=local`, expecting `fd47:eab4:aa15:10::/64`.
+The hint avoids LAN's existing local `/60`; WAN prefixes are excluded.
+Actual allocation must be verified after apply, not assumed from the hint.
+IoT RA uses SLAAC, flags `none`, router lifetime zero, and no DNS
+advertisement (`ra_dns=0`, `dns_service=0`); DHCPv6 is explicitly disabled.
+IPv4 DHCP, Pi-hole, LAN Internet IPv6, firewall restrictions, guest policy,
+AP allocations, and existing Apple border-router advertisements are unchanged.
+No NAT66, bridging, or BGW320 prefix-request changes are included.
+
+Desired gateway CronJob is suspended again for controlled maintenance;
+these edits are not yet applied. Publish and sync, verify suspension/no
+active gateway Jobs, then run one manual gateway reconcile with Ethernet
+recovery available. Inspect live allocation and capture gateway-originated
+RA: expected `/64`, SLAAC on-link prefix, zero default lifetime, no RDNSS.
+Reconnect the IoT client and inspect IPv6 addresses/routes and Pi-hole DNS;
+validate IPv4 Internet, UDP/TCP DNS, and continued gateway-admin/Vault
+blocking. Existing border-router RAs can still add their own addresses/routes.
+Local-only IPv6 does not yet establish cross-VLAN IPv6 application access or
+full isolation; those need a separately designed routed prefix/service policy.
+
+After acceptance, restore gateway scheduling separately. Roll back only the
+new IoT IPv6 options through GitOps and reconnect clients; verify RA prefix
+withdrawal and client address lifetimes. AP RA/DHCPv6 ownership migration
+remains a later controlled batch, even though temporary IoT disruption is
+acceptable, because AP prefixes also affect LAN clients.
+
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|
 | 2026-10-11 Kitchen Speaker | IoT | DHCP lease + neighbor; ping passed; owner says active home hub | A incomplete; cross-VLAN conflict unresolved |

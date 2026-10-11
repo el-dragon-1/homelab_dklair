@@ -194,6 +194,42 @@ change, retaining trusted-LAN access, DHCP, and required ICMPv6. Then resolve
 IPv6 ownership, available upstream prefix size, DNS advertisements, and
 Matter/Thread requirements before enabling gateway IoT RA or removing AP RA.
 
+17:09 CDT follow-up: owner confirmed upstream AT&T BGW320 and identified
+IoT `basement` (`10.1.1.233`) as an Apple TV. Gateway requests automatic
+delegation (`odhcp6c -P0`) and still receives one LAN `/64`; larger-prefix
+availability is unverified. Hades actively delegates ULA
+`fd6f:ffb:7de6:4::/62` to the DUID also used by its `Living-Room` lease.
+This overlaps the route advertised on IoT by Kitchen HomePod and basement
+Apple TV. The test Mac also has addresses from multiple AP ULA prefixes.
+Preserve these active allocations until a staged prefix-ownership migration
+is designed; immediate AP RA/DHCPv6 removal is not a safe cleanup.
+See the [IPv6 follow-up](../IOT.md) for the evidence and proposed direction.
+
+### Staged IoT Local IPv6
+
+Owner approved local-only IPv6 first and accepts IoT interruptions. Desired
+gateway IoT now requests a local ULA `/64` with hexadecimal hint `10`
+(expected `fd47:eab4:aa15:10::/64`), excluding WAN-delegated prefixes.
+LAN's existing `/60` local allocation and global `/64` are unchanged.
+IoT RA advertises SLAAC, zero default-router lifetime, no managed/other
+configuration flags, and no IPv6 DNS. DHCPv6 is disabled for this interface;
+IPv4 DHCP continues to advertise Pi-hole only. This is local IPv6 enablement,
+not completed routed IPv6 or Matter/Thread support.
+
+Gateway scheduling is staged suspended for the apply/test window. After
+publication, sync suspension and check for active Jobs before one manual
+gateway reconcile. Verify the actual ULA allocation and RA prefix, zero
+router lifetime, and absence of RDNSS; inspect renewed client addresses and
+routes, preserving IPv4 DNS/Internet, LAN management, and blocked IoT
+administration/Vault paths. Existing Apple RAs and all AP IPv6 settings remain
+unchanged. Do not remove their allocations in this batch.
+
+Rollback: remove only the new IoT IPv6 network/DHCP options through GitOps,
+reconcile while suspended, and reconnect clients. SLAAC addresses can linger
+until their valid lifetimes expire; verify withdrawal rather than assuming
+instant removal. Restore scheduling separately after acceptance tests.
+Publication/application and live RA/client validation are pending.
+
 Current intent:
 
 - `smz_homex` maps to `lan` and is allowed to reach IoT/guest devices.
