@@ -255,6 +255,19 @@ Retest after wireless reload/reconcile to prove persistence. Do not proceed to t
 DNS-only milestone until client VLAN transport works and isolation is preserved.
 See [mesh transport notes](openwrt/README.md#gemini-mesh-vlan-transport).
 
+At approximately 16:03 local time, gateway Job `mesh-vlan-gateway-20261011-1602`
+completed after publication of revision `4377f97a63efa0c441cedc284522c98424839cd4`.
+Runtime VLANs 10/20 include tagged `phy1-mesh0`; LAN management remains untagged.
+The Gemini-connected laptop automatically obtained `10.1.1.105`, with DHCP server
+and router `10.1.1.1`; gateway logs show DISCOVER/OFFER/REQUEST/ACK.
+An HTTP probe explicitly bound to Wi-Fi `en0` reached the IoT gateway.
+Gemini association and gateway mesh peers remain established. Vault remained
+unsealed at `.103`, workstation Pi-hole DNS resolved, and K3S API readiness passed.
+These confirm IoT DHCP transport restoration after the reconcile's wireless reload.
+Guest client DHCP, later scheduled-reconcile persistence, and client-side negative
+isolation tests remain pending. Existing IoT/guest-to-LAN DROP rules are still loaded;
+their presence alone is not a completed isolation test. No DNS exception was added.
+
 **Vault VIP separation and owner login are confirmed; long-term observation remains.**
 Vault now uses `.103`, protected by its gateway DHCP reservation; Pi-hole remains
 `.102`. See the
@@ -350,6 +363,21 @@ not actions performed during this read-only inventory.
 ### Validation Ledger
 
 Add one result row per device/profile, retaining failures and linking any corrective change.
+
+2026-10-11 approximately 16:10-16:11, owner-run IPv4 isolation baseline:
+Vault `.103:8200` returned healthy/unsealed JSON with Ethernet connected. With
+Ethernet unplugged, Wi-Fi was `10.1.1.105` and the route to Vault used `en0` via
+`10.1.1.1`; the same Vault request timed out. Explicit UDP and TCP DNS queries to
+Pi-hole `.102:53` also timed out before any DNS exception was added.
+These are expected results for the tested IoT-to-LAN paths, not a full IPv6 or
+all-services isolation certification. Firewall counters were not correlated.
+After adding the scoped DNS exception, repeat both DNS tests and the blocked
+Vault probe from the same verified IoT-only path.
+
+Desired gateway firewall now includes `Allow IoT to Pi-hole DNS` before the broad
+IoT-to-LAN DROP rules: IPv4 source `iot_zone`, destination `lan`, address `.102`,
+TCP/UDP destination port 53 only. Publication/application and post-change tests
+are pending. Guest policy, DHCP DNS advertisements, and IPv6 are unchanged.
 
 | Date / device | Actual network | Test / result | Remaining work / stability status |
 |---|---|---|---|

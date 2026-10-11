@@ -81,6 +81,14 @@ Use these overrides only for staged maintenance windows when remote recovery is 
 
 ## SSID Segmentation Notes
 
+### IoT DNS Exception
+
+Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to
+Pi-hole `192.168.4.102`, destination port 53, before the broad IoT-to-LAN DROP rules.
+This does not allow Pi-hole administration, Vault `.103:8200`, or guest DNS access.
+DHCP resolver advertisements are unchanged until IoT-only UDP/TCP DNS and blocked
+Vault probes validate the exception after application.
+
 ### Gemini Mesh VLAN Transport
 
 Gemini's wired uplink passes through AP, which backhauls to gateway over 802.11s;
@@ -98,6 +106,11 @@ then test guest VLAN 20 and confirm cross-zone isolation. Do not replace missing
 VLAN transport with AP DHCP servers or untagged IoT on the LAN.
 If tagged traffic still fails, trace the AP Ethernet/mesh path before widening the
 change. Rollback the gateway network/wireless changes together through Git.
+
+2026-10-11 validation: after gateway reconciliation and wireless reload, live mesh
+membership included tagged VLANs 10/20, and a Gemini Wi-Fi client obtained
+`10.1.1.105` from gateway `10.1.1.1`. Wi-Fi-bound gateway reachability passed.
+Guest-client and subsequent scheduled-reconcile checks remain pending.
 
 Current intent:
 
