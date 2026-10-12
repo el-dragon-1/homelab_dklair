@@ -175,6 +175,42 @@ remains suspended until sync. Unsuspension can automatically run a missed
 scheduled reconciliation. Apple functionality and LAN/guest client
 continuity remain outside these completed network-path tests.
 
+### Managed Gateway mDNS Reflection
+
+The gateway reconcile now requires `desired/gateway/avahi-daemon.conf`
+in addition to the five UCI packages. In enforce mode on the gateway only,
+it installs the supported `avahi-nodbus-daemon` APK when absent, enforces
+the configuration, enables the service for boot and restarts it after
+interface refresh. Package/config/service failures fail the Job; a bounded
+daemon check verifies startup. Remote APs and non-enforce runs skip these
+tasks. No new secret or firewall forwarding exception is needed.
+
+Avahi uses IPv4 and IPv6 mDNS only on `br-lan.1` (LAN) and `br-lan.10`
+(IoT); the allowlist excludes guest, WAN and all other interfaces.
+Reflection is bidirectional and shares service metadata across the two
+trust tiers. IPv4-to-IPv6 translation is disabled, and gateway service
+publishing is disabled. Existing LAN/IoT input policies permit mDNS;
+the old LAN-to-LAN `Allow mDNS` rule is not the reflector.
+Discovery does not grant application access, route link-local addresses,
+or prove HomeKit/Matter/Thread function. No second reflector should serve
+the same pair of networks.
+
+Gateway scheduling is staged suspended for publication and controlled
+apply. After sync and no active gateway Job, run one normal gateway
+reconcile with wired recovery available. Verify daemon enabled/running,
+interface membership and config, LAN-to-IoT and IoT-to-LAN DNS-SD
+discovery using known device identities and resolved targets. Use bounded
+captures or a controlled test advertisement to verify reflection and
+absence on guest/WAN; do not count cached results as fresh proof.
+Recheck DHCP/Pi-hole DNS, Internet, administration/Vault isolation,
+wired management and cluster health. Restore scheduling separately.
+Publication and live validation remain pending.
+
+Rollback sets `enable-reflector=no` in the desired config and reconciles
+the gateway, then verifies cross-VLAN reflection stops. The managed
+daemon/package may remain installed with reflection disabled; do not
+delete the required config or manually stop a service the next Job enables.
+
 ### IoT DNS Exception
 
 Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to

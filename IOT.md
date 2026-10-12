@@ -1085,6 +1085,44 @@ and sync-only restoration are pending, with no additional manual Job
 needed. Live scheduling remains suspended until sync; automatic missed
 schedule reconciliation may run upon unsuspension.
 
+### 2026-10-11: Managed mDNS Reflection Preparation
+
+Hades schedule restoration revision `338eb4df38fd7b81ba82cf3f7456070d24b1908c`
+was synced with Argo Healthy. Two automatic catch-up Jobs,
+`openwrt-hades-reconcile-29862704` and `openwrt-hades-reconcile-29862734`,
+completed without failures. All five schedules were enabled, no Jobs
+were active, and all five K3S nodes were Ready.
+
+Owner approved the next planned step: managed gateway LAN/IoT mDNS
+reflection. Read-only inspection found no Avahi/mDNS package or UDP 5353
+listener on the gateway. Live LAN/IoT devices are `br-lan.1`/`br-lan.10`.
+OpenWRT 25.12.4 offers `avahi-nodbus-daemon`; upstream configuration
+supports explicit interface allowlisting and separate IPv4/IPv6 reflection.
+
+Desired gateway `avahi-daemon.conf` allows only LAN and IoT, enables
+reflection for both IP families without IPv4/IPv6 translation, and
+disables gateway publishing. Reflection is bidirectional: IoT can also
+discover LAN service metadata. Guest/WAN are excluded by the allowlist.
+No firewall/application-port exceptions are added; mDNS discovery does
+not route link-local addresses or bypass application isolation.
+
+Gateway-only enforce tasks manage APK installation when absent, desired
+config, boot enablement and restart after interface refresh, with explicit
+failure propagation and bounded startup verification. APs and non-enforce
+runs skip these tasks. The config is required separately from the five
+UCI packages, keeping native Avahi configuration out of UCI imports.
+Only gateway scheduling is staged suspended; publication/application
+remain pending. Apply one normal gateway reconcile after sync and
+checking no active gateway Job, with wired recovery available.
+
+Acceptance requires fresh DNS-SD discovery and resolved known device
+targets from LAN and IoT, evidence of reflection on only the allowed
+interfaces (including guest/WAN exclusion), and normal network/infrastructure
+checks. Apple function and any additional scoped application exceptions
+are separate follow-up gates. Restore scheduling after acceptance.
+Rollback sets desired `enable-reflector=no` and reconciles; verify
+reflection stops while retaining the managed package/config/service.
+
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
 - [ ] Identify all HomePods/Apple TVs and eligible hub roles; identify Main Bedroom.
