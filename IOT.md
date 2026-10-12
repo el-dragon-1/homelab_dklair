@@ -50,13 +50,14 @@ OpenWRT gateway 192.168.4.1
   |-- VLAN 1 / lan / 192.168.4.0/24
   |     |-- smz_homex (Hades and Gemini, 5 GHz)
   |     |-- owner phones, tablets, computers, Watch
-  |     |-- Living Room Apple TV 192.168.4.220
   |     `-- router management, compute nodes, DNS service
   |
   |-- VLAN 10 / iot / 10.1.1.0/24
   |     |-- OpenWrt (Hades and Gemini, 2.4 GHz and 5 GHz)
   |     |-- Hue bridge 10.1.1.218 (gateway LAN4, wired)
   |     |-- Kitchen Speaker HomePod 10.1.1.148
+  |     |-- Living Room Apple TV 10.1.1.121
+  |     |-- basement Apple TV 10.1.1.233
   |     `-- plugs, sensors/controllers, unidentified devices
   |
   `-- VLAN 20 / smz_guest / 10.2.2.0/24
@@ -161,8 +162,8 @@ ownership, model, and firmware are confirmed.
 
 | Device / identity evidence | Observed address / network | Tier / proposed placement | Evidence and validation remaining |
 |---|---|---|---|
-| Kitchen Speaker; `HomePod`, `a4:cf:99:ab:5e:91` | `10.1.1.148` / IoT | T2 / retain IoT; 5 GHz if supported and signal adequate | Owner re-added it and confirmed active home hub; ping passed. A profile required; new layout not validated |
-| Living Room Apple TV; AirPlay model `AppleTV14,1`, `c4:f7:c1:5a:a1:2f` | `192.168.4.220` / LAN | T2 / proposed IoT | AirPlay discovery and ping passed. A profile and hub failover untested |
+| Kitchen Speaker; `HomePod`, `a4:cf:99:ab:5e:91` | `10.1.1.148` / IoT | T2 / retain IoT | LAN TCP 7000 passed; owner confirms Siri/Hue and AirPlay work. Hades 5 GHz signal sampled -83 to -84 dBm; stability and full A profile pending |
+| Living Room Apple TV; AirPlay model `AppleTV14,1`, `c4:f7:c1:5a:a1:2f` | `10.1.1.121` / IoT | T2 / IoT | Owner migrated from LAN; LAN discovery/address resolution and TCP 7000 passed; owner confirms AirPlay. A profile/hub failover/stability pending |
 | Main Bedroom; AirPlay service name only | Address/physical device unconfirmed | T2 candidate / IoT if Apple Home/media hub confirmed | Identify device/model; A profile |
 | Hue bridge; Signify BSB002, `ec:b5:fa:99:ce:e4` | `10.1.1.218` / wired IoT, gateway LAN4 | T2 / wired IoT with Apple Home hubs | Migrated 2026-10-11; identity, LAN IPv4 and IoT IPv4/IPv6 access, and `_hue._tcp` passed. Owner confirms Hue and Apple Home light control work without re-pairing. Routed LAN IPv6 HTTPS times out; H profile/stability incomplete |
 | Hue lights/accessories behind bridge | Count, rooms, models, and Zigbee membership unknown | T3 accessories behind T2 bridge; no direct IP placement unless separately verified | Inventory each light/sensor/switch; H profile per accessory |
@@ -172,7 +173,7 @@ ownership, model, and firmware are confirmed.
 | Unnamed, `74:fe:ce:fd:89:f5` (earlier lease label EP25) | `10.1.1.130` / IoT | T3 candidate / retain IoT pending identity | P profile after owner mapping |
 | `flo-64694e321baf`, `64:69:4e:32:1b:af` | `10.1.1.115` / IoT | T3 candidate / IoT | Name suggests a controller but exact purpose unconfirmed; U then C if water controller |
 | `sv3-90380C86F4C0`, `90:38:0c:86:f4:c0` | `10.1.1.120` / IoT | T3 candidate / IoT | U; confirm whether camera before selecting C |
-| `basement`, `1c:b3:c9:03:1c:9a` | `10.1.1.233` / IoT | T4 pending identity / no promotion | Room label alone does not identify hardware; U |
+| basement Apple TV; owner-confirmed, AirPlay model `AppleTV11,1`, `1c:b3:c9:03:1c:9a` | `10.1.1.233` / IoT | T2 / retain IoT | LAN TCP 7000 passed; owner confirms AirPlay; Hades 2.4 GHz association observed. A profile/hub failover/stability pending |
 | `MyQ-C91`, `24:18:c6:fb:ba:58` | `10.1.1.191` / IoT | T3 candidate / retain IoT | Confirm garage controller; C profile, supervised physical tests only |
 | Unnamed, `00:c5:26:16:bf:eb` | `10.1.1.185` / IoT | T4 / no promotion | U |
 | Unnamed, `00:c5:26:16:d2:71` | `10.1.1.244` / IoT | T4 / no promotion | U |
@@ -1255,6 +1256,39 @@ publication and Argo sync-only restoration remain pending.
 No additional manual router Job is needed; automatic catch-up may run.
 Full dual-stack Hue acceptance, all lights/automations, broader Apple
 features and 48-hour stability are not certified by this sampled success.
+
+### 2026-10-11 19:49-19:53 CDT: Apple Hub Placement and Functional Checks
+
+Owner reported moving Kitchen Speaker HomePod, Living Room Apple TV
+and basement Apple TV to OpenWrt, and explicitly confirmed these room
+identities. Live DHCP now places Living Room MAC `c4:f7:c1:5a:a1:2f`
+at `10.1.1.121` (previously LAN `.220`). Kitchen Speaker retains
+`10.1.1.148`; basement retains `10.1.1.233`, both already on IoT.
+No router settings, pairings or schedules were changed during this check.
+
+LAN-scoped AirPlay browse found all three. Living Room currently uses
+service name `Living Room (2)`, hostname `Living-Room-2.local:7000`,
+model AppleTV14,1, IPv4 `10.1.1.121` and ULA
+`fd47:eab4:aa15:10:88c:81fa:282b:b656`. Do not treat the suffix
+as proof of a second physical Apple TV. With Mac Wi-Fi inactive, routes
+to IoT used gateway `192.168.4.1` via Ethernet en9; TCP 7000 succeeded
+to all three separate devices.
+
+Hades reported Kitchen Speaker authorized/associated on 5 GHz with
+weak sampled signal -83 to -84 dBm. Living Room's MAC appeared authorized
+on both Hades 5 GHz (about -70 to -71 dBm) and Gemini 2.4 GHz
+(about -73 dBm) in sequential snapshots; these observations alone do
+not establish the active data path, stable roaming or simultaneous radios.
+Basement remained authorized on Hades 2.4 GHz (about -35 dBm).
+Avahi remained running. Weak Kitchen signal is a stability concern,
+not evidence of current functional failure; no band/channel changes made.
+
+With phone returned to trusted `smz_homex`, owner confirmed Siri on
+Kitchen Speaker controls Hue and AirPlay playback works to all three.
+These are owner-reported functional successes, not assistant-generated
+playback or comprehensive A-profile certification. Current active Home
+hub, failover, Thread accessories, all automations and 48-hour stability
+remain unverified. Other advertised room names remain inventory gaps.
 
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
