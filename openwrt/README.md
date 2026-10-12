@@ -275,6 +275,32 @@ Preserve Pi-hole DNS, Internet, gateway administration/Vault isolation,
 Avahi and cluster health. Restore scheduling separately after acceptance.
 Publication/live migration remain pending.
 
+Revision `6216a4fc963084434cedceb2082ae6fa2759fae0` was synced and
+applied by Job `hue-vlan10-gateway-20261011-1933` without failed attempts.
+Live LAN4 belongs only to VLAN 10 untagged/PVID. Owner reconnected
+only the Hue Ethernet cable after the bridge retained its old lease.
+DHCPACK on `br-lan.10` assigned `10.1.1.218` to the same MAC; public
+API bridge ID, model and firmware match baseline. Hue also advertises
+`fd47:eab4:aa15:10:eeb5:faff:fe99:cee4`.
+
+LAN-only routed IPv4 HTTP identification/TCP 443 and LAN-scoped mDNS
+resolution passed. IoT-only HTTP identification, IPv4/IPv6 TCP 443,
+IPv6 ping and IoT-scoped mDNS resolution passed. Owner confirmed light
+control works in both Hue and Apple Home without re-pairing.
+Routed LAN IPv6 TCP 443 timed out on repeated checks; a bounded capture
+on `br-lan.10` showed incoming LAN SYNs but no replies. Same-VLAN IPv6
+works, but the bridge's off-link IPv6 response remains unverified.
+No IPv6 policy change was made; do not claim full dual-stack acceptance.
+
+Pi-hole UDP/TCP DNS, IPv4 Internet, gateway administration rejection
+and Vault isolation passed from IoT. Initial UDP was stale TTL 0/EDNS
+code 3, followed by fresh TCP answers. Wired gateway management,
+LAN Vault HTTP 200, Avahi enabled/running and all five K3S nodes Ready
+passed. Desired gateway scheduling is restored to `suspend: false`;
+publish and sync restoration only. Live scheduling remains suspended
+until sync; automatic catch-up may run. Broader Apple/48-hour stability
+and the Hue routed IPv6 gap remain follow-up checks.
+
 Rollback restores LAN4 VLAN 1 untagged/PVID and VLANs 10/20 tagged,
 then reconciles the gateway and renews only the Hue link if necessary.
 Existing Hue pairings must be retained throughout.

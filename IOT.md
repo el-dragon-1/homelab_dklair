@@ -50,12 +50,12 @@ OpenWRT gateway 192.168.4.1
   |-- VLAN 1 / lan / 192.168.4.0/24
   |     |-- smz_homex (Hades and Gemini, 5 GHz)
   |     |-- owner phones, tablets, computers, Watch
-  |     |-- Hue bridge 192.168.4.168
   |     |-- Living Room Apple TV 192.168.4.220
   |     `-- router management, compute nodes, DNS service
   |
   |-- VLAN 10 / iot / 10.1.1.0/24
-  |     |-- OpenWrt (Hades and Gemini, 2.4 GHz)
+  |     |-- OpenWrt (Hades and Gemini, 2.4 GHz and 5 GHz)
+  |     |-- Hue bridge 10.1.1.218 (gateway LAN4, wired)
   |     |-- Kitchen Speaker HomePod 10.1.1.148
   |     `-- plugs, sensors/controllers, unidentified devices
   |
@@ -75,7 +75,7 @@ before attaching a segmented client or changing an uplink.
 | VLAN / interface | Gateway / subnet | SSID | Current Wi-Fi policy | Intended role |
 |---|---|---|---|---|
 | 1 / `lan` | `192.168.4.1/24` | `smz_homex` | 5 GHz, WPA2/WPA3 mixed, 802.11r enabled, client isolation off | Owner endpoints and currently shared infrastructure |
-| 10 / `iot` | `10.1.1.1/24` | `OpenWrt` | 2.4 GHz, WPA2-CCMP, DTIM 1 | Constrained household IoT |
+| 10 / `iot` | `10.1.1.1/24` | `OpenWrt` | 2.4 GHz and 5 GHz, WPA2-CCMP, DTIM 1 | Constrained household IoT |
 | 20 / `smz_guest` | `10.2.2.1/24` | `smz_guest` | 5 GHz, WPA2/WPA3 mixed, client isolation on | Visitors; not a general-purpose automation network |
 
 Both client APs use 5 GHz channel 149 / HE80. Desired 2.4 GHz channels are Hades 1
@@ -83,8 +83,10 @@ and Gemini 6; earlier live inspection found Hades 6 and Gemini 1. Record that dr
 but do not infer it caused the incident. Same-channel AP contention and roaming
 compatibility remain measurements to make, not established causes.
 
-Gateway wired bridge ports `lan1` through `lan4` and `sfp2` carry VLAN 1 untagged/PVID
-and VLANs 10/20 tagged. Hades/Gemini `eth1` follows the same logical tagging pattern.
+Gateway wired bridge ports `lan1` through `lan3` and `sfp2` carry VLAN 1 untagged/PVID
+and VLANs 10/20 tagged. Dedicated Hue port `lan4` carries only VLAN 10
+untagged/PVID after the 2026-10-11 migration. Hades/Gemini `eth1` retains
+VLAN 1 untagged/PVID and VLANs 10/20 tagged.
 Physical switch port assignments and wired accessory placement still need confirmation.
 
 ### DHCP, DNS, and IPv6
@@ -162,7 +164,7 @@ ownership, model, and firmware are confirmed.
 | Kitchen Speaker; `HomePod`, `a4:cf:99:ab:5e:91` | `10.1.1.148` / IoT | T2 / retain IoT; 5 GHz if supported and signal adequate | Owner re-added it and confirmed active home hub; ping passed. A profile required; new layout not validated |
 | Living Room Apple TV; AirPlay model `AppleTV14,1`, `c4:f7:c1:5a:a1:2f` | `192.168.4.220` / LAN | T2 / proposed IoT | AirPlay discovery and ping passed. A profile and hub failover untested |
 | Main Bedroom; AirPlay service name only | Address/physical device unconfirmed | T2 candidate / IoT if Apple Home/media hub confirmed | Identify device/model; A profile |
-| Hue bridge; Signify BSB002, `ec:b5:fa:99:ce:e4` | `192.168.4.168` / LAN | T2 / proposed wired IoT with Apple Home hubs | HTTP identification, public API, and `_hue._tcp` passed; owner reports Hue app works, Apple Home does not. H profile |
+| Hue bridge; Signify BSB002, `ec:b5:fa:99:ce:e4` | `10.1.1.218` / wired IoT, gateway LAN4 | T2 / wired IoT with Apple Home hubs | Migrated 2026-10-11; identity, LAN IPv4 and IoT IPv4/IPv6 access, and `_hue._tcp` passed. Owner confirms Hue and Apple Home light control work without re-pairing. Routed LAN IPv6 HTTPS times out; H profile/stability incomplete |
 | Hue lights/accessories behind bridge | Count, rooms, models, and Zigbee membership unknown | T3 accessories behind T2 bridge; no direct IP placement unless separately verified | Inventory each light/sensor/switch; H profile per accessory |
 | SonosZP, `74:ca:60:a8:ac:ce` | `10.2.2.126` / guest lease | T2/T3 candidate / placement pending media dependencies | Guest isolation may conflict with discovery/grouping; identity and S profile required |
 | EP25, `30:68:93:36:c2:62` | `10.1.1.103` / IoT | T3 / retain IoT if identity confirmed | Lease model label only; P profile |
@@ -1211,6 +1213,48 @@ Avahi and cluster acceptance remain required; broader Apple recovery is
 still a separate gate. Restore scheduling after acceptance.
 Rollback restores LAN4 VLAN 1 untagged/PVID and VLANs 10/20 tagged
 through GitOps/reconcile and renews the bridge link as needed.
+
+### 2026-10-11 19:33-19:43 CDT: Hue Migration Acceptance
+
+Revision `6216a4fc963084434cedceb2082ae6fa2759fae0` was synced after
+confirming wired management on another port and no active gateway Job.
+Job `hue-vlan10-gateway-20261011-1933` completed without failed attempts.
+Live netifd confirms LAN4 only in VLAN 10 untagged/PVID, absent from
+VLANs 1/20. Avahi remained running and `fw4 check` passed.
+
+Hue initially retained its LAN lease. Owner unplugged/replugged only
+its Ethernet cable into LAN4, without reset or pairing changes.
+Gateway DHCPACK on `br-lan.10` assigned `10.1.1.218`, same MAC
+`ec:b5:fa:99:ce:e4`; public API bridge ID `ECB5FAFFFE99CEE4`,
+BSB002 model and firmware `1978418030` match baseline.
+LAN-scoped mDNS now resolves its IPv4 and IoT ULA
+`fd47:eab4:aa15:10:eeb5:faff:fe99:cee4`.
+
+With Wi-Fi off, LAN-to-IoT IPv4 route used gateway via en9;
+HTTP identification and TCP 443 succeeded. LAN-scoped `_hue._tcp`
+resolved the unchanged bridge identity/hostname. Routed LAN IPv6 TCP
+443 timed out initially and on recheck. A bounded IoT-interface capture
+showed three LAN SYN attempts arriving at Hue's ULA, no replies captured,
+and no kernel drops. This does not establish the bridge's internal cause.
+The capture ended normally; no router IPv6 changes were made.
+
+With Ethernet unplugged, IoT en0 HTTP identification and TCP 443
+succeeded over IPv4; Hue ULA ping and IPv6 TCP 443 also succeeded.
+IoT-scoped `_hue._tcp` resolution passed. Thus same-VLAN IPv6 works,
+while Hue's off-link IPv6 response remains an explicit follow-up gap.
+Owner tested light control and confirmed both Hue app and Apple Home
+work with the existing pairing; no re-pairing was performed.
+
+IoT Pi-hole UDP/TCP DNS returned NOERROR with answers (initial stale
+UDP TTL 0/EDNS code 3, fresh TCP TTL 85); IPv4 Internet HTTPS returned
+HTTP 200. Gateway TCP 22/80/443 was refused and Vault `.103:8200`
+timed out. Final Ethernet-only checks preserved gateway management,
+LAN Vault HTTP 200, Avahi running/boot-enabled and all five nodes Ready.
+Desired gateway scheduling is restored to `suspend: false`;
+publication and Argo sync-only restoration remain pending.
+No additional manual router Job is needed; automatic catch-up may run.
+Full dual-stack Hue acceptance, all lights/automations, broader Apple
+features and 48-hour stability are not certified by this sampled success.
 
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
