@@ -1043,6 +1043,48 @@ checks. Restore scheduling separately after acceptance. Rollback removes
 only Hades `iot_5g` through GitOps/wireless reconcile. Apple functional
 acceptance remains deferred until discovery and device placement are done.
 
+Revision `ecdfb195919feaf9d9050544fd10749100a8e508` was published and
+Argo synced successfully. After verifying Hades suspension and no active
+Hades Job, manual Job `hades-iot-5g-20261011-1828` completed without
+failed attempts. Network/firewall runtime overrides remained off;
+DHCP and wireless refresh succeeded. Live `phy1-ap2` is enabled at
+5745 MHz/channel 149/80 MHz, BSSID `de:0d:ab:29:d1:ef`.
+Netifd confirms VLAN 10 untagged/PVID membership and tagged eth1 uplink.
+Existing 2.4 GHz IoT and 5 GHz LAN/guest BSSs remain enabled; their
+client continuity is not yet certified. Wired Hades management, LAN Vault
+HTTP 200 and all five K3S nodes Ready passed after apply.
+No clients were associated with the new BSS at inspection; actual Hades
+5 GHz association and IoT-only acceptance are pending. Scheduling remains
+suspended until acceptance and separate restoration.
+
+Hades client-path acceptance passed at 19:11 CDT. The first attempted
+reconnect still used Gemini; after a full Wi-Fi toggle near Hades,
+the Mac was authenticated/authorized/associated on Hades `phy1-ap2`,
+confirmed before and after the IoT-only tests. An intermediate SSH/K3S
+timeout occurred while Ethernet was disconnected and management routes
+used IoT; wired reconnection restored management, not a router change.
+
+With Ethernet unplugged and Wi-Fi unchanged, routes to Pi-hole, Vault
+and Internet used en0 via `10.1.1.1`. DHCP retained `10.1.1.105`,
+gateway `.1`, and Pi-hole-only DNS `.102`. Pi-hole UDP/TCP returned
+NOERROR with A answers; initial UDP TTL 0/EDNS stale-answer code 3
+was followed by fresh TCP TTL 140 and repeat UDP TTL 132 without
+the stale indication. System resolver remained Pi-hole-only and
+ordinary resolution succeeded, without a packet capture to distinguish
+cache from a new system query. Gateway IoT ULA ping and IPv4 Internet
+HTTPS HTTP 200 passed. Gateway TCP 22/80/443 was refused and Vault
+`.103:8200` timed out as intended.
+
+After Ethernet reconnection, Hades management routed via en9, LAN Vault
+returned HTTP 200, and all five K3S nodes were Ready. Mac association
+remained on Hades 5 GHz; basement Apple TV remained authorized on
+Hades 2.4 GHz. LAN/guest client continuity, comprehensive isolation,
+and Apple functional acceptance are not certified by these tests.
+Desired Hades scheduling is restored to `suspend: false`; publication
+and sync-only restoration are pending, with no additional manual Job
+needed. Live scheduling remains suspended until sync; automatic missed
+schedule reconciliation may run upon unsuspension.
+
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
 - [ ] Identify all HomePods/Apple TVs and eligible hub roles; identify Main Bedroom.

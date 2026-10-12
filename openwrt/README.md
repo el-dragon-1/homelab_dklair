@@ -145,6 +145,36 @@ Check existing BSSs and infrastructure before restoring scheduling
 in a separate publication. Rollback removes only Hades `iot_5g` and
 reconciles wireless through the same workflow.
 
+Revision `ecdfb195919feaf9d9050544fd10749100a8e508` was synced and
+applied by Job `hades-iot-5g-20261011-1828`, with no failed attempt.
+Network/firewall runtime overrides remained off. Live `phy1-ap2` is
+enabled on channel 149/5745 MHz/80 MHz, BSSID `de:0d:ab:29:d1:ef`.
+Netifd confirms VLAN 10 untagged/PVID membership with tagged eth1 uplink.
+Existing IoT/LAN/guest BSSs remain enabled; client continuity is not yet
+certified. Wired Hades management, LAN Vault HTTP 200 and all five
+K3S nodes Ready passed. No clients were on the new BSS at inspection;
+actual Hades 5 GHz client-path acceptance remains pending.
+Hades scheduling remains suspended.
+
+Client-path acceptance subsequently passed at 19:11 CDT. After a full
+Wi-Fi toggle near Hades, the Mac was authenticated, authorized and
+associated on `phy1-ap2`; association was confirmed again after testing.
+With Ethernet unplugged, Pi-hole/Vault/Internet routes used en0 via
+`10.1.1.1`; DHCP retained `10.1.1.105` and Pi-hole-only DNS. UDP/TCP
+DNS returned NOERROR with answers. Initial UDP had TTL 0/EDNS stale-answer
+code 3; repeat UDP returned fresh TTL 132 without that code. System
+resolution succeeded, IoT gateway ULA ping passed, and IPv4 HTTPS
+returned HTTP 200. Gateway TCP 22/80/443 was refused and Vault TCP 8200
+timed out. Ethernet reconnection restored wired Hades management and
+LAN Vault HTTP 200; all five K3S nodes remained Ready. Basement Apple TV
+remained authorized on the existing 2.4 GHz BSS.
+
+Desired Hades scheduling is restored to `suspend: false`; publish and
+sync this restoration without another manual router Job. Live scheduling
+remains suspended until sync. Unsuspension can automatically run a missed
+scheduled reconciliation. Apple functionality and LAN/guest client
+continuity remain outside these completed network-path tests.
+
 ### IoT DNS Exception
 
 Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to
