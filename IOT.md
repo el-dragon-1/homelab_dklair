@@ -1123,6 +1123,65 @@ are separate follow-up gates. Restore scheduling after acceptance.
 Rollback sets desired `enable-reflector=no` and reconciles; verify
 reflection stops while retaining the managed package/config/service.
 
+### 2026-10-11 19:18-19:26 CDT: mDNS Deployment and Acceptance
+
+Revision `b7c84e8ac60e76edbeb21d665c9273ec17286a8c` was published and
+Argo synced successfully. Gateway schedule was suspended with no active
+gateway Job before manual Job `gateway-mdns-20261011-1918`.
+The Job installed Avahi 0.9-rc5, enforced configuration, enabled/restarted
+the service and verified startup, without failed attempts. Live config
+matches desired and logs show LAN/IoT IPv4/IPv6 multicast membership.
+Daemon running/boot-enabled checks and `fw4 check` passed.
+
+Fresh reflection proof: unique native DNS-SD queries scoped to en9/LAN
+and en0/IoT were captured at the gateway on their originating VLAN and
+re-emitted with the gateway source on the opposite VLAN for both IPv4
+and IPv6. Concurrent 15-second captures on guest `br-lan.20` and WAN
+`br-wan` contained zero mDNS packets, with no kernel drops.
+The allowlist and joined-interface logs corroborate this bounded exclusion
+test; it is not a comprehensive guest/WAN audit. Early custom probes and
+default tcpdump name matching were inconclusive (the gateway build does
+not decode DNS names); they were not counted as failed reflection.
+Native probes plus per-interface ASCII captures supplied usable evidence.
+All captures ended, remote scratch files were removed, and no tcpdump
+process remained at final inspection.
+
+LAN-scoped discovery/resolution identified Kitchen Speaker
+`Kitchen-Speaker-A4CF99AB5E91.local:7000`, IPv4 `10.1.1.148`,
+ULA `fd47:eab4:aa15:10:14cf:1ad:befd:932a`, and basement
+`basement.local:7000`, IPv4 `10.1.1.233`,
+ULA `fd47:eab4:aa15:10:cda:fef:5253:a6b3`.
+Initial TCP checks while dual-connected routed directly via Wi-Fi and
+were excluded from forwarding evidence. With Wi-Fi off, Ethernet routes
+used the LAN gateway for IoT IPv4 and IPv6; TCP 7000 connections to
+both separate devices succeeded in both families. This supplies the
+previously missing positive LAN-to-IoT IPv6 forwarding/reply evidence
+for these endpoints, not comprehensive protocol acceptance.
+
+IoT-scoped discovery resolved Hue Bridge `ecb5fa99cee4.local:443`
+at LAN `192.168.4.168`, and Homebridge `0E_2A_E4_83_4C_E9.local:51495`
+at `192.168.4.84`. Resolution may use cache; packet probes provide fresh
+reflection evidence separately. Homebridge also advertises old AP-derived
+ULAs and container addresses; cleanup remains an explicit follow-up.
+No application exceptions were added.
+
+At 19:25 CDT with Ethernet unplugged, routes to Pi-hole/Vault used
+IoT en0 via `10.1.1.1`. DHCP retained `10.1.1.105` and Pi-hole-only DNS.
+UDP/TCP DNS returned NOERROR with answers; initial stale UDP TTL 0/EDNS
+code 3 was followed by fresh TCP TTL 230 and repeat UDP TTL 215.
+Gateway ULA ping and IPv4 Internet HTTPS HTTP 200 passed.
+Gateway TCP 22/80/443 was refused. Vault `.103:8200` and Hue `.168:443`
+timed out. Hue discovery therefore does not imply IoT application access;
+planned bridge placement on IoT remains needed.
+
+After Ethernet reconnection, gateway management routed via en9, LAN
+Vault returned HTTP 200, Hue TCP 443 succeeded and all five K3S nodes
+were Ready. Avahi remained running and enabled. Apple Home/Hue control,
+Siri, Thread, actual media playback and stability remain unverified.
+Desired gateway scheduling is restored to `suspend: false`; publication
+and sync-only restoration are pending. No further manual router Job is
+needed; automatic missed-schedule Jobs may run on unsuspension.
+
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
 - [ ] Identify all HomePods/Apple TVs and eligible hub roles; identify Main Bedroom.

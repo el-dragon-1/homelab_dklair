@@ -204,7 +204,45 @@ captures or a controlled test advertisement to verify reflection and
 absence on guest/WAN; do not count cached results as fresh proof.
 Recheck DHCP/Pi-hole DNS, Internet, administration/Vault isolation,
 wired management and cluster health. Restore scheduling separately.
-Publication and live validation remain pending.
+Revision `b7c84e8ac60e76edbeb21d665c9273ec17286a8c` was synced and
+applied by Job `gateway-mdns-20261011-1918` without failed attempts.
+Avahi 0.9-rc5 is installed, running and boot-enabled; configuration
+matches desired. Logs show multicast membership only on LAN/IoT for
+both IP families. `fw4 check` passed.
+
+At 19:21 CDT, unique interface-scoped native DNS-SD queries were captured
+entering LAN and being re-emitted by the gateway on IoT, and vice versa,
+for IPv4 and IPv6. Concurrent 15-second guest/WAN captures had zero
+mDNS packets and no kernel drops. This is bounded exclusion evidence,
+not a comprehensive guest/WAN audit. Early probes were inconclusive:
+the gateway tcpdump build does not decode DNS payload names; use per-interface
+ASCII captures or a capable external decoder instead of name matching
+against its default output. All capture processes ended and temporary
+remote capture files were removed.
+
+LAN-scoped browsing/resolution found Kitchen Speaker and basement at
+IoT IPv4/ULA addresses on TCP 7000. With Wi-Fi off and Ethernet routes
+confirmed via the gateway, TCP connections to both passed over IPv4
+and IPv6: actual LAN-to-IoT forwarding/replies, not same-host traffic.
+IoT-scoped discovery resolved Hue Bridge at `192.168.4.168:443` and
+Homebridge at `192.168.4.84:51495`. Browse/resolve output alone can be
+cached; unique packet probes supply fresh reflection evidence.
+Homebridge also advertised old AP-derived ULAs and container addresses;
+address-advertisement cleanup remains follow-up, not reflector failure.
+
+At 19:25 CDT with Ethernet unplugged, IoT DHCP/Pi-hole-only DNS, UDP/TCP
+DNS, gateway ULA ping and IPv4 HTTPS passed. Initial UDP DNS was stale
+(TTL 0/EDNS code 3); repeat returned fresh TTL 215. Gateway TCP 22/80/443
+was refused; Vault TCP 8200 and Hue TCP 443 timed out. After Ethernet
+reconnection, gateway management, LAN Vault HTTP 200 and Hue TCP 443
+passed; all five K3S nodes remained Ready. No application exceptions
+were added. Hue still needs planned IoT placement; Apple function remains
+unverified.
+
+Desired gateway scheduling is restored to `suspend: false` after these
+checks. Publish and sync restoration only, without another manual router
+Job. Live scheduling remains suspended until sync; automatic catch-up
+reconciliation may run on unsuspension.
 
 Rollback sets `enable-reflector=no` in the desired config and reconciles
 the gateway, then verifies cross-VLAN reflection stops. The managed
