@@ -249,6 +249,36 @@ the gateway, then verifies cross-VLAN reflection stops. The managed
 daemon/package may remain installed with reflection disabled; do not
 delete the required config or manually stop a service the next Job enables.
 
+### Wired Hue Migration: Gateway LAN4
+
+Owner confirmed gateway LAN4 connects only to the Hue bridge, not a
+downstream switch. The live bridge forwarding table independently learned
+MAC `ec:b5:fa:99:ce:e4` on port 4, mapped to `lan4`.
+Desired LAN4 is now an IoT-only access port: VLAN 10 untagged/PVID,
+removed from VLAN 1 and VLAN 20. Other physical ports and mesh VLAN
+transport remain unchanged. Do not use LAN4 for trusted management
+or a trunk after this migration.
+
+No Hue reset, pairing removal, application-port exception or DHCP
+reservation is required. The bridge currently uses DHCP at LAN
+`192.168.4.168`; after migration expect an address in `10.1.1.0/24`.
+Verify identity by MAC and bridge ID `ECB5FAFFFE99CEE4`, not old IP.
+If it retains its old lease, unplug/replug only the Hue Ethernet cable
+to trigger renewal; do not reset the bridge.
+
+Gateway scheduling is staged suspended. Publish, sync, verify no active
+gateway Job, then run one normal gateway reconcile with management on
+another LAN port. Check live LAN4 VLAN membership, Hue DHCP/neighbor
+identity, HTTP identification and DNS-SD target resolution from LAN and
+IoT. Test Hue vendor app and existing Apple Home pairing without re-pairing.
+Preserve Pi-hole DNS, Internet, gateway administration/Vault isolation,
+Avahi and cluster health. Restore scheduling separately after acceptance.
+Publication/live migration remain pending.
+
+Rollback restores LAN4 VLAN 1 untagged/PVID and VLANs 10/20 tagged,
+then reconciles the gateway and renews only the Hue link if necessary.
+Existing Hue pairings must be retained throughout.
+
 ### IoT DNS Exception
 
 Desired gateway firewall permits IoT-initiated IPv4 TCP/UDP DNS only to

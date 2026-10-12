@@ -1182,6 +1182,36 @@ Desired gateway scheduling is restored to `suspend: false`; publication
 and sync-only restoration are pending. No further manual router Job is
 needed; automatic missed-schedule Jobs may run on unsuspension.
 
+### 2026-10-11: Wired Hue Migration Preparation
+
+mDNS schedule restoration revision `e4d0c9546f909b59b4ff3c381cf5e5cde101a793`
+was synced with Argo Healthy; all schedules enabled, Avahi running and
+boot-enabled, all five K3S nodes Ready, and no active Jobs at inspection.
+
+Owner approved Hue migration and confirmed the bridge is directly
+connected to gateway LAN4, with no downstream devices on that port.
+Live bridge FDB learned `ec:b5:fa:99:ce:e4` on port 4, mapped to LAN4;
+DHCP/neighbor identified current LAN address `192.168.4.168`.
+Public API baseline: Hue Bridge, model BSB002, bridge ID
+`ECB5FAFFFE99CEE4`, firmware `1978418030`.
+
+Desired gateway LAN4 is an IoT-only access port, VLAN 10 untagged/PVID,
+removed from VLANs 1 and 20. Other ports, mesh, DHCP settings and firewall
+remain unchanged. No reset/re-pair, reservation or application exception
+is added. Gateway schedule is staged suspended for controlled reconcile;
+publication/application remain pending.
+
+Keep Ethernet management on a different LAN port. After sync/no active
+gateway Job, run one normal reconcile and validate LAN4 VLAN membership,
+Hue lease/neighbor MAC and bridge identity at its new IoT address.
+If the bridge retains its old DHCP lease, renew by unplug/replug of its
+Ethernet cable only. Verify LAN/IoT DNS-SD targets and HTTP access, then
+owner Hue app/light control and existing Apple Home pairing. Network,
+Avahi and cluster acceptance remain required; broader Apple recovery is
+still a separate gate. Restore scheduling after acceptance.
+Rollback restores LAN4 VLAN 1 untagged/PVID and VLANs 10/20 tagged
+through GitOps/reconcile and renews the bridge link as needed.
+
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.
 - [ ] Identify all HomePods/Apple TVs and eligible hub roles; identify Main Bedroom.

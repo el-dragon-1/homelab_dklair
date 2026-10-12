@@ -26,7 +26,6 @@ config bridge-vlan
 	list ports 'lan1:u*'
 	list ports 'lan2:u*'
 	list ports 'lan3:u*'
-	list ports 'lan4:u*'
 	list ports 'sfp2:u*'
 	list ports 'phy1-mesh0:u*'
 
@@ -36,7 +35,7 @@ config bridge-vlan
 	list ports 'lan1:t'
 	list ports 'lan2:t'
 	list ports 'lan3:t'
-	list ports 'lan4:t'
+	list ports 'lan4:u*'
 	list ports 'sfp2:t'
 	list ports 'phy1-mesh0:t'
 
@@ -46,7 +45,6 @@ config bridge-vlan
 	list ports 'lan1:t'
 	list ports 'lan2:t'
 	list ports 'lan3:t'
-	list ports 'lan4:t'
 	list ports 'sfp2:t'
 	list ports 'phy1-mesh0:t'
 
