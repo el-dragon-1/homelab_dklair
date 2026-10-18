@@ -51,7 +51,7 @@ config:
             href: https://nextcloud.dklair.io
             description: Files and collaboration
         - Open WebUI:
-            href: https://open-webui.dklair.io
+            href: https://ai.dklair.io
             description: Local AI chat
         - pgAdmin:
             href: https://pgadmin.dklair.io
