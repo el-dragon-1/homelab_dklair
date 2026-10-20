@@ -1,7 +1,7 @@
 # Baserow values
 # - Deploys via Traefik + cert-manager
 # - Reuses shared PostgreSQL (CloudNativePG) instead of chart-managed Postgres
-# - Pulls DB credentials from ExternalSecret-managed Secret baserow-db
+# - Pulls DB and SMTP credentials from ExternalSecret-managed Secrets
 
 global:
   baserow:
@@ -12,6 +12,8 @@ global:
     envFrom:
       - secretRef:
           name: baserow-db
+      - secretRef:
+          name: baserow-smtp
 
 # Use existing PostgreSQL cluster, not chart-managed dependency.
 postgresql:
@@ -22,6 +24,10 @@ backendConfigMap:
   DATABASE_HOST: postgresql-rw.postgresql.svc.cluster.local
   DATABASE_PORT: "5432"
   DATABASE_NAME: baserow
+  EMAIL_SMTP: "true"
+  EMAIL_SMTP_HOST: smtp.mail.me.com
+  EMAIL_SMTP_PORT: "587"
+  EMAIL_SMTP_USE_TLS: "true"
   # Run migrations at application startup to avoid Redis dependency in chart pre-sync hook.
   MIGRATE_ON_STARTUP: "true"
 

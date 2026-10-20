@@ -2,14 +2,18 @@
 
 This document lists the Vault secrets required by the current Baserow manifests.
 
-## Required Vault secret path
+## Required Vault secret paths
 
-- Path: `homelab/baserow/postgresql`
-- Engine: KV v2 (same backend used by other app secrets)
+- `homelab/baserow/postgresql` (KV v2)
+- `homelab/baserow/smtp` (KV v2)
 
-Required properties at this path:
+Required properties at `homelab/baserow/postgresql`:
 - `username`
 - `password`
+
+Required properties at `homelab/baserow/smtp`:
+- `username` (iCloud email address)
+- `password` (iCloud app-specific password)
 
 ## Kubernetes mapping
 
@@ -18,12 +22,17 @@ The ExternalSecret at `apps/external-secrets-config/baserow-db-externalsecret.ya
 - Vault `username` -> Secret key `DATABASE_USER`
 - Vault `password` -> Secret key `DATABASE_PASSWORD`
 
-The Baserow chart consumes this secret via `global.baserow.envFrom` in `values/baserow/values.yaml`.
+The ExternalSecret at `apps/external-secrets-config/baserow-smtp-externalsecret.yaml` maps Vault values to Kubernetes Secret `baserow-smtp`:
+
+- Vault `username` -> `EMAIL_SMTP_USER` and `FROM_EMAIL`
+- Vault `password` -> `EMAIL_SMTP_PASSWORD`
+
+The Baserow chart consumes both Kubernetes Secrets via `global.baserow.envFrom` in `values/baserow/values.yaml`.
 
 ## Notes
 
-- No additional Vault secret paths are required for the current Baserow configuration.
-- PostgreSQL host/port/database name are non-secret and set in `backendConfigMap` in `values/baserow/values.yaml`.
+- iCloud SMTP uses `smtp.mail.me.com` on port `587` with STARTTLS; these non-secret settings are set in `backendConfigMap` in `values/baserow/values.yaml`.
+- PostgreSQL host/port/database name are non-secret and set in the same `backendConfigMap`.
 - TLS ingress is managed by `apps/baserow/ingress.yaml` as a workaround for a Baserow chart ingress TLS rendering issue.
 
 ## Provisioning helper
