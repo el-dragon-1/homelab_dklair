@@ -129,3 +129,13 @@ For long-running clients, refresh shortly before expiry (the migration used a tw
 
 ## Open Questions
 - Track unresolved risks, TODOs, or follow-up checks.
+
+## CryoSRV Migration Decisions
+
+- On 2026-10-21, the user selected preservation first: retain source values, then rebuild business-critical behavior. This approves a planning policy, not individual field decisions or a data import.
+- The read-only audit observed 46 tables, 2,228 fields and 123,327 records in Airtable; `CryoSRV Database2` (Baserow database `22`, workspace `11`) still had zero records. The source was live, so these counts are not an atomic snapshot.
+- The field-decision matrix covers every field, including 402 placeholders and 94 configured lookups that depend on placeholders. Private reports and scripts remain outside Git in the originating session's `files/` directory, under the `cryosrv-field-decision-` prefix.
+- Use source table, field and record IDs as migration keys. Four duplicate-name pairs require a field-ID-based re-export; name-keyed audit profiles cannot distinguish those fields.
+- Preserve original typed values and missing/null/empty/error distinctions in a protected snapshot. Proposed JSON placeholders preserve evidence, not working calculations or useful primary displays. Generated history fields and read-only computed fields need separately approved writable companions when historical values must be available in Baserow.
+- Do not collapse directional self-links, discard extra links, regenerate AI output, execute buttons, or grant access while importing identities. Additional schema, identity mappings and operational behavior require explicit approval.
+- Next gates: identify business-critical workflows, approve field-level preservation/display choices, obtain missing critical rollup/button definitions, then design a field-ID-based snapshot and separately authorize a staging rehearsal. No data import has been authorized or performed.
