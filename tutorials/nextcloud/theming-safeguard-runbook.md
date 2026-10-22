@@ -20,6 +20,12 @@ These hooks enforce:
 - color = #0082c9
 - background_color = #0082c9
 
+## Major Version Upgrade Preparation
+
+The chart uses its `appVersion` as the Nextcloud image tag when no image tag is set. The configured chart `9.1.4` uses Nextcloud `33.0.5`; chart `9.2.7` upgrades to `34.0.4`, one major release at a time.
+
+Before syncing a major-version upgrade, create and verify recoverable backups of both the Nextcloud data volume and its external PostgreSQL database. The upstream chart's upgrade guidance requires backups before upgrading.
+
 ## Prerequisites
 
 - Access to the cluster with kubectl

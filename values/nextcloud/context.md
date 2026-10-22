@@ -14,7 +14,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Status: Managed through Argo CD with additional safeguarding documented in a runbook.
 
 ## Current Deployment Shape
-- Deploys to namespace `nextcloud` from the upstream `nextcloud` chart at target revision `9.1.4`.
+- Deploys to namespace `nextcloud` from the upstream `nextcloud` chart at target revision `9.2.7`, which uses Nextcloud `34.0.4`.
 - Exposes `nextcloud.dklair.io` through Traefik with TLS secret `nextcloud-tls` and middleware `nextcloud-nextcloud-security-headers@kubernetescrd`.
 - Uses admin credentials from Secret `nextcloud-admin` and trusts only `nextcloud.dklair.io` as an explicit application domain.
 - Runs against the shared PostgreSQL cluster at `postgresql-rw.postgresql.svc.cluster.local:5432` with credentials from Secret `nextcloud-db`.
@@ -44,6 +44,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 ## Working Fixes
 - If login succeeds but dashboard or TOTP redirects return HTTP 500, reapply the safe theming values with `php occ config:app:set theming ...` as documented in [../../tutorials/nextcloud/theming-safeguard-runbook.md](../../tutorials/nextcloud/theming-safeguard-runbook.md).
 - If manual theming remediation works, verify the hook entries in [values.yaml](values.yaml) and resync Argo CD instead of leaving the fix only in runtime state.
+- Before future Nextcloud major-version upgrades, back up and verify recovery of both the Nextcloud data volume and its external PostgreSQL database.
 
 ## Dependencies And Secrets
 - Secret `nextcloud-admin` stores admin bootstrap credentials.
