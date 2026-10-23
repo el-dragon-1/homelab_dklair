@@ -34,13 +34,20 @@
 - The proposed ExternalSecret mapping `homelab/cloudflare/tunnel` /
   `credential_json` to `default/tunnel-credentials` / `credentials.json`, using
   `vault-backend` and `creationPolicy: Orphan`, passed a server-side dry run.
-  No ExternalSecret has been created or added to Git for this tunnel yet; actual
-  ESO reconciliation and its authorization to this entry remain unverified.
+  The ExternalSecret manifest is now present under `apps/external-secrets-config/`
+  and was applied directly for the initial credential reconciliation. ESO reported
+  `Ready=True`, reason `SecretSynced`, message `Secret was synced`, confirming
+  authorization and retrieval from Vault. Commit and push the manifest so the
+  `external-secrets-config` application can adopt it.
 - `cloudflared tunnel --config /etc/cloudflared/config/config.yaml ingress validate`
   returned `OK` in the running Deployment. Helm-rendered configuration matches the
   validated live configuration. All three existing connector replicas were ready.
 - The local Vault CLI address was stale (`192.168.4.102:8200`); a per-command
   override to the current `vault-ui` address `http://192.168.4.103:8200` allowed
   authenticated reads. No saved client settings were changed.
+- Root and `external-secrets-config` automatic sync were disabled live before the
+  initial ESO reconciliation, as requested for a manual rollout. Their manifests
+  and the Cloudflared Application now omit automatic sync. Publish these changes
+  before syncing root; otherwise the older Git revision can re-enable automation.
 - Live reconciliation and external routing still require publishing the files and
   completing the [adoption runbook](../../tutorials/cloudflare/argocd-tunnel-adoption.md).

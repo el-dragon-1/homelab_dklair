@@ -24,9 +24,5 @@ spec:
       ref: values
   project: default
   syncPolicy:
-    automated:
-      prune: true
-      selfHeal: true
-      allowEmpty: false
     syncOptions:
       - CreateNamespace=true

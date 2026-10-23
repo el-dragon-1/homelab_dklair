@@ -5,8 +5,10 @@
 - Access to the `K3S` context using `~/kube/k3s.yaml`.
 - The existing `default/cloudflared` Deployment and ConfigMap.
 - The existing `default/tunnel-credentials` Secret with a `credentials.json` key.
-  Keep a recoverable copy in your secret manager. The chart references this Secret
-  but does not create or back it up; never commit its contents to Git.
+  Vault KV v2 mount `homelab`, path `cloudflare/tunnel`, property `credential_json`
+  stores the complete credential JSON string. The
+  [ExternalSecret](../../apps/external-secrets-config/cloudflared-tunnel-credentials-externalsecret.yaml)
+  syncs it to this Secret. Never commit credential contents to Git.
 
 The owning resources are the [Argo CD Application](../../apps/argocd/cloudflared-application.yaml),
 [local Helm chart](../../charts/cloudflared/Chart.yaml), and
@@ -48,10 +50,25 @@ kubectl --context K3S apply --dry-run=server \
 
 ## 2. Publish and Adopt
 
-Commit and push the chart, application values, and Application manifest together.
-The existing root application discovers the new Application automatically. Do not
-apply the Application before those paths exist in the remote Git repository, and
-do not run `helm install`: Argo CD renders the chart and adopts the resources.
+Commit and push the chart, application values, ExternalSecret, and Application
+manifests together, including the manual-sync policies for root, secrets-config,
+and Cloudflared. Do not apply the Application before those paths exist in the
+remote Git repository, and do not run `helm install`: Argo CD renders the chart
+and adopts the resources.
+
+In Argo CD, review the root diff and manually sync the `external-secrets-config`
+and `cloudflared` Application resources. This registers the tunnel Application
+without deploying its workload because automatic sync is disabled. Then manually
+sync `external-secrets-config` and wait for ESO:
+
+```bash
+kubectl --context K3S -n default wait --for=condition=Ready \
+  externalsecret/cloudflared-tunnel-credentials --timeout=90s
+```
+
+ESO reconciles automatically; no restart of the operator is needed. Once the
+ExternalSecret is Ready, review the Cloudflared diff and manually sync
+`cloudflared`. Do not enable automatic sync during these checks.
 
 If root reconciliation needs a refresh after publishing:
 
@@ -82,7 +99,7 @@ open a published application to verify routing and any Access login flow.
 ## Rollback
 
 If adoption fails, keep the Application manifest in Git. Correct or revert the
-chart or values change and push it, then verify the rollout again. Do not delete
+chart or values change and push it, manually sync, then verify the rollout again. Do not delete
 the Application or remove its manifest from Git: its cascading-deletion finalizer
 can remove the tunnel Deployment and ConfigMap, interrupting external access.
 
@@ -97,12 +114,13 @@ kubectl --context K3S -n argocd patch application cloudflared --type=merge \
 ```
 
 Check that no sync is still running before repairing the workload. Publish the
-corrected desired state before restoring automated reconciliation:
+corrected desired state before reapplying the manual-sync policies:
 
 ```bash
 kubectl --context K3S apply -f apps/argocd/cloudflared-application.yaml
 kubectl --context K3S apply -f root-application.yaml
 ```
 
-The existing credentials Secret is not part of this application's resource set and
-is not pruned by it. Its disaster recovery remains an operator responsibility.
+The credentials Secret is not part of the Cloudflared application's resource set.
+ESO manages it with `creationPolicy: Orphan`, preserving it if the ExternalSecret
+is removed. Vault remains the credential source for disaster recovery.
