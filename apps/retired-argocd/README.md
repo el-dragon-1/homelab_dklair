@@ -1,6 +1,6 @@
 # Retired test applications
 
-Nextcloud, Homepage, Mailu, Uptime Kuma, and Wger were retired on 2026-10-23
+Nextcloud, Homepage, Mailu, Uptime Kuma, Wger, Aliasvault, and Vaultwarden were retired on 2026-10-23
 with owner authorization to destroy their test PVC data and release Longhorn
 replica allocations.
 
@@ -8,6 +8,11 @@ Their Application manifests are archived here, outside the root Application's
 watched `apps/argocd/` directory. Helm values, supplementary manifests, and
 Vault/ExternalSecret configuration remain in their original locations.
 Shared PostgreSQL databases are not removed by this retirement.
+
+Aliasvault and Vaultwarden retirement includes permanent deletion of their
+six PVCs (39 GiB logical), including local databases, attachments, certificates,
+logs, and generated application secrets. Retained Vault credentials and any shared
+database alone do not constitute a recoverable backup of these applications.
 
 ## Re-enable an application
 

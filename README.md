@@ -98,7 +98,7 @@ Inter-node Communication & External Network
 
 ### Retired test applications
 
-Nextcloud, Homepage, Mailu, Uptime Kuma, and Wger are retired. Their Application
+Nextcloud, Homepage, Mailu, Uptime Kuma, Wger, Aliasvault, and Vaultwarden are retired. Their Application
 manifests and re-enablement steps are preserved in
 [apps/retired-argocd/](apps/retired-argocd/README.md); Helm values remain available.
 Their test PVC data is intentionally discarded to release Longhorn allocations.

@@ -9,12 +9,18 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Repo Anchors
 - Values file: [values.yaml](values.yaml)
-- Argo CD application: [../../apps/argocd/aliasvault-application.yaml](../../apps/argocd/aliasvault-application.yaml)
+- Archived Argo CD application: [aliasvault-application.yaml](../../apps/retired-argocd/aliasvault-application.yaml)
 - Namespace: [../../apps/external-secrets-config/aliasvault-namespace.yaml](../../apps/external-secrets-config/aliasvault-namespace.yaml)
 - ExternalSecret: [../../apps/external-secrets-config/aliasvault-db-externalsecret.yaml](../../apps/external-secrets-config/aliasvault-db-externalsecret.yaml)
 - Companion doc: [vault-secrets.md](vault-secrets.md)
 
 ## Current Deployment Shape
+- Retired on 2026-10-23 with owner authorization to permanently delete all four
+  PVCs (9 GiB), including generated application secrets and certificates.
+  Values, Vault/ExternalSecret configuration, and shared PostgreSQL data are
+  retained, but are not sufficient to restore deleted cryptographic material.
+  See [re-enablement guidance](../../apps/retired-argocd/README.md).
+- The following describes the archived deployment:
 - Deploys Aliasvault using the generic `bjw-s/app-template` Helm chart (v3).
 - Uses the all-in-one image `ghcr.io/aliasvault/aliasvault:0.30.5`.
 - Reuses the shared PostgreSQL cluster via ExternalSecret (`aliasvault-db`).

@@ -9,9 +9,14 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 
 ## Repo Anchors
 - Values file: [values.yaml](values.yaml)
-- Argo CD application: [../../apps/argocd/vaultwarden-application.yaml](../../apps/argocd/vaultwarden-application.yaml)
+- Archived Argo CD application: [vaultwarden-application.yaml](../../apps/retired-argocd/vaultwarden-application.yaml)
 
 ## Current Deployment Shape
+- Retired on 2026-10-23 with owner authorization to permanently delete its data
+  and attachments PVCs (30 GiB), including the local vault database.
+  Values and Vault/ExternalSecret configuration remain for future deployment.
+  See [re-enablement guidance](../../apps/retired-argocd/README.md).
+- The following describes the archived deployment:
 - Namespace: vaultwarden.
 - Chart: `vaultwarden` from `https://guerzon.github.io/vaultwarden`.
 - Ingress host: vaultwarden.dklair.io via Traefik ingress class my-traefik.
@@ -48,7 +53,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Helm values reference this via `adminToken.existingSecret` and `adminToken.existingSecretKey`.
 
 ## Important Files
-- [../../apps/argocd/vaultwarden-application.yaml](../../apps/argocd/vaultwarden-application.yaml)
+- [Archived Application](../../apps/retired-argocd/vaultwarden-application.yaml)
 - [../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml](../../apps/external-secrets-config/vaultwarden-admin-externalsecret.yaml)
 - [values.yaml](values.yaml)
 
