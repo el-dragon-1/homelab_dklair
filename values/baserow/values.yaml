@@ -1,7 +1,7 @@
 # Baserow values
 # - Deploys via Traefik + cert-manager
 # - Reuses shared PostgreSQL (CloudNativePG) instead of chart-managed Postgres
-# - Pulls DB and SMTP credentials from ExternalSecret-managed Secrets
+# - Pulls DB, SMTP and object-storage credentials from ExternalSecret-managed Secrets
 
 global:
   baserow:
@@ -14,10 +14,19 @@ global:
           name: baserow-db
       - secretRef:
           name: baserow-smtp
+      # Last envFrom source overrides the parent chart's generated AWS credentials.
+      - secretRef:
+          name: baserow-minio-vault
 
 # Use existing PostgreSQL cluster, not chart-managed dependency.
 postgresql:
   enabled: false
+
+minio:
+  auth:
+    existingSecret: baserow-minio-vault
+    rootUserSecretKey: root-user
+    rootPasswordSecretKey: root-password
 
 # Provide external PostgreSQL connection details (non-secret values only).
 backendConfigMap:
