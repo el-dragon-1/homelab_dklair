@@ -23,6 +23,8 @@ postgresql:
   enabled: false
 
 minio:
+  persistence:
+    size: 20Gi
   auth:
     existingSecret: baserow-minio-vault
     rootUserSecretKey: root-user
