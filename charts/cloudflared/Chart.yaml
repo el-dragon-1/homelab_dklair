@@ -1,0 +1,5 @@
+apiVersion: v2
+name: cloudflared
+description: In-place adoption of the existing locally managed Cloudflare Tunnel
+type: application
+version: 0.1.0
