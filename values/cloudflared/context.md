@@ -2,14 +2,18 @@
 
 ## Adoption Baseline
 
-- Inspected on `K3S` on 2026-10-22; live adoption has not yet been performed.
+- Initial inspection on `K3S` on 2026-10-22 preceded adoption; live adoption and
+  public reachability were subsequently verified during the manual rollout.
 - Existing Deployment: `default/cloudflared`, three replicas, immutable selector
   `app: cloudflared`. Preserve the name, namespace, and selector during adoption.
 - Existing ConfigMap: `default/cloudflared`, key `config.yaml`.
 - Existing Secret: `default/tunnel-credentials`, key `credentials.json`.
   The chart references but does not manage this Secret. Vault credential comparison
   was performed in memory without printing or writing credential values to disk.
-- Tunnel name: `k3s`; locally managed with a credentials JSON file, not a tunnel token.
+- Tunnel name in the mounted configuration: `k3s`; authentication uses a credentials
+  JSON file, not a tunnel token. Despite the initial locally-managed assumption,
+  connector logs show Cloudflare pushing configuration version 58 with explicit
+  hostname routes. Do not assume the local wildcard is the sole route authority.
 - Existing route: `*.dklair.io` to `http://my-traefik.default.svc.cluster.local:80`,
   followed by `http_status:404`. Cloudflare DNS and Access policies remain external.
 - Pinned image digest was observed on all three existing pods across ARM64 and
@@ -49,5 +53,23 @@
   initial ESO reconciliation, as requested for a manual rollout. Their manifests
   and the Cloudflared Application now omit automatic sync. Publish these changes
   before syncing root; otherwise the older Git revision can re-enable automation.
-- Live reconciliation and external routing still require publishing the files and
-  completing the [adoption runbook](../../tutorials/cloudflare/argocd-tunnel-adoption.md).
+- Manual adoption completed: Cloudflared reported `Synced`, `Healthy`, and sync
+  phase `Succeeded`; all three replacement replicas became available.
+
+## Rollout Interruption
+
+- During adoption, pod `cloudflared-869bdd77-9xfvs` returned HTTP 503 from `/ready`
+  during startup. Kubernetes events confirm the inherited liveness probe killed
+  and restarted it. That probe allows only one failure after ten seconds.
+- A transient access interruption was reported during the rollout. The premature
+  restart is confirmed, but was not proven to be the sole cause of the interruption.
+- Subsequent public checks returned HTTP 200 for `argocd.dklair.io` and HTTP 302
+  login redirects for `homepage.dklair.io` and `authentik.dklair.io`. Connector logs
+  showed successful Cloudflare QUIC registrations.
+- A startup probe now allows approximately three minutes to establish a connection
+  before normal liveness checks begin. It uses the same `/ready` endpoint, so the
+  zero-unavailable rollout still waits for connected replacements. This change is
+  local only until committed, pushed, and manually synced; no recovery restart or
+  automatic sync was performed.
+- See the [adoption runbook](../../tutorials/cloudflare/argocd-tunnel-adoption.md)
+  for the manual sync and verification workflow.

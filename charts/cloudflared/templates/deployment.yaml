@@ -30,6 +30,13 @@ spec:
             - --config
             - /etc/cloudflared/config/config.yaml
             - run
+          startupProbe:
+            httpGet:
+              path: /ready
+              port: 2000
+            failureThreshold: 36
+            periodSeconds: 5
+            timeoutSeconds: 2
           livenessProbe:
             httpGet:
               path: /ready
