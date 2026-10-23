@@ -96,6 +96,13 @@ Inter-node Communication & External Network
 
 ## Storage Architecture
 
+### Retired test applications
+
+Nextcloud, Homepage, Mailu, Uptime Kuma, and Wger are retired. Their Application
+manifests and re-enablement steps are preserved in
+[apps/retired-argocd/](apps/retired-argocd/README.md); Helm values remain available.
+Their test PVC data is intentionally discarded to release Longhorn allocations.
+
 ### Longhorn Distributed Storage
 - **Version**: v4.9.0
 - **Replica Factor**: 5 copies across cluster

@@ -45,6 +45,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Depends on Authentik outpost publishing uptime.dklair.io with path /outpost.goauthentik.io.
 
 ## Important Files
+- Retired on 2026-10-23 with authorized destruction of test PVC data. The [Application](../../apps/retired-argocd/uptime-kuma-application.yaml) and configuration are retained. See [re-enablement steps](../../apps/retired-argocd/README.md).
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.
 
 ## Open Questions

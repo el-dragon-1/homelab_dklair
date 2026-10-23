@@ -53,7 +53,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Depends on the middleware resource `nextcloud-nextcloud-security-headers@kubernetescrd` referenced by ingress annotations.
 
 ## Important Files
-- [../../apps/argocd/nextcloud-application.yaml](../../apps/argocd/nextcloud-application.yaml)
+- [Archived Application](../../apps/retired-argocd/nextcloud-application.yaml)
+- Retired on 2026-10-23 with authorized destruction of test PVC data. See [re-enablement steps](../../apps/retired-argocd/README.md); shared PostgreSQL data and secrets are retained.
 - [values.yaml](values.yaml)
 - [../../tutorials/nextcloud/theming-safeguard-runbook.md](../../tutorials/nextcloud/theming-safeguard-runbook.md)
 

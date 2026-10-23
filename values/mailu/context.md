@@ -55,7 +55,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Public deliverability still depends on routable SMTP port 25 and correct PTR/rDNS.
 
 ## Important Files
-- [../../apps/argocd/mailu-application.yaml](../../apps/argocd/mailu-application.yaml)
+- [Archived Application](../../apps/retired-argocd/mailu-application.yaml)
+- Retired on 2026-10-23 with authorized destruction of test PVC data, including mail. See [re-enablement steps](../../apps/retired-argocd/README.md); shared PostgreSQL data and secrets are retained.
 - [../../apps/external-secrets-config/mailu-db-externalsecret.yaml](../../apps/external-secrets-config/mailu-db-externalsecret.yaml)
 - [../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml](../../apps/external-secrets-config/mailu-app-core-externalsecret.yaml)
 - [../../apps/external-secrets-config/mailu-admin-externalsecret.yaml](../../apps/external-secrets-config/mailu-admin-externalsecret.yaml)

@@ -106,7 +106,8 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - The shared PostgreSQL cluster serves the main app database, while the Wger chart still manages its own Redis dependency.
 
 ## Important Files
-- [../../apps/argocd/wger-application.yaml](../../apps/argocd/wger-application.yaml)
+- [Archived Application](../../apps/retired-argocd/wger-application.yaml)
+- Retired on 2026-10-23 with authorized destruction of test PVC data. See [re-enablement steps](../../apps/retired-argocd/README.md); shared PostgreSQL data and secrets are retained.
 - [../../apps/external-secrets-config/wger-db-externalsecret.yaml](../../apps/external-secrets-config/wger-db-externalsecret.yaml)
 - [values.yaml](values.yaml)
 - [../../values/postgresql/values.yaml](../../values/postgresql/values.yaml)

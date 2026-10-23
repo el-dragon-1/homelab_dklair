@@ -40,6 +40,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Depends on Authentik outpost route for `homepage.dklair.io/outpost.goauthentik.io`.
 
 ## Important Files
+- Retired on 2026-10-23; no PVC was present. The [Application](../../apps/retired-argocd/homepage-application.yaml) and configuration are retained. See [re-enablement steps](../../apps/retired-argocd/README.md).
 - Add the highest-signal manifests, scripts, or tutorials to inspect first.
 
 ## Open Questions
