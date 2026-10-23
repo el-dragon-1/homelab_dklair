@@ -9,6 +9,12 @@ watched `apps/argocd/` directory. Helm values, supplementary manifests, and
 Vault/ExternalSecret configuration remain in their original locations.
 Shared PostgreSQL databases are not removed by this retirement.
 
+Subsequent owner-approved database cleanup on 2026-10-23 removed the shared
+databases `aliasvault`, `nextcloud`, `mailu`, and `wger`, their dedicated roles,
+and Wger's inactive replication slot. The shared `dpolizzi` role was preserved
+because Authentik still uses it. Vault/ExternalSecret configuration remains.
+Re-provision the required database and role before restoring any of these apps.
+
 Aliasvault and Vaultwarden retirement includes permanent deletion of their
 six PVCs (39 GiB logical), including local databases, attachments, certificates,
 logs, and generated application secrets. Retained Vault credentials and any shared

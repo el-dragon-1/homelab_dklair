@@ -31,6 +31,18 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, pod failover symptoms, storage pressure, and database-provisioning issues.
 
 ## Troubleshooting History
+- 2026-10-23: With explicit owner approval after read-only dependency inspection,
+  removed retired databases `aliasvault`, `nextcloud`, `mailu`, and `wger`
+  (approximately 569 MB combined). Removed Wger's inactive logical slot
+  `powersync_1_ec96`, which had retained approximately 416 MB of WAL; physical
+  WAL reclamation was not measured. No target sessions were present at execution.
+  Dropped dedicated roles `aliasvault-admin`, `nextcloud`, `mailu`, `wger`, and
+  `powersync_storage` without cascading dependency removal. Preserved `dpolizzi`,
+  which owns active Authentik, and all other databases/roles. Catalog verification
+  confirmed target databases, roles, and slot absent; active Authentik connections
+  remained. Vault/ExternalSecret configuration and the shared PostgreSQL PVC
+  were unchanged. Re-provision databases/roles before re-enabling these apps;
+  retained credentials alone do not recreate them.
 - Date:
 - Issue:
 - Root cause:

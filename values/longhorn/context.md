@@ -32,6 +32,22 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, replica health issues, disk pressure, and node-rollout regressions.
 
 ## Troubleshooting History
+- 2026-10-23: Public `https://longhorn.dklair.io` returned HTTP 530 / Cloudflare
+  error 1033. All three Cloudflared replicas were ready and other public routes
+  worked. Direct HTTPS to Traefik at `192.168.4.100`, preserving the Longhorn
+  hostname and certificate verification, returned the expected Authentik 302.
+  The frontend had ready endpoints. Investigate the hostname's Cloudflare DNS
+  tunnel target and published route before changing Longhorn Helm values.
+  The active connector tunnel ID was `b015e1d0-a9d1-47d7-bd79-da61a7749970`.
+- After the owner recreated the Cloudflare route, the public response changed
+  to HTTP 404. Pushed connector configuration confirmed the Longhorn hostname
+  routed to HTTP Traefik port 80, but Longhorn's ingress listens only on
+  `websecure`. Direct HTTP reproduced the 404; direct HTTPS returned Authentik
+  302. The prior suggestion to copy other routes' HTTP origin was incorrect
+  for this ingress. Use HTTPS Traefik port 443 with origin TLS server name
+  `longhorn.dklair.io` and preserve that HTTP Host header; retain certificate
+  verification. The owner subsequently confirmed the Cloudflare route
+  correction restored access.
 - Date:
 - Issue:
 - Root cause:
