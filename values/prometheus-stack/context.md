@@ -13,6 +13,11 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Status: Managed through Argo CD with the sibling values file.
 
 ## Current Deployment Shape
+- Prometheus uses a 10 GiB Longhorn PVC with 7-day and `6GB` block-retention
+  limits, whichever is reached first. WAL/head data consumes additional space;
+  the block limit is not a total-disk quota. Monitor free space and actual
+  retention as ingestion changes. Prometheus reports the size flag as `6GiB`.
+  The Longhorn three-replica target is retained.
 - Summarize namespace, scrape scope, Alertmanager routing, storage, and ingress or dashboard exposure after the next validated review.
 - Prometheus and Alertmanager ingress use Traefik ingress class `my-traefik`.
 
@@ -23,6 +28,32 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, alert-routing mistakes, missing metrics, and PVC or retention issues.
 
 ## Troubleshooting History
+- 2026-10-23: Owner subsequently authorized another history reset and downsizing
+  to 10 GiB with 7-day / `6GB` retention. Observed approximately 11,360 samples/sec
+  and 327,000 active series; daily disk growth was not yet measurable after the
+  earlier reset. Rendered chart 78.5.0 and server-side dry-run validated the
+  Prometheus resource. Disabled automatic sync temporarily, stopped Prometheus,
+  paused operator reconciliation, and recreated its StatefulSet (immutable claim
+  template) and PVC. Restored reconciliation and one Prometheus instance.
+  New PV `pvc-154244ad-4fcf-4b47-b7f2-6d8302fc8d1e` was attached/healthy
+  with three running replicas on `eldragon`, `node1`, and `node3`.
+  Verified advancing sample timestamps over 35 seconds, 30 targets up, and
+  runtime retention flags of `1w` / `6GiB`. No other application's PVC was reset.
+- 2026-10-23: Active 40 GiB PV `pvc-24f2fdfb-ee9d-4c3f-bdc6-31c808bde97c`
+  was faulted/detached with both remaining replicas failed since September 19.
+  Pod readiness was misleading: Prometheus logged WAL input/output errors and
+  failed scrape commits. The original failure cause was not established.
+  The owner explicitly authorized discarding Prometheus history. Temporarily
+  disabled Argo automatic sync, set the Prometheus CR replicas to zero, waited
+  for pod termination, deleted only its verified PVC, and waited for old PV and
+  Longhorn volume deletion. Restored one Prometheus instance and original Argo
+  automatic-sync settings. New 40 GiB PV:
+  `pvc-e96aafb2-450b-4ee6-8787-5030c05ce607`.
+  Verified advancing `max(timestamp(up))` across two observations 35 seconds
+  apart, with 30 targets up at the latter observation; Argo reported Synced/Healthy.
+  After that reset storage remained degraded: one running replica on `eldragon`, two unscheduled
+  replicas due to insufficient capacity. The three-replica target was preserved;
+  application recovery does not mean storage redundancy is restored.
 - Date:
 - Issue:
 - Root cause:

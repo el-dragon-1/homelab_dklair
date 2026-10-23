@@ -70,8 +70,8 @@ prometheus:
   enabled: true
   prometheusSpec:
     replicas: 1
-    retention: 30d
-    retentionSize: 20GB
+    retention: 7d
+    retentionSize: 6GB
     walCompression: true
     storageSpec:
       volumeClaimTemplate:
@@ -80,7 +80,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 40Gi
+              storage: 10Gi
 
 grafana:
   enabled: true
