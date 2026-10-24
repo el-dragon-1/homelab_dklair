@@ -7,6 +7,12 @@ Use this file to preserve durable outcomes from Argo CD troubleshooting and oper
 - Root application: [../../root-application.yaml](../../root-application.yaml)
 
 ## Troubleshooting History
+- Date: 2026-10-23
+- Issue: Many Argo CD applications simultaneously reported `Sync: Unknown` (some `Health: Progressing`) with target-state load failures.
+- Root cause: In-cluster DNS instability caused repo-server Git lookups to fail (`lookup github.com on 10.43.0.10:53: server misbehaving`), so Argo CD could not fetch repo refs/manifests for source `https://github.com/el-dragon-1/homelab_dklair.git`.
+- Fix: Restored DNS behavior and hard-refreshed applications (`argocd.argoproj.io/refresh=hard`) to clear stale comparison errors; created durable GitOps resources for a `kube-system/coredns-custom` override (`forward . 1.1.1.1 1.0.0.1 8.8.8.8`) and an Argo CD app `coredns-custom` to keep resolver behavior explicit in Git.
+- Validation: Previously unknown apps converged back to `Synced/Healthy` after refresh; public Argo CD endpoint checks returned HTTP 200; cloudflared DNS prechecks passed.
+
 - Date: 2026-09-19
 - Issue: `argocd-repo-server` entered CrashLoopBackOff with repeated liveness probe failures and exit code 137.
 - Root cause: Repo server ran as BestEffort with default 1s probe timeouts while handling concurrent manifest generation; health checks timed out and kubelet repeatedly restarted the container.
@@ -44,3 +50,4 @@ Use this file to preserve durable outcomes from Argo CD troubleshooting and oper
 
 ## Open Questions
 - Evaluate whether to add topology spread constraints for stronger distribution behavior during rollouts.
+- Confirm desired steady-state CoreDNS replica placement/tolerations so DNS does not run effectively single-replica during scheduler pressure.

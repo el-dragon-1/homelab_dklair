@@ -1,0 +1,9 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+data:
+  upstream.override: |
+    # Pin stable IPv4 upstream resolvers to avoid node /etc/resolv.conf drift.
+    forward . 1.1.1.1 1.0.0.1 8.8.8.8

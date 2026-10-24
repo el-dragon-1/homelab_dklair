@@ -255,6 +255,33 @@ Authentik uses the shared PostgreSQL instance and bootstrap credentials from Vau
 - For new applications requiring a database, reuse the existing PostgreSQL instance (CloudNativePG) instead of deploying a separate database by default.
 - Only create a dedicated database instance when there is a clear isolation or performance requirement.
 
+### Cluster Auth Session Helper
+
+Use `scripts/cluster-auth-context.sh` to streamline kubectl context switching plus Argo CD and Vault session checks.
+
+Common flow for this repository:
+
+```bash
+./scripts/cluster-auth-context.sh up k3s
+./scripts/cluster-auth-context.sh status k3s
+./scripts/cluster-auth-context.sh argocd-login k3s
+./scripts/cluster-auth-context.sh vault-login k3s
+./scripts/cluster-auth-context.sh down k3s
+```
+
+What `up k3s` does:
+- switches kubectl to context `K3S`
+- starts a local Argo CD port-forward (`127.0.0.1:18080`) to avoid external ingress issues
+- verifies Argo CD API auth state and Vault reachability
+
+Second cluster support (`cluster2`) is environment-driven. Set variables such as:
+- `CLUSTER2_KUBE_CONTEXT`
+- `CLUSTER2_VAULT_ADDR`
+- `CLUSTER2_ARGOCD_MODE` (`direct` or `port-forward`)
+- `CLUSTER2_ARGOCD_SERVER` (required for `direct`)
+
+Then run the same commands with `cluster2` in place of `k3s`.
+
 ### OpenWRT Ops Runtime Guardrails
 
 The `openwrt-ops` CronJobs include runtime safeguards to prevent stale long-running jobs from degrading application health:
