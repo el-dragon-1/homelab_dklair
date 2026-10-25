@@ -4,6 +4,105 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 data:
-  upstream.override: |
-    # Pin stable IPv4 upstream resolvers to avoid node /etc/resolv.conf drift.
-    forward . 1.1.1.1 1.0.0.1 8.8.8.8
+  Corefile: |
+    .:53 {
+      errors
+      health :8080
+      ready
+      cache 30
+      forward . 192.168.4.1
+    }
+
+    dklair.io:53 {
+      errors
+      cache 30
+      file /etc/coredns/db.dklair.io dklair.io
+    }
+
+  db.dklair.io: |
+    $TTL 3600
+    @   IN SOA localhost. hostmaster.localhost. 2026102501 7200 3600 1209600 3600
+    @   IN NS localhost.
+    @   IN A 192.168.4.100
+    pihole IN A 192.168.4.100
+    argocd IN A 192.168.4.100
+    authentik IN A 192.168.4.100
+    home-assistant IN A 192.168.4.100
+    vault IN A 192.168.4.103
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: coredns-custom
+  template:
+    metadata:
+      labels:
+        app: coredns-custom
+    spec:
+      containers:
+        - name: coredns
+          image: coredns/coredns:1.11.4
+          args:
+            - -conf
+            - /etc/coredns/Corefile
+          ports:
+            - name: dns-udp
+              containerPort: 53
+              protocol: UDP
+            - name: dns-tcp
+              containerPort: 53
+              protocol: TCP
+            - name: health
+              containerPort: 8080
+              protocol: TCP
+          volumeMounts:
+            - name: config
+              mountPath: /etc/coredns
+              readOnly: true
+          readinessProbe:
+            httpGet:
+              path: /ready
+              port: 8181
+            initialDelaySeconds: 2
+            periodSeconds: 5
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: 8080
+            initialDelaySeconds: 10
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      volumes:
+        - name: config
+          configMap:
+            name: coredns-custom
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: coredns-custom
+  namespace: kube-system
+spec:
+  selector:
+    app: coredns-custom
+  ports:
+    - name: dns-tcp
+      port: 53
+      targetPort: 53
+      protocol: TCP
+    - name: dns-udp
+      port: 53
+      targetPort: 53
+      protocol: UDP
