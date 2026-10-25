@@ -36,7 +36,7 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 spec:
-  replicas: 1
+  replicas: 2
   selector:
     matchLabels:
       app: coredns-custom
@@ -45,6 +45,19 @@ spec:
       labels:
         app: coredns-custom
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+            - weight: 100
+              podAffinityTerm:
+                topologyKey: kubernetes.io/hostname
+                labelSelector:
+                  matchLabels:
+                    app: coredns-custom
+      tolerations:
+        - key: homelab.io/control-infra
+          operator: Exists
+          effect: NoSchedule
       containers:
         - name: coredns
           image: coredns/coredns:1.11.4
