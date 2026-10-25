@@ -108,6 +108,8 @@ metadata:
   name: coredns-custom
   namespace: kube-system
 spec:
+  type: LoadBalancer
+  loadBalancerIP: 192.168.4.102
   selector:
     app: coredns-custom
   ports:
