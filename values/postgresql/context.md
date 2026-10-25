@@ -27,6 +27,13 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - The bootstrap Secret `postgresql-admin` contains `username` and `password` keys expected by the cluster chart.
 - Application provisioning helpers can connect to `postgresql-rw.postgresql.svc.cluster.local:5432` and create or repair per-app roles and databases successfully.
 
+## Shared-DB Upgrade Rule
+- Every app that uses the shared CloudNativePG cluster must complete a compatibility check before any app, chart, or database upgrade.
+- No upgrade is allowed to proceed without confirming: app image/chart version compatibility with the PostgreSQL version, required DB driver/schema changes, logical-replication assumptions, role/database existence, and secret drift risk.
+- For any shared-DB app, record the compatibility review in the app's `values/<app>/context.md` and keep the shared PostgreSQL context in sync with the outcome.
+- If compatibility is not confirmed, the upgrade must be paused, pinned, or deferred until the app and database are validated together.
+- This policy applies to Authentik, Open WebUI, Aliasvault, Baserow, Wger, Mailu, Nextcloud, Keeper, and any future app added to the shared PostgreSQL cluster.
+
 ## Recurring Problems
 - Capture repeated failures, pod failover symptoms, storage pressure, and database-provisioning issues.
 

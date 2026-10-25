@@ -43,6 +43,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Verify the outage with `dig @192.168.4.102 google.com A`.
 - Confirm the active resolver with `kubectl -n pihole exec deploy/pihole -- sed -n '/^  upstreams = \[/,/^  \]/p' /etc/pihole/pihole.toml`.
 - Query `dig @192.168.4.1 google.com A` from the Pi-hole pod to confirm the router resolver remains reachable.
+- 2026-10-25: Upgraded the Pi-hole chart from `2.36.0` to `2.38.0` while keeping the active upstream at `192.168.4.1` and validating `dig @192.168.4.102 google.com A` plus a local hostname resolution check before considering the upgrade complete.
 
 ## Dependencies And Secrets
 - Pi-hole requires the OpenWRT resolver at `192.168.4.1` to be reachable from the cluster pod network.
