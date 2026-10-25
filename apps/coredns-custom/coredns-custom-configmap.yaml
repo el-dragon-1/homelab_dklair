@@ -107,6 +107,8 @@ kind: Service
 metadata:
   name: coredns-custom
   namespace: kube-system
+  annotations:
+    kube-vip.io/loadbalancerIPs: 192.168.4.102
 spec:
   type: LoadBalancer
   loadBalancerIP: 192.168.4.102
