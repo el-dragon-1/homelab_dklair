@@ -24,11 +24,27 @@ data:
     @   IN SOA localhost. hostmaster.localhost. 2026102501 7200 3600 1209600 3600
     @   IN NS localhost.
     @   IN A 192.168.4.100
-    pihole IN A 192.168.4.100
+    ai IN A 192.168.4.100
+    alertmanager IN A 192.168.4.100
+    aliasvault IN A 192.168.4.100
+    api.baserow IN A 192.168.4.100
     argocd IN A 192.168.4.100
+    audiobookshelf IN A 192.168.4.100
     authentik IN A 192.168.4.100
-    home-assistant IN A 192.168.4.100
+    baserow IN A 192.168.4.100
+    calibre IN A 192.168.4.100
+    grafana IN A 192.168.4.100
+    homeassistant IN A 192.168.4.100
+    homepage IN A 192.168.4.100
+    keeper IN A 192.168.4.100
+    longhorn IN A 192.168.4.100
+    nextcloud IN A 192.168.4.100
+    objects.baserow IN A 192.168.4.100
+    pgadmin IN A 192.168.4.100
+    uptime IN A 192.168.4.100
     vault IN A 192.168.4.103
+    vaultwarden IN A 192.168.4.100
+    wger IN A 192.168.4.100
 ---
 apiVersion: apps/v1
 kind: Deployment
