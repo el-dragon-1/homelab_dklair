@@ -13,7 +13,7 @@ spec:
       hosts:
         - baserow.dklair.io
         - api.baserow.dklair.io
-        - objects.baserow.dklair.io
+        - baserow-objects.dklair.io
   rules:
     - host: baserow.dklair.io
       http:
@@ -84,7 +84,7 @@ spec:
                 name: baserow-baserow-backend-wsgi
                 port:
                   number: 80
-    - host: objects.baserow.dklair.io
+    - host: baserow-objects.dklair.io
       http:
         paths:
           - path: /

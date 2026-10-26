@@ -8,7 +8,8 @@ global:
     domain: baserow.dklair.io
     # Use the same public host for UI and API to avoid split-DNS/proxy issues.
     backendDomain: baserow.dklair.io
-    objectsDomain: objects.baserow.dklair.io
+    # Single-level subdomain so Cloudflare Universal SSL (*.dklair.io) covers it.
+    objectsDomain: baserow-objects.dklair.io
     envFrom:
       - secretRef:
           name: baserow-db
@@ -24,6 +25,8 @@ postgresql:
 
 minio:
   persistence:
+    # PVC is managed in apps/baserow/minio-pvc.yaml.
+    existingClaim: baserow-minio-data
     size: 20Gi
   auth:
     existingSecret: baserow-minio-vault
