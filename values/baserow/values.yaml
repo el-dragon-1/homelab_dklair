@@ -1,7 +1,7 @@
 # Baserow values
 # - Deploys via Traefik + cert-manager
 # - Reuses shared PostgreSQL (CloudNativePG) instead of chart-managed Postgres
-# - Pulls DB, SMTP and object-storage credentials from ExternalSecret-managed Secrets
+# - Pulls DB, SMTP, app signing keys and object-storage credentials from ExternalSecret-managed Secrets
 
 global:
   baserow:
@@ -15,9 +15,16 @@ global:
           name: baserow-db
       - secretRef:
           name: baserow-smtp
+      # Stable SECRET_KEY/BASEROW_JWT_SIGNING_KEY from Vault (see generateJwtSecret below).
+      - secretRef:
+          name: baserow-app
       # Last envFrom source overrides the parent chart's generated AWS credentials.
       - secretRef:
           name: baserow-minio-vault
+
+# The chart's generated keys live in a Helm hook Secret that Argo CD recreates on every
+# sync, which invalidates all sessions; keys come from the baserow-app Secret instead.
+generateJwtSecret: false
 
 # Use existing PostgreSQL cluster, not chart-managed dependency.
 postgresql:
