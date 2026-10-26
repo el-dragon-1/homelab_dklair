@@ -38,9 +38,6 @@ config:
         - Longhorn:
             - abbr: LH
               href: https://longhorn.dklair.io
-        - Pi-hole:
-            - abbr: DNS
-              href: https://pihole.dklair.io
         - Vault:
             - abbr: KV
               href: https://vault.dklair.io
