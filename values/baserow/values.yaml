@@ -31,6 +31,8 @@ postgresql:
   enabled: false
 
 minio:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
   persistence:
     # PVC is managed in apps/baserow/minio-pvc.yaml.
     existingClaim: baserow-minio-data
@@ -63,3 +65,30 @@ ingress:
 # before Redis resources are created.
 migration:
   enabled: false
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+# Keep Baserow API/UI/workers on the same stable AMD64 node as MinIO during bulk import.
+baserow-backend-asgi:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+baserow-backend-wsgi:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+baserow-celery-beat-worker:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+baserow-celery-export-worker:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+baserow-celery-worker:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
+
+baserow-frontend:
+  nodeSelector:
+    kubernetes.io/hostname: eldragon
