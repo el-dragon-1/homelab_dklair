@@ -47,6 +47,8 @@ backendConfigMap:
   DATABASE_HOST: postgresql-rw.postgresql.svc.cluster.local
   DATABASE_PORT: "5432"
   DATABASE_NAME: baserow
+  # Temporarily avoid background index pressure during the CryoSRV migration.
+  BASEROW_USE_PG_FULLTEXT_SEARCH: "false"
   EMAIL_SMTP: "true"
   EMAIL_SMTP_HOST: smtp.mail.me.com
   EMAIL_SMTP_PORT: "587"
