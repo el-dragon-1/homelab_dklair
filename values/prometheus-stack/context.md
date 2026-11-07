@@ -37,8 +37,12 @@ Use this file to preserve the durable outcome of Copilot chats about building an
   `node1`, `node2`, and `eldragon`, but lacks the custom control-infra taint
   toleration and has a hard hostname spread constraint. Its old pod runs on
   `eldragon`; two new pods remain pending. The deployment has one ready replica
-  out of two desired. See the PostgreSQL context for the unresolved database
-  outage. No alerts were silenced or routing changed.
+  out of two desired and is the only ready `kube-dns` endpoint; the separate
+  `coredns-custom` deployment does not serve that Kubernetes Service.
+  PostgreSQL recovered after an approved volume expansion; Authentik and both
+  Baserow backends also became ready. See the PostgreSQL context for details.
+  The DNS scheduling issue remains unresolved. No alerts were silenced or
+  routing changed.
 - 2026-10-23: Owner subsequently authorized another history reset and downsizing
   to 10 GiB with 7-day / `6GB` retention. Observed approximately 11,360 samples/sec
   and 327,000 active series; daily disk growth was not yet measurable after the

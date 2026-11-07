@@ -43,10 +43,20 @@ Use this file to preserve the durable outcome of Copilot chats about building an
   say it refuses to start due to low disk space. The 10 GiB Longhorn volume is
   attached and reports healthy with three configured replicas; the storage
   class supports expansion. Authentik and Baserow logs show refused database
-  connections. An expansion to 20 GiB was approved and added to GitOps; recovery
-  and the space consumer still need verification. No database files or WAL were
-  deleted. No CNPG Backup resources were listed in the namespace; this alone
-  does not establish whether other backups exist.
+  connections. With owner approval, expanded the volume to 20 GiB via GitOps.
+  CNPG did not update the PVC while its low-disk guard was active, so the PVC
+  request was also increased directly to match the committed cluster spec.
+  Longhorn initially rejected the expansion because the `node3` replica had
+  insufficient schedulable capacity. With separate owner approval, reduced
+  `node3` Longhorn disk reservation by 10 GiB to 64866911436 bytes; the separate
+  25% minimum-free-space setting remained unchanged. Filesystem expansion
+  succeeded, the volume remained healthy, CNPG reported healthy, and Argo CD
+  reported Synced/Healthy. The filesystem showed 9.8 GiB used and 9.9 GiB
+  available; `baserow` accounted for approximately 8962 MB of database data,
+  `pg_wal` used 769 MiB, and no replication slots existed. The cause of the
+  data growth was not established. No database files or WAL were deleted. No
+  CNPG Backup resources were listed in the namespace; this alone does not
+  establish whether other backups exist.
 - 2026-10-23: With explicit owner approval after read-only dependency inspection,
   removed retired databases `aliasvault`, `nextcloud`, `mailu`, and `wger`
   (approximately 569 MB combined). Removed Wger's inactive logical slot
