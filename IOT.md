@@ -167,7 +167,8 @@ ownership, model, and firmware are confirmed.
 | Main Bedroom; AirPlay service name only | Address/physical device unconfirmed | T2 candidate / IoT if Apple Home/media hub confirmed | Identify device/model; A profile |
 | Hue bridge; Signify BSB002, `ec:b5:fa:99:ce:e4` | `10.1.1.218` / wired IoT, gateway LAN4 | T2 / wired IoT with Apple Home hubs | Migrated 2026-10-11; identity, LAN IPv4 and IoT IPv4/IPv6 access, and `_hue._tcp` passed. Owner confirms Hue and Apple Home light control work without re-pairing. Routed LAN IPv6 HTTPS times out; H profile/stability incomplete |
 | Hue lights/accessories behind bridge | Count, rooms, models, and Zigbee membership unknown | T3 accessories behind T2 bridge; no direct IP placement unless separately verified | Inventory each light/sensor/switch; H profile per accessory |
-| SonosZP, `74:ca:60:a8:ac:ce` | `10.2.2.126` / guest lease | T2/T3 candidate / placement pending media dependencies | Guest isolation may conflict with discovery/grouping; identity and S profile required |
+| Sonos Era 100 SL "Downstairs", `74:ca:60:a8:ac:ce` | `10.1.1.126` / IoT (earlier guest lease `10.2.2.126` is stale) | T2 / IoT | Identity from device description on TCP 1400 (2026-11-07). Covered by the scoped media-receiver exception; S profile pending |
+| Sonos Era 100 SL "Master Bedroom", `74:ca:60:a8:a9:32` | `10.1.1.123` / IoT | T2 / IoT | Identity from device description on TCP 1400 (2026-11-07). Covered by the scoped media-receiver exception; S profile pending |
 | EP25, `30:68:93:36:c2:62` | `10.1.1.103` / IoT | T3 / retain IoT if identity confirmed | Lease model label only; P profile |
 | Unnamed, `30:68:93:36:f8:99` | `10.1.1.104` / IoT | T4 pending identity / no promotion | Similar MAC prefix is not device identification; U then appropriate profile |
 | Unnamed, `74:fe:ce:fd:89:f5` (earlier lease label EP25) | `10.1.1.130` / IoT | T3 candidate / retain IoT pending identity | P profile after owner mapping |
@@ -1289,6 +1290,34 @@ These are owner-reported functional successes, not assistant-generated
 playback or comprehensive A-profile certification. Current active Home
 hub, failover, Thread accessories, all automations and 48-hour stability
 remain unverified. Other advertised room names remain inventory gaps.
+
+### 2026-11-07: Multi-Speaker Playback Pauses and Media Receiver Exception
+
+Symptom: Apple Music played from an owner iPhone on `smz_homex` (LAN) to
+several HomePod/Sonos speakers paused after a few seconds. With the iPhone
+moved to `OpenWrt` (IoT, same VLAN as the speakers) playback ran for
+4+ minutes without pausing, isolating the cause to the LAN/IoT boundary.
+LAN -> IoT is forwarded, but `Block IoT to LAN` dropped connections that
+the receivers originate back to the sender (AirPlay 2 PTP UDP 319/320 plus
+dynamic timing/control/event ports; Sonos UPnP event callbacks).
+
+Desired gateway firewall adds two rules ahead of `Block IoT to LAN`,
+matching only by source MAC, IoT -> LAN zone, family any:
+UDP `319-320 1024-65535` and TCP `1024-65535`. Receivers: Kitchen
+HomePod `a4:cf:99:ab:5e:91`, Sonos Downstairs `74:ca:60:a8:ac:ce`, Sonos
+Master Bedroom `74:ca:60:a8:a9:32`, Living Room Apple TV `c4:f7:c1:5a:a1:2f`,
+basement Apple TV `1c:b3:c9:03:1c:9a`. Other IoT devices remain blocked;
+no DHCP reservations were added. Unidentified `00:c5:26:…` and `74:fe:ce:…`
+IoT devices refused TCP 7000 and are not included.
+
+Dry run before publication: all five desired gateway packages were imported
+into a scratch UCI directory on the gateway and exported canonically.
+System, network, DHCP and wireless were identical to live; firewall differed
+only by the two rules. fw4 rendered live and candidate rulesets from a
+scratch config copy; both passed `nft -c` (check-only) and the rendered diff
+was exactly two `forward_iot_zone` lines jumping to `accept_to_lan`.
+Rollback: remove the two rules and let the gateway reconcile reapply.
+Owner acceptance of multi-speaker playback from `smz_homex` is pending.
 
 - [ ] Confirm owner/model/firmware for every provisional row and merge verified duplicates.
 - [ ] Enumerate every Hue light/sensor/switch and its room/bridge membership.

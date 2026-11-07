@@ -184,6 +184,34 @@ config rule
 	option target 'ACCEPT'
 
 config rule
+	option name 'Allow IoT media receivers to LAN UDP'
+	option src 'iot_zone'
+	option dest 'lan'
+	list src_mac 'a4:cf:99:ab:5e:91'
+	list src_mac '74:ca:60:a8:ac:ce'
+	list src_mac '74:ca:60:a8:a9:32'
+	list src_mac 'c4:f7:c1:5a:a1:2f'
+	list src_mac '1c:b3:c9:03:1c:9a'
+	option proto 'udp'
+	option dest_port '319-320 1024-65535'
+	option family 'any'
+	option target 'ACCEPT'
+
+config rule
+	option name 'Allow IoT media receivers to LAN TCP'
+	option src 'iot_zone'
+	option dest 'lan'
+	list src_mac 'a4:cf:99:ab:5e:91'
+	list src_mac '74:ca:60:a8:ac:ce'
+	list src_mac '74:ca:60:a8:a9:32'
+	list src_mac 'c4:f7:c1:5a:a1:2f'
+	list src_mac '1c:b3:c9:03:1c:9a'
+	option proto 'tcp'
+	option dest_port '1024-65535'
+	option family 'any'
+	option target 'ACCEPT'
+
+config rule
 	option name 'Allow IoT to CoreDNS'
 	option src 'iot_zone'
 	option dest 'lan'
