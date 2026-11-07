@@ -1,0 +1,5 @@
+apiVersion: v2
+name: coredns
+description: In-place adoption of K3s CoreDNS without changing its service or deployment selector
+type: application
+version: 0.1.0

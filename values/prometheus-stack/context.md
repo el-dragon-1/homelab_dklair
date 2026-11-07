@@ -41,8 +41,19 @@ Use this file to preserve the durable outcome of Copilot chats about building an
   `coredns-custom` deployment does not serve that Kubernetes Service.
   PostgreSQL recovered after an approved volume expansion; Authentik and both
   Baserow backends also became ready. See the PostgreSQL context for details.
-  The DNS scheduling issue remains unresolved. No alerts were silenced or
-  routing changed.
+  CoreDNS was restored by adding the infrastructure taint toleration to the
+  live deployment and setting `maxUnavailable: 0` for a safe rollout. Two
+  ready `kube-dns` endpoints now run on `node1` and `node2`; direct UDP queries
+  to each endpoint and to the Service resolved cluster, public, and homelab
+  names. This is a live repair, not a durable K3s source change: the packaged
+  addon manifest does not contain the new toleration or rollout policy, so
+  future K3s reconciliation or upgrades may overwrite them. Packaged K3s
+  manifests are rewritten at startup; do not edit them directly. A future
+  GitOps migration must preserve the `kube-dns` Service IP and the
+  `coredns` ConfigMap's dynamically managed `NodeHosts` key (managed fields
+  show `k3s-supervisor@node2`); the separate `coredns-custom` application is
+  not a replacement for cluster DNS. No alerts were silenced or routing
+  changed.
 - 2026-10-23: Owner subsequently authorized another history reset and downsizing
   to 10 GiB with 7-day / `6GB` retention. Observed approximately 11,360 samples/sec
   and 327,000 active series; daily disk growth was not yet measurable after the

@@ -1,0 +1,13 @@
+replicas: 2
+image: rancher/mirrored-coredns-coredns:1.14.4
+clusterIP: 10.43.0.10
+allowedNodes:
+  - node1
+  - node2
+  - eldragon
+resources:
+  limits:
+    memory: 170Mi
+  requests:
+    cpu: 100m
+    memory: 70Mi
