@@ -28,6 +28,17 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, alert-routing mistakes, missing metrics, and PVC or retention issues.
 
 ## Troubleshooting History
+- 2026-11-07: Alertmanager routed ten firing alerts to Telegram: four
+  crash-looping containers, two non-ready CoreDNS pods, two deployment replica
+  mismatches, a stuck CoreDNS rollout, and an unhealthy PostgreSQL PDB.
+  PostgreSQL's instance manager refused to start because of low disk space;
+  Authentik and Baserow logs showed refused connections to the shared database.
+  CoreDNS is a separate scheduling problem: its K3s-managed deployment permits
+  `node1`, `node2`, and `eldragon`, but lacks the custom control-infra taint
+  toleration and has a hard hostname spread constraint. Its old pod runs on
+  `eldragon`; two new pods remain pending. The deployment has one ready replica
+  out of two desired. See the PostgreSQL context for the unresolved database
+  outage. No alerts were silenced or routing changed.
 - 2026-10-23: Owner subsequently authorized another history reset and downsizing
   to 10 GiB with 7-day / `6GB` retention. Observed approximately 11,360 samples/sec
   and 327,000 active series; daily disk growth was not yet measurable after the

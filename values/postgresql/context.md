@@ -16,7 +16,7 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - This directory configures the shared CloudNativePG database cluster used by other apps.
 - Deploys to namespace `postgresql` from the CloudNativePG `cluster` chart at target revision `0.6.0`.
 - Uses `nameOverride: postgresql` and `fullNameOverride: postgresql-cluster`.
-- Runs a single database instance with a `10Gi` Longhorn-backed volume.
+- Runs a single database instance with a `20Gi` Longhorn-backed volume.
 - Bootstraps via `cluster.initdb` with database `admin`, owner `admin`, and bootstrap credentials from Secret `postgresql-admin`.
 - The values file explicitly notes that `initdb` must remain under `cluster.initdb`, not `bootstrap.initdb`.
 - Sets PostgreSQL parameters `max_connections=100`, `shared_buffers=128MB`, and `wal_level=logical`.
@@ -38,6 +38,15 @@ Use this file to preserve the durable outcome of Copilot chats about building an
 - Capture repeated failures, pod failover symptoms, storage pressure, and database-provisioning issues.
 
 ## Troubleshooting History
+- 2026-11-07: The single instance `postgresql-1` is crash-looping and the CNPG
+  cluster reports `Not enough disk space`. Instance-manager logs explicitly
+  say it refuses to start due to low disk space. The 10 GiB Longhorn volume is
+  attached and reports healthy with three configured replicas; the storage
+  class supports expansion. Authentik and Baserow logs show refused database
+  connections. An expansion to 20 GiB was approved and added to GitOps; recovery
+  and the space consumer still need verification. No database files or WAL were
+  deleted. No CNPG Backup resources were listed in the namespace; this alone
+  does not establish whether other backups exist.
 - 2026-10-23: With explicit owner approval after read-only dependency inspection,
   removed retired databases `aliasvault`, `nextcloud`, `mailu`, and `wger`
   (approximately 569 MB combined). Removed Wger's inactive logical slot
